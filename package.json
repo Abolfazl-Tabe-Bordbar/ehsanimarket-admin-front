@@ -1,0 +1,41 @@
+{
+  "name": "ramian_pakhsh",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --turbopack",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@emotion/react": "^11.13.3",
+    "@emotion/styled": "^11.13.0",
+    "@mui/icons-material": "^6.1.0",
+    "@mui/material": "^6.1.0",
+    "@tiptap/extension-color": "^2.12.0",
+    "@tiptap/extension-image": "^2.12.0",
+    "@tiptap/extension-link": "^2.12.0",
+    "@tiptap/extension-table": "^2.12.0",
+    "@tiptap/extension-table-cell": "^2.12.0",
+    "@tiptap/extension-table-header": "^2.12.0",
+    "@tiptap/extension-table-row": "^2.12.0",
+    "@tiptap/extension-text-align": "^2.12.0",
+    "@tiptap/extension-text-style": "^2.12.0",
+    "@tiptap/extension-underline": "^2.12.0",
+    "@tiptap/react": "^2.12.0",
+    "@tiptap/starter-kit": "^2.12.0",
+    "axios": "^1.7.9",
+    "next": "16.0.7",
+    "react": "19.2.1",
+    "react-dom": "19.2.1",
+    "react-hook-form": "^7.53.0",
+    "react-multi-date-picker": "^4.5.2",
+    "sweetalert2": "^11.17.2"
+  },
+  "devDependencies": {
+    "baseline-browser-mapping": "^2.10.31",
+    "postcss": "^8",
+    "tailwindcss": "^3.4.1"
+  }
+}
