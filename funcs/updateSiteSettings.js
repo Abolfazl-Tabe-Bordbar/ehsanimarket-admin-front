@@ -18,6 +18,7 @@ const TEXT_FIELDS = [
   "instagram_url",
   "telegram_url",
   "whatsapp_url",
+  "bale_url",
   "map_embed_url",
 ];
 

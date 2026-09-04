@@ -207,7 +207,11 @@ function SiteSettingsMain({ initialSettings }) {
     const result = await updateSiteSettings(form, imageFiles);
 
     if (result?.status && result.body) {
-      setForm(result.body);
+      setForm((prev) => ({
+        ...prev,
+        ...result.body,
+        bale_url: result.body.bale_url ?? prev.bale_url,
+      }));
       setImageFiles({});
       setImagePreviews({});
     }
