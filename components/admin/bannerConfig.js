@@ -20,6 +20,61 @@ export const bannerDeviceLabels = {
   laptop: "تبلت به بالا",
 };
 
+export const bannerDeviceBreakpoints = {
+  mobile: "عرض کمتر از ۶۴۰px",
+  tablet: "عرض ۶۴۰ تا ۷۶۷px",
+  laptop: "عرض ۷۶۸px به بالا",
+};
+
+export const bannerGuideSections = {
+  home: [
+    { section: "header", label: "هدر", display: "اسلایدر بالای صفحه" },
+    { section: "hero", label: "میانه", display: "۲ بنر کنار هم (دسکتاپ/تبلت)" },
+    { section: "footer", label: "فوتر", display: "۲ بنر کنار هم (دسکتاپ/تبلت)" },
+  ],
+  shop: [
+    { section: "header", label: "هدر", display: "۱ بنر بالای لیست محصولات" },
+    { section: "footer", label: "فوتر", display: "۲ بنر پایین لیست محصولات" },
+  ],
+};
+
+export const bannerDesignSizes = [
+  {
+    title: "بنر بالایی (هدر) — اسلایدر",
+    rows: [
+      { device: "موبایل", ratio: "۱۶:۹", size: "720 × 405 px" },
+      { device: "تبلت", ratio: "۱۶:۹", size: "1024 × 576 px" },
+      { device: "تبلت به بالا", ratio: "۳:۱", size: "1440 × 480 px" },
+    ],
+  },
+  {
+    title: "بنر میانه و پایین — دو تایی",
+    rows: [
+      { device: "موبایل", ratio: "۱۶:۹", size: "720 × 405 px (تک ستونه)" },
+      { device: "تبلت", ratio: "۲:۱", size: "512 × 256 px (هر بنر)" },
+      { device: "تبلت به بالا", ratio: "۲:۱", size: "700 × 350 px (هر بنر)" },
+    ],
+  },
+  {
+    title: "صفحه محصولات — بنر هدر",
+    rows: [
+      { device: "موبایل", ratio: "—", size: "720 × 400 px" },
+      { device: "تبلت", ratio: "—", size: "1024 × 400 px" },
+      { device: "تبلت به بالا", ratio: "—", size: "1440 × 400 px" },
+    ],
+  },
+];
+
+export const bannerAdminRules = [
+  "برای هر بنر، صفحه، مکان و دستگاه را دقیق انتخاب کنید.",
+  "هر مکان باید برای هر ۳ دستگاه (موبایل، تبلت، تبلت به بالا) جداگانه آپلود شود.",
+  "اگر فقط یک دستگاه آپلود شود، سایت در بقیه سایزها بنر جایگزین نشان می‌دهد.",
+  "بخش میانه صفحه خانه: ترجیحاً ۲ بنر برای هر دستگاه بگذارید.",
+  "لینک مقصد هر بنر را حتماً پر کنید.",
+  "فرمت JPG یا PNG — حجم ترجیحاً زیر 150KB.",
+  "متن و لوگوی مهم وسط تصویر باشد؛ گوشه‌ها ممکن است بریده شوند.",
+];
+
 export function getBannerPageLabel(page) {
   return bannerPageLabels[page] || "نامشخص";
 }
