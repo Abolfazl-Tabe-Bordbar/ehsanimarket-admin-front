@@ -3,6 +3,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import UsersTable from "./UsersTable";
 import EmptyMessage from "@/components/modules/EmptyMessage";
+import AdminSearchBar from "@/components/admin/ui/AdminSearchBar";
 import { useRouter, useSearchParams } from "next/navigation";
 import getUsers from "@/funcs/getUsers";
 import exportUsersExcel from "@/funcs/exportUsersExcel";
@@ -12,10 +13,11 @@ import Loader from "@/components/modules/Loader";
 import { getCitiesByProvince, getProvinceNames } from "@/data/iranLocations";
 import { apiBaseUrl } from "@/data/variables";
 
-function buildFilterQuery(province, city) {
+function buildFilterQuery(province, city, q) {
   const params = new URLSearchParams();
   if (province) params.set("province", province);
   if (city) params.set("city", city);
+  if (q) params.set("q", q);
   const query = params.toString();
   return query ? `&${query}` : "";
 }
@@ -33,6 +35,8 @@ function UsersList({ data }) {
   const currentPage = Math.max(1, Number(searchParams.get("p")) || 1);
   const provinceFilter = searchParams.get("province") || "";
   const cityFilter = searchParams.get("city") || "";
+  const searchValue = searchParams.get("q") || "";
+  const [searchInput, setSearchInput] = useState(searchValue);
   const totalPages = Math.max(1, Math.ceil((shownData?.countAll || 0) / itemsPerPage));
 
   const provinceOptions = useMemo(() => getProvinceNames(), []);
@@ -41,7 +45,20 @@ function UsersList({ data }) {
     [provinceFilter]
   );
 
-  const paginationQuery = buildFilterQuery(provinceFilter, cityFilter);
+  const paginationQuery = buildFilterQuery(provinceFilter, cityFilter, searchValue);
+
+  useEffect(() => {
+    setSearchInput(searchValue);
+  }, [searchValue]);
+
+  const currentFilters = useMemo(
+    () => ({
+      province: provinceFilter,
+      city: cityFilter,
+      q: searchValue,
+    }),
+    [provinceFilter, cityFilter, searchValue]
+  );
 
   const loadUsers = useCallback(
     async (page, filters) => {
@@ -67,31 +84,45 @@ function UsersList({ data }) {
     [itemsPerPage]
   );
 
-  const pushFiltersToUrl = (page, province, city) => {
+  const pushFiltersToUrl = (page, province, city, q) => {
     const params = new URLSearchParams();
     params.set("p", String(page));
     if (province) params.set("province", province);
     if (city) params.set("city", city);
+    if (q?.trim()) params.set("q", q.trim());
     router.push(`/p-admin/users?${params.toString()}`);
   };
 
   const updateFilter = (key, value) => {
     const nextProvince = key === "province" ? value : provinceFilter;
     const nextCity = key === "province" ? "" : key === "city" ? value : cityFilter;
-    const nextFilters = { province: nextProvince, city: nextCity };
+    const nextFilters = {
+      province: nextProvince,
+      city: nextCity,
+      q: searchValue,
+    };
 
-    pushFiltersToUrl(1, nextProvince, nextCity);
+    pushFiltersToUrl(1, nextProvince, nextCity, searchValue);
     loadUsers(1, nextFilters);
   };
 
+  const searchHandler = (value) => {
+    pushFiltersToUrl(1, provinceFilter, cityFilter, value.trim());
+  };
+
   const clearFilters = () => {
+    setSearchInput("");
     router.push("/p-admin/users?p=1");
-    loadUsers(1, { province: "", city: "" });
+    loadUsers(1, { province: "", city: "", q: "" });
   };
 
   const exportHandler = () => {
     setIsExporting(true);
-    exportUsersExcel({ province: provinceFilter, city: cityFilter })
+    exportUsersExcel({
+      province: provinceFilter,
+      city: cityFilter,
+      q: searchValue.trim() || undefined,
+    })
       .then((res) => {
         if (res?.file) {
           const linkElem = document.createElement("a");
@@ -104,21 +135,29 @@ function UsersList({ data }) {
   };
 
   useEffect(() => {
-    loadUsers(currentPage, { province: provinceFilter, city: cityFilter });
-  }, [currentPage, provinceFilter, cityFilter, loadUsers]);
+    loadUsers(currentPage, currentFilters);
+  }, [currentPage, currentFilters, loadUsers]);
 
   useEffect(() => {
     const maxPage = Math.max(1, Math.ceil((shownData?.countAll || 0) / itemsPerPage));
     if ((shownData?.countAll || 0) > 0 && currentPage > maxPage) {
-      pushFiltersToUrl(maxPage, provinceFilter, cityFilter);
+      pushFiltersToUrl(maxPage, provinceFilter, cityFilter, searchValue);
     }
-  }, [shownData?.countAll, currentPage, provinceFilter, cityFilter, itemsPerPage]);
+  }, [shownData?.countAll, currentPage, provinceFilter, cityFilter, searchValue, itemsPerPage]);
 
-  const hasActiveFilters = Boolean(provinceFilter || cityFilter);
+  const hasActiveFilters = Boolean(provinceFilter || cityFilter || searchValue.trim());
 
   return (
     <div className="space-y-5">
       {(isExporting || isLoading) && <Loader />}
+
+      <AdminSearchBar
+        value={searchInput}
+        onChange={setSearchInput}
+        onSearch={searchHandler}
+        onClear={() => searchHandler("")}
+        placeholder="جستجو در نام، شماره تماس یا نام کاربری..."
+      />
 
       <div className="admin-section">
         <div className="flex flex-col lg:flex-row lg:items-end gap-4">
@@ -182,7 +221,13 @@ function UsersList({ data }) {
       </div>
 
       {!shownData?.status || !shownData?.body?.length ? (
-        <EmptyMessage text="کاربری با این فیلتر پیدا نشد." />
+        <EmptyMessage
+          text={
+            hasActiveFilters
+              ? "کاربری با این فیلتر یا جستجو پیدا نشد."
+              : "هنوز کاربری ثبت‌نام نکرده است."
+          }
+        />
       ) : (
         <>
           <UsersTable

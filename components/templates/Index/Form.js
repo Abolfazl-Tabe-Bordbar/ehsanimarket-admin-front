@@ -22,18 +22,18 @@ function Form() {
 
   const onSubmit = (data) => {
     setIsLoading(true);
-    login(data, router).then(() => setIsLoading(false));
+    login(data, router).finally(() => setIsLoading(false));
   };
 
   const inputBaseClass =
-    "w-full bg-gray-50 border border-gray-200 rounded-xl py-3 pr-11 pl-4 text-sm text-gray-800 placeholder:text-gray-400 outline-none transition-all duration-200 focus:bg-white focus:border-[#CA8549] focus:ring-2 focus:ring-[#CA8549]/20";
+    "w-full bg-gray-50 border border-gray-200 rounded-xl py-3 pr-11 pl-4 text-sm text-gray-800 text-right placeholder:text-gray-400 outline-none transition-all duration-200 focus:bg-white focus:border-[#CA8549] focus:ring-2 focus:ring-[#CA8549]/20";
 
   return (
     <>
       {isLoading && <Loader />}
-      <form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
+      <form className="space-y-5 text-right" onSubmit={handleSubmit(onSubmit)}>
         <div className="space-y-1.5">
-          <label htmlFor="username" className="block text-sm font-medium text-gray-700">
+          <label htmlFor="username" className="block text-sm font-medium text-gray-700 text-right">
             نام کاربری
           </label>
           <div className="relative">
@@ -58,7 +58,7 @@ function Form() {
         </div>
 
         <div className="space-y-1.5">
-          <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+          <label htmlFor="password" className="block text-sm font-medium text-gray-700 text-right">
             رمز عبور
           </label>
           <div className="relative">

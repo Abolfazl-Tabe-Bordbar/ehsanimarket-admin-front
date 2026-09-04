@@ -17,6 +17,7 @@ async function editProduct(productData, productId) {
     }
     formData.append("delete_images", JSON.stringify(productData.delete_images));
     formData.append("count", productData.count);
+    formData.append("brand_id", productData.brand_id || "");
     if (productData.product_code?.trim()) {
       formData.append("product_code", productData.product_code.trim());
     } else {

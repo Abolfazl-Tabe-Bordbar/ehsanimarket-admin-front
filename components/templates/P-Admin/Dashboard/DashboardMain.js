@@ -1,13 +1,19 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import AdminPageShell from "@/components/admin/ui/AdminPageShell";
 import DashboardCharts from "./DashboardCharts";
+import getDashboardStats from "@/funcs/getDashboardStats";
+import getCookie from "@/funcs/cookies/getCookie";
+import Loader from "@/components/modules/Loader";
 import { uploadUrl } from "@/data/variables";
 import ShoppingBasketOutlinedIcon from "@mui/icons-material/ShoppingBasketOutlined";
 import LocalMallOutlinedIcon from "@mui/icons-material/LocalMallOutlined";
 import PersonOutlineOutlinedIcon from "@mui/icons-material/PersonOutlineOutlined";
 import PaymentsOutlinedIcon from "@mui/icons-material/PaymentsOutlined";
+import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
+import ArticleOutlinedIcon from "@mui/icons-material/ArticleOutlined";
 
 const orderStatusLabels = {
   0: { label: "در انتظار ارسال", className: "bg-amber-100 text-amber-800" },
@@ -107,7 +113,36 @@ function SectionTitle({ children }) {
   );
 }
 
-function DashboardMain({ stats, adminName }) {
+function DashboardMain({ stats: initialStats, adminName }) {
+  const [stats, setStats] = useState(initialStats);
+  const [isRefreshing, setIsRefreshing] = useState(!initialStats);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    getDashboardStats(getCookie("ramian-pakhsh-admin"))
+      .then((res) => {
+        if (!cancelled && res?.status) {
+          setStats(res.body);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setIsRefreshing(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  if (isRefreshing && !stats) {
+    return (
+      <AdminPageShell title="داشبورد" description="آمار کلی سایت">
+        <Loader />
+      </AdminPageShell>
+    );
+  }
+
   if (!stats) {
     return (
       <AdminPageShell title="داشبورد" description="آمار کلی سایت">
@@ -125,6 +160,7 @@ function DashboardMain({ stats, adminName }) {
   const charts = stats.charts || {
     salesLast7Days: [],
     usersLast7Days: [],
+    viewsLast7Days: [],
     orderStatus: {
       pending: stats.orders?.pending || 0,
       sent: stats.orders?.sent || 0,
@@ -143,6 +179,7 @@ function DashboardMain({ stats, adminName }) {
       title={`سلام ${adminName || "مدیر"} 👋`}
       description="خلاصه وضعیت فروشگاه، سفارشات و محتوای سایت"
     >
+      {isRefreshing && <Loader />}
       <div className="space-y-8">
         <section className="rounded-3xl bg-gradient-to-l from-brand-navy via-brand-navy-light to-brand-gold p-5 md:p-7 shadow-lg shadow-brand-navy/15">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
@@ -154,7 +191,7 @@ function DashboardMain({ stats, adminName }) {
               <p className="text-sm text-white/75 max-w-xl">
                 {formatPrice(stats.revenue?.today)} تومان درآمد امروز ·{" "}
                 {formatPrice(stats.orders?.pending)} سفارش در انتظار ·{" "}
-                {formatPrice(stats.products?.lowStock)} محصول با موجودی کم
+                {formatPrice(stats.views?.today || 0)} بازدید امروز
               </p>
             </div>
 
@@ -218,6 +255,40 @@ function DashboardMain({ stats, adminName }) {
         </section>
 
         <section>
+          <SectionTitle>بازدیدها</SectionTitle>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+            <StatCard
+              title="کل بازدیدها"
+              value={stats.views?.total}
+              hint={`${formatPrice(stats.views?.today || 0)} بازدید امروز`}
+              accent="navy"
+              icon={VisibilityOutlinedIcon}
+            />
+            <StatCard
+              title="بازدید محصولات"
+              value={stats.views?.products}
+              hint={`${formatPrice(stats.views?.todayProducts || 0)} مورد امروز`}
+              href="/p-admin/products?p=1"
+              icon={LocalMallOutlinedIcon}
+            />
+            <StatCard
+              title="بازدید مقالات"
+              value={stats.views?.articles}
+              hint={`${formatPrice(stats.views?.todayArticles || 0)} مورد امروز`}
+              href="/p-admin/articles"
+              icon={ArticleOutlinedIcon}
+            />
+            <StatCard
+              title="بازدید امروز"
+              value={stats.views?.today}
+              hint="محصول و مقاله"
+              accent="gold"
+              icon={VisibilityOutlinedIcon}
+            />
+          </div>
+        </section>
+
+        <section>
           <SectionTitle>نمودارها و تحلیل</SectionTitle>
           <DashboardCharts charts={charts} />
         </section>
@@ -253,6 +324,106 @@ function DashboardMain({ stats, adminName }) {
             />
           </div>
         </section>
+
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+          <section className="admin-section">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="admin-section-title !border-0 !pb-0 mb-0">
+                پربازدیدترین محصولات
+              </h2>
+              <Link
+                href="/p-admin/products?p=1"
+                className="text-xs text-brand-gold hover:underline"
+              >
+                مشاهده همه
+              </Link>
+            </div>
+            {!stats.topViewedProducts?.length ? (
+              <p className="text-sm text-gray-500 text-center py-6">
+                هنوز بازدیدی ثبت نشده است.
+              </p>
+            ) : (
+              <div className="space-y-3">
+                {stats.topViewedProducts.map((product, index) => (
+                  <div
+                    key={product.id}
+                    className="flex items-center gap-3 rounded-xl border border-gray-100 bg-gray-50/50 px-3 py-3"
+                  >
+                    <span className="w-6 text-xs font-bold text-gray-400 shrink-0">
+                      {formatPrice(index + 1)}
+                    </span>
+                    {product.image ? (
+                      <img
+                        src={`${uploadUrl}/products/${product.image}`}
+                        alt=""
+                        className="w-12 h-12 object-contain rounded-lg bg-white border border-gray-100"
+                      />
+                    ) : (
+                      <div className="w-12 h-12 rounded-lg bg-white border border-gray-100" />
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-bold text-brand-navy line-clamp-1">
+                        {product.name}
+                      </p>
+                      <p className="text-xs text-gray-500 mt-0.5">
+                        {formatPrice(product.view_count)} بازدید
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+
+          <section className="admin-section">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="admin-section-title !border-0 !pb-0 mb-0">
+                پربازدیدترین مقالات
+              </h2>
+              <Link
+                href="/p-admin/articles"
+                className="text-xs text-brand-gold hover:underline"
+              >
+                مشاهده همه
+              </Link>
+            </div>
+            {!stats.topViewedArticles?.length ? (
+              <p className="text-sm text-gray-500 text-center py-6">
+                هنوز بازدیدی ثبت نشده است.
+              </p>
+            ) : (
+              <div className="space-y-3">
+                {stats.topViewedArticles.map((article, index) => (
+                  <div
+                    key={article.id}
+                    className="flex items-center gap-3 rounded-xl border border-gray-100 bg-gray-50/50 px-3 py-3"
+                  >
+                    <span className="w-6 text-xs font-bold text-gray-400 shrink-0">
+                      {formatPrice(index + 1)}
+                    </span>
+                    {article.cover_image ? (
+                      <img
+                        src={`${uploadUrl}/articles/covers/${article.cover_image}`}
+                        alt=""
+                        className="w-12 h-12 object-cover rounded-lg bg-white border border-gray-100"
+                      />
+                    ) : (
+                      <div className="w-12 h-12 rounded-lg bg-white border border-gray-100" />
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-bold text-brand-navy line-clamp-1">
+                        {article.title}
+                      </p>
+                      <p className="text-xs text-gray-500 mt-0.5">
+                        {formatPrice(article.view_count)} بازدید
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+        </div>
 
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
           <section className="admin-section">
@@ -304,6 +475,11 @@ function DashboardMain({ stats, adminName }) {
                         >
                           {status.label}
                         </span>
+                        {order.status_after_paid_message ? (
+                          <p className="text-[10px] text-gray-500 mt-1 max-w-[160px] line-clamp-2 text-left">
+                            {order.status_after_paid_message}
+                          </p>
+                        ) : null}
                       </div>
                     </div>
                   );

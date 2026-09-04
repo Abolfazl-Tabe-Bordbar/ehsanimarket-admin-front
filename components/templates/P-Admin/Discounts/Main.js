@@ -12,6 +12,9 @@ import setDiscountForProducts from '@/funcs/setDiscountForProducts';
 import EmptyMessage from '@/components/modules/EmptyMessage';
 import Loader from '@/components/modules/Loader';
 import AdminPageShell from "@/components/admin/ui/AdminPageShell";
+import EditSubcategoryDiscountModal from './EditSubcategoryDiscountModal';
+import DiscountSubcategoryCard from './DiscountSubcategoryCard';
+import DiscountSubcategorySelectCard from './DiscountSubcategorySelectCard';
 
 function Main({ data }) {
   const [categories, setCategories] = useState(data);
@@ -28,6 +31,12 @@ function Main({ data }) {
   const [isDiscountSubcategoriesLoading, setIsDiscountSubcategoriesLoading] =
     useState(true);
   const [removingSubcategoryId, setRemovingSubcategoryId] = useState(null);
+  const [editingSubcategory, setEditingSubcategory] = useState(null);
+  const [editProducts, setEditProducts] = useState(null);
+  const [editSelectedProductIds, setEditSelectedProductIds] = useState([]);
+  const [editDiscountPercent, setEditDiscountPercent] = useState('');
+  const [isEditLoading, setIsEditLoading] = useState(false);
+  const [isEditApplying, setIsEditApplying] = useState(false);
 
   const loadDiscountSubcategories = () => {
     setIsDiscountSubcategoriesLoading(true);
@@ -95,6 +104,118 @@ function Main({ data }) {
             setRemovingSubcategoryId(null);
           });
       }
+    });
+  };
+
+  const closeEditModal = () => {
+    setEditingSubcategory(null);
+    setEditProducts(null);
+    setEditSelectedProductIds([]);
+    setEditDiscountPercent('');
+  };
+
+  const handleEditSubcategory = (subcategory) => {
+    setEditingSubcategory(subcategory);
+    setEditProducts(null);
+    setEditSelectedProductIds([]);
+    setEditDiscountPercent(
+      subcategory.discountPercent != null
+        ? String(subcategory.discountPercent)
+        : ''
+    );
+    setIsEditLoading(true);
+
+    getSubcategoryProducts(subcategory.id)
+      .then((res) => {
+        setEditProducts(res);
+        if (res?.status && res?.body?.length > 0) {
+          setEditSelectedProductIds(
+            res.body
+              .filter((product) => Number(product.totalPrice) > 0)
+              .map((product) => product.id)
+          );
+        }
+      })
+      .finally(() => {
+        setIsEditLoading(false);
+      });
+  };
+
+  const handleEditProductToggle = (productId) => {
+    setEditSelectedProductIds((prev) =>
+      prev.includes(productId)
+        ? prev.filter((id) => id !== productId)
+        : [...prev, productId]
+    );
+  };
+
+  const allEditProductsSelected =
+    editProducts?.body?.length > 0 &&
+    editProducts.body.every((product) =>
+      editSelectedProductIds.includes(product.id)
+    );
+
+  const handleEditSelectAllToggle = () => {
+    if (!editProducts?.body?.length) return;
+
+    if (allEditProductsSelected) {
+      setEditSelectedProductIds([]);
+    } else {
+      setEditSelectedProductIds(editProducts.body.map((product) => product.id));
+    }
+  };
+
+  const handleEditApplyDiscount = () => {
+    if (editSelectedProductIds.length === 0) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'توجه!',
+        text: 'حداقل یک محصول را انتخاب کنید',
+      });
+      return;
+    }
+
+    const percent = Number(editDiscountPercent);
+    if (
+      editDiscountPercent === '' ||
+      Number.isNaN(percent) ||
+      percent < 0 ||
+      percent > 100
+    ) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'توجه!',
+        text: 'درصد تخفیف باید عددی بین ۰ تا ۱۰۰ باشد',
+      });
+      return;
+    }
+
+    const payload = editProducts.body
+      .filter((product) => {
+        const isSelected = editSelectedProductIds.includes(product.id);
+        const hadDiscount = Number(product.totalPrice) > 0;
+        return isSelected || hadDiscount;
+      })
+      .map((product) => ({
+        p_id: product.id,
+        totalPrice: editSelectedProductIds.includes(product.id)
+          ? Math.round(product.price * (1 - percent / 100))
+          : 0,
+      }));
+
+    setIsEditApplying(true);
+    setDiscountForProducts(payload, {
+      reload: false,
+      onSuccess: () => {
+        Swal.fire({
+          icon: 'success',
+          title: 'تخفیف با موفقیت ویرایش شد',
+        });
+        closeEditModal();
+        loadDiscountSubcategories();
+      },
+    }).finally(() => {
+      setIsEditApplying(false);
     });
   };
 
@@ -189,7 +310,11 @@ function Main({ data }) {
 
   return (
     <AdminPageShell title="تخفیف‌ها" description="مدیریت کدهای تخفیف">
-      {(isLoading || isApplyingDiscount || removingSubcategoryId) && <Loader />}
+      {(isLoading ||
+        isApplyingDiscount ||
+        removingSubcategoryId ||
+        isEditLoading ||
+        isEditApplying) && <Loader />}
 
       <div className="admin-section mb-6">
         <h2 className="admin-section-title">زیردسته‌های دارای تخفیف</h2>
@@ -200,23 +325,16 @@ function Main({ data }) {
           </div>
         ) : discountSubcategories?.status &&
           discountSubcategories?.body?.length > 0 ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-5">
             {discountSubcategories.body.map((subcategory) => (
-              <div
+              <DiscountSubcategoryCard
                 key={subcategory.id}
-                className="p-4 border rounded-lg flex flex-col gap-3"
-              >
-                <p className="text-sm font-medium text-center">
-                  {subcategory.name}
-                </p>
-                <button
-                  onClick={() => handleRemoveDiscountSubcategory(subcategory)}
-                  disabled={removingSubcategoryId === subcategory.id}
-                  className="text-sm bg-red-500 text-white px-3 py-2 rounded-lg hover:bg-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  حذف تخفیف
-                </button>
-              </div>
+                subcategory={subcategory}
+                onEdit={handleEditSubcategory}
+                onRemove={handleRemoveDiscountSubcategory}
+                isRemoving={removingSubcategoryId === subcategory.id}
+                isEditDisabled={isEditLoading}
+              />
             ))}
           </div>
         ) : (
@@ -224,13 +342,13 @@ function Main({ data }) {
         )}
       </div>
 
-      <div className="bg-white rounded-xl border p-6 mb-6">
-        <h2 className="text-lg font-bold mb-4">انتخاب دسته بندی</h2>
+      <div className="admin-section mb-6">
+        <h2 className="admin-section-title">انتخاب دسته‌بندی</h2>
 
         <select
           value={selectedCategory}
           onChange={handleCategoryChange}
-          className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#CA8549]"
+          className="admin-input"
         >
           <option value="">انتخاب دسته بندی</option>
           {categories?.body?.map((category) => (
@@ -250,21 +368,14 @@ function Main({ data }) {
               <p className="text-gray-500">در حال دریافت زیردسته‌ها...</p>
             </div>
           ) : subcategories?.body?.length > 0 ? (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
               {subcategories.body.map((subcategory) => (
-                <div
+                <DiscountSubcategorySelectCard
                   key={subcategory.id}
-                  onClick={() => handleSubcategoryToggle(subcategory.id)}
-                  className={`p-4 border rounded-lg cursor-pointer transition-all ${
-                    selectedSubcategories.includes(subcategory.id)
-                      ? 'bg-[#CA8549] text-white border-[#CA8549]'
-                      : 'bg-white hover:bg-gray-50'
-                  }`}
-                >
-                  <p className="text-sm font-medium text-center">
-                    {subcategory.name}
-                  </p>
-                </div>
+                  subcategory={subcategory}
+                  isSelected={selectedSubcategories.includes(subcategory.id)}
+                  onToggle={handleSubcategoryToggle}
+                />
               ))}
             </div>
           ) : (
@@ -290,7 +401,7 @@ function Main({ data }) {
 
           {products?.status && products?.body?.length > 0 ? (
             <>
-              <div className="flex flex-wrap items-end gap-4 mb-6 p-4 border rounded-lg bg-gray-50">
+              <div className="flex flex-wrap items-end gap-4 mb-6 p-4 rounded-xl border border-gray-200/80 bg-gradient-to-l from-brand-gold/5 to-white">
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="checkbox"
@@ -315,7 +426,7 @@ function Main({ data }) {
                     max="100"
                     value={discountPercent}
                     onChange={(e) => setDiscountPercent(e.target.value)}
-                    className="w-32 p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#CA8549]"
+                    className="admin-input !w-32 !py-2"
                     placeholder="مثلاً ۲۰"
                   />
                 </div>
@@ -333,7 +444,7 @@ function Main({ data }) {
                 {products.body.map((product) => (
                   <div
                     key={product.id}
-                    className="border rounded-lg p-4 flex justify-between items-center"
+                    className="admin-card !p-4 flex justify-between items-center"
                   >
                     <div className="flex items-center gap-4">
                       <input
@@ -362,6 +473,20 @@ function Main({ data }) {
             <EmptyMessage text="هیچ محصولی یافت نشد." />
           )}
         </div>
+      )}
+      {editingSubcategory && (
+        <EditSubcategoryDiscountModal
+          subcategory={editingSubcategory}
+          products={editProducts}
+          selectedProductIds={editSelectedProductIds}
+          discountPercent={editDiscountPercent}
+          isApplying={isEditApplying}
+          onClose={closeEditModal}
+          onDiscountPercentChange={setEditDiscountPercent}
+          onProductToggle={handleEditProductToggle}
+          onSelectAllToggle={handleEditSelectAllToggle}
+          onApply={handleEditApplyDiscount}
+        />
       )}
     </AdminPageShell>
   );

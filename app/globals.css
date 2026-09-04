@@ -159,6 +159,10 @@
     @apply flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6 md:mb-8;
   }
 
+  .admin-page-header-sticky {
+    @apply sticky top-14 md:top-16 z-20 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-4 mb-6 bg-[#eef1f8]/95 backdrop-blur-sm border-b border-gray-200/60;
+  }
+
   .admin-page-title {
     @apply text-xl md:text-2xl font-bold text-brand-navy;
   }
@@ -169,6 +173,14 @@
 
   .admin-page-actions {
     @apply flex flex-wrap items-center gap-2;
+  }
+
+  .admin-form-sticky-bar {
+    @apply fixed bottom-0 left-0 right-0 z-40 md:left-[260px] lg:left-[272px] border-t border-gray-200/80 bg-white/95 px-4 sm:px-6 py-3 backdrop-blur-sm flex justify-end shadow-[0_-4px_20px_rgba(20,28,50,0.06)];
+  }
+
+  .admin-section-save {
+    @apply admin-btn-accent !py-1.5 !px-3 !text-xs shrink-0;
   }
 
   .admin-nav-link {
@@ -295,6 +307,10 @@
     @apply space-y-3 md:space-y-4;
   }
 
+  .admin-permission-chip {
+    @apply inline-flex items-center rounded-lg border border-[#CA8549]/20 bg-white px-2 py-0.5 text-[11px] font-medium text-[#8a5528];
+  }
+
   .admin-table-wrap {
     @apply overflow-x-auto rounded-2xl border border-gray-200/80 bg-white shadow-sm;
   }
@@ -339,5 +355,68 @@
 
   .admin-sidebar-scroll::-webkit-scrollbar-thumb:hover {
     background: rgba(202, 133, 73, 0.65);
+  }
+
+  .discount-hex-frame {
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    overflow: hidden;
+  }
+
+  .discount-hex-frame--lg {
+    @apply relative z-[1] h-[92px] w-[84px];
+  }
+
+  .discount-hex-frame--md {
+    @apply relative z-[1] h-[72px] w-[66px];
+  }
+
+  .discount-hex-ring {
+    @apply absolute inset-0 m-auto;
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    background: linear-gradient(145deg, rgba(202, 133, 73, 0.35), rgba(37, 60, 138, 0.2));
+    transform: scale(1.12);
+    transition: transform 0.3s ease, background 0.3s ease;
+  }
+
+  .discount-hex-ring--active {
+    background: linear-gradient(145deg, #ca8549, #b8743f);
+    transform: scale(1.14);
+  }
+
+  .discount-subcategory-card {
+    @apply relative overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-sm transition-all duration-300;
+  }
+
+  .discount-subcategory-card:hover {
+    @apply -translate-y-1 shadow-lg;
+    border-color: rgba(202, 133, 73, 0.3);
+    box-shadow:
+      0 10px 15px -3px rgba(202, 133, 73, 0.1),
+      0 4px 6px -4px rgba(202, 133, 73, 0.1);
+  }
+
+  .discount-subcategory-card__glow {
+    @apply pointer-events-none absolute inset-x-0 top-0 h-24 opacity-0 transition-opacity duration-300;
+    background: linear-gradient(to bottom, rgba(202, 133, 73, 0.08), transparent);
+  }
+
+  .discount-subcategory-card:hover .discount-subcategory-card__glow {
+    @apply opacity-100;
+  }
+
+  .discount-select-card {
+    @apply relative flex flex-col items-center rounded-2xl border border-gray-200/80 bg-white p-4 shadow-sm transition-all duration-200 hover:shadow-md;
+  }
+
+  .discount-select-card:hover {
+    border-color: rgba(202, 133, 73, 0.4);
+  }
+
+  .discount-select-card--active {
+    @apply border-brand-gold text-brand-navy shadow-md;
+    background: linear-gradient(to bottom, rgba(202, 133, 73, 0.1), #ffffff);
+    box-shadow:
+      0 4px 6px -1px rgba(202, 133, 73, 0.15),
+      0 2px 4px -2px rgba(202, 133, 73, 0.15);
   }
 }

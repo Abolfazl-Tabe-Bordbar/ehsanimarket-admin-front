@@ -25,7 +25,10 @@ export async function middleware(request) {
       return NextResponse.next();
     }
   } catch (error) {
-    return NextResponse.redirect(new URL("/", request.url));
+    if (pathname.startsWith("/p-admin")) {
+      return NextResponse.redirect(new URL("/", request.url));
+    }
+    return NextResponse.next();
   }
 
   return NextResponse.next();

@@ -7,6 +7,7 @@ function AdminPageShell({
   children,
   className = "",
   narrow = false,
+  stickyHeader = false,
 }) {
   const contentClass = narrow
     ? "mx-auto w-full max-w-3xl"
@@ -16,7 +17,9 @@ function AdminPageShell({
     <div className={`admin-page ${className}`.trim()}>
       <div className={contentClass}>
         {(title || description || actions) && (
-          <header className="admin-page-header">
+          <header
+            className={`admin-page-header${stickyHeader ? " admin-page-header-sticky" : ""}`}
+          >
             <div className="min-w-0">
               {title && <h1 className="admin-page-title">{title}</h1>}
               {description && <p className="admin-page-desc">{description}</p>}

@@ -14,6 +14,7 @@ import editProduct from "@/funcs/editProduct";
 import getAsnaf from "@/funcs/getAsnaf";
 import getCookie from "@/funcs/cookies/getCookie";
 import getSenfSubcategories from "@/funcs/getSenfSubcategories";
+import getBrands from "@/funcs/getBrands";
 import { useForm } from "react-hook-form";
 
 function EditProductModal({ setIsEditProductModalShow, productData }) {
@@ -27,6 +28,7 @@ function EditProductModal({ setIsEditProductModalShow, productData }) {
   const [isLoading, setIsLoading] = useState(false);
   const [flag, setFlag] = useState(false);
   const [senfSubcategories, setSenfSubcategories] = useState([]);
+  const [brands, setBrands] = useState([]);
   const [isGetSenfSubcategoriesPending, setisGetSenfSubcategoriesPending] =
     useState(false);
   const [senfSelectBoxValue, setSenfSelectBoxValue] = useState("");
@@ -54,6 +56,7 @@ function EditProductModal({ setIsEditProductModalShow, productData }) {
       images: productImages,
       delete_images: deleteImages,
       count: data.count,
+      brand_id: data.brand_id || "",
     });
     if (productImages.length && productDescription?.length >= 8) {
       setIsLoading(true);
@@ -69,6 +72,7 @@ function EditProductModal({ setIsEditProductModalShow, productData }) {
           images: productImages,
           delete_images: deleteImages,
           count: data.count,
+          brand_id: data.brand_id || "",
         },
         productData.id,
       ).then((res) => {
@@ -106,6 +110,7 @@ function EditProductModal({ setIsEditProductModalShow, productData }) {
     setValue("description", productData.description);
     setValue("features", productData.features);
     setValue("count", productData.count);
+    setValue("brand_id", productData.brand_id || productData.brand?.id || "");
     setProductImages(productData.images_path);
     setProductDescription(productData.description);
 
@@ -113,6 +118,9 @@ function EditProductModal({ setIsEditProductModalShow, productData }) {
     getAsnaf(getCookie("ramian-pakhsh-admin")).then((res) => {
       setAsnaf(res.body);
       setIsGetAsnafPending(false);
+    });
+    getBrands(getCookie("ramian-pakhsh-admin")).then((res) => {
+      if (res?.status) setBrands(res.body || []);
     });
   }, []);
 
@@ -502,6 +510,31 @@ function EditProductModal({ setIsEditProductModalShow, productData }) {
                     تعداد محصول اجباری است
                   </p>
                 )}
+              </div>
+              <div className="space-y-2 col-span-2 md:col-span-1">
+                <label htmlFor="brand_id" className="block text-sm font-bold">
+                  برند (اختیاری)
+                </label>
+                <div className="relative z-50">
+                  <select
+                    id="brand_id"
+                    className="bg-transparent border rounded-full px-3 py-2 w-full text-sm text-gray-700 outline-gray-300 appearance-none"
+                    {...register("brand_id")}
+                  >
+                    <option value="">بدون برند</option>
+                    {brands.map((brand) => (
+                      <option key={brand.id} value={brand.id}>
+                        {brand.name}
+                      </option>
+                    ))}
+                  </select>
+                  <label
+                    htmlFor="brand_id"
+                    className="absolute left-2 top-0.5 text-[#4b4b4b] -z-[1] pointer-events-none"
+                  >
+                    <KeyboardArrowDownOutlinedIcon fontSize="large" />
+                  </label>
+                </div>
               </div>
               <div className="space-y-2 col-span-2">
                 <label

@@ -22,6 +22,7 @@ const basicSections = [
       { key: "instagram_url", label: "لینک اینستاگرام", type: "url" },
       { key: "telegram_url", label: "لینک تلگرام", type: "url" },
       { key: "whatsapp_url", label: "لینک واتساپ", type: "url" },
+      { key: "bale_url", label: "لینک بله", type: "url" },
     ],
   },
   {
@@ -101,6 +102,30 @@ function getPreviewSrc(key, filename, fallback, previewFiles) {
     return `${uploadUrl}/site_settings/${filename}`;
   }
   return `${siteUrl}${fallback}`;
+}
+
+function SaveButton({ isLoading, compact = false, className = "" }) {
+  const label = isLoading ? "در حال ذخیره…" : compact ? "ذخیره" : "ذخیره تغییرات";
+
+  return (
+    <button
+      type="submit"
+      form="site-settings-form"
+      disabled={isLoading}
+      className={`${compact ? "admin-section-save" : "admin-btn-accent"} ${className}`.trim()}
+    >
+      {label}
+    </button>
+  );
+}
+
+function SectionHeader({ title, showSave, isLoading }) {
+  return (
+    <div className="flex items-center justify-between gap-3 border-b border-gray-100 pb-3">
+      <h2 className="text-base font-bold text-brand-navy">{title}</h2>
+      {showSave && <SaveButton isLoading={isLoading} compact />}
+    </div>
+  );
 }
 
 function TextField({ field, form, onChange }) {
@@ -193,19 +218,23 @@ function SiteSettingsMain({ initialSettings }) {
   return (
     <AdminPageShell
       narrow
+      stickyHeader
       title="اطلاعات کلی سایت"
       description="شماره تماس، شبکه‌های اجتماعی و محتوای صفحه درباره ما را از اینجا مدیریت کنید."
+      actions={<SaveButton isLoading={isLoading} />}
     >
       {isLoading && <Loader />}
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form id="site-settings-form" onSubmit={handleSubmit} className="space-y-6">
         {basicSections.slice(0, 2).map((section) => (
           <section
             key={section.title}
             className="admin-section"
           >
-            <h2 className="admin-section-title">
-              {section.title}
-            </h2>
+            <SectionHeader
+              title={section.title}
+              showSave
+              isLoading={isLoading}
+            />
             {section.fields.map((field) => (
               <TextField
                 key={field.key}
@@ -276,13 +305,6 @@ function SiteSettingsMain({ initialSettings }) {
           </section>
         ))}
 
-        <button
-          type="submit"
-          disabled={isLoading}
-          className="admin-btn-accent"
-        >
-          {isLoading ? "در حال ذخیره…" : "ذخیره تغییرات"}
-        </button>
       </form>
     </AdminPageShell>
   );

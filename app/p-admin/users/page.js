@@ -18,6 +18,7 @@ async function Users({ searchParams }) {
     {
       province: params.province,
       city: params.city,
+      q: params.q,
     }
   );
 

@@ -10,7 +10,7 @@ import BusinessIcon from "@mui/icons-material/Business";
 import AdUnitsIcon from "@mui/icons-material/AdUnits";
 import ManageAccountsOutlinedIcon from "@mui/icons-material/ManageAccountsOutlined";
 import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
-import { DiscountOutlined, SellOutlined, SmsOutlined, RateReviewOutlined } from "@mui/icons-material";
+import { DiscountOutlined, SellOutlined, SmsOutlined, RateReviewOutlined, LocalOfferOutlined } from "@mui/icons-material";
 
 export const adminNavItems = [
   {
@@ -40,6 +40,13 @@ export const adminNavItems = [
     label: "زیردسته‌ها",
     description: "مدیریت زیردسته محصولات",
     icon: BusinessIcon,
+  },
+  {
+    href: "/p-admin/brands",
+    path: "/p-admin/brands",
+    label: "برندها",
+    description: "مدیریت برندهای محصولات",
+    icon: LocalOfferOutlined,
   },
   {
     href: "/p-admin/purchases?p=1&status=pending",

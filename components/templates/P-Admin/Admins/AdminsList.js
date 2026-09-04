@@ -24,7 +24,20 @@ function AdminsList({ adminsData, permissionsData }) {
   const permissions = shownPermissions?.body || shownPermissions?.data || [];
 
   return (
-    <div className="my-6">
+    <div className="my-2">
+      {admins.length > 0 && (
+        <div className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div className="admin-card flex items-center justify-between py-3 px-4">
+            <span className="text-sm text-gray-600">تعداد ادمین‌ها</span>
+            <span className="text-lg font-bold text-[#141c32]">{admins.length}</span>
+          </div>
+          <div className="admin-card flex items-center justify-between py-3 px-4">
+            <span className="text-sm text-gray-600">دسترسی‌های تعریف‌شده</span>
+            <span className="text-lg font-bold text-[#CA8549]">{permissions.length}</span>
+          </div>
+        </div>
+      )}
+
       {!admins?.length ? (
         <EmptyMessage text="هیچ ادمینی ثبت نشده است." />
       ) : (

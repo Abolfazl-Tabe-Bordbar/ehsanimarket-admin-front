@@ -4,7 +4,9 @@ import getCookie from "./cookies/getCookie";
 import { TopRightToast } from "@/components/modules/Toast";
 import Swal from "sweetalert2";
 
-async function setDiscountForProducts(products) {
+async function setDiscountForProducts(products, options = {}) {
+  const { reload = true, onSuccess } = options;
+
   try {
     const { data } = await axios.put(`${baseUrl}/products`, products, {
       headers: {
@@ -13,10 +15,16 @@ async function setDiscountForProducts(products) {
     });
 
     if (data.status) {
-      Swal.fire({
-        icon: "success",
-        title: data.message,
-      }).then(() => window.location.reload());
+      if (onSuccess) {
+        onSuccess(data);
+      } else {
+        Swal.fire({
+          icon: "success",
+          title: data.message,
+        }).then(() => {
+          if (reload) window.location.reload();
+        });
+      }
     } else {
       Swal.fire({
         icon: "error",

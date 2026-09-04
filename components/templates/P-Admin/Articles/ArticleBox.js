@@ -49,6 +49,9 @@ function ArticleBox({ meta, getArticlesHandler, pendingCommentsCount = 0, ...art
             <p className="text-gray-600 text-sm line-clamp-2 mt-1">{article.excerpt}</p>
             <div className="flex flex-wrap gap-2 mt-2 text-xs text-gray-500">
               {article.category?.name && <span>{article.category.name}</span>}
+              <span>
+                بازدید: {Number(article.view_count || 0).toLocaleString("fa-IR")}
+              </span>
               <span
                 className={
                   article.is_published

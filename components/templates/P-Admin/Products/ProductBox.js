@@ -79,6 +79,18 @@ function ProductBox(props) {
                 دسته‌بندی:{" "}
                 <span className="font-bold text-gray-800">{props?.senf?.name}</span>
               </span>
+              {props?.brand?.name && (
+                <span>
+                  برند:{" "}
+                  <span className="font-bold text-gray-800">{props.brand.name}</span>
+                </span>
+              )}
+              <span>
+                بازدید:{" "}
+                <span className="font-bold text-gray-800">
+                  {Number(props?.view_count || 0).toLocaleString("fa-IR")}
+                </span>
+              </span>
               <span className="inline-flex flex-wrap items-center gap-2">
                 مبلغ:
                 {props?.totalPrice > 0 ? (

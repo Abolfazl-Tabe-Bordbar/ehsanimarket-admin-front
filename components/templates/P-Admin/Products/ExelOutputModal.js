@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Controller } from "react-hook-form";
 import DatePicker from "react-multi-date-picker";
@@ -9,23 +9,72 @@ import persian_fa from "react-date-object/locales/persian_fa";
 import CloseIcon from "@mui/icons-material/Close";
 import Loader from "@/components/modules/Loader";
 import exportExelOutput from "@/funcs/exportExelOutput";
+import getAsnaf from "@/funcs/getAsnaf";
+import getBrands from "@/funcs/getBrands";
+import getSenfSubcategories from "@/funcs/getSenfSubcategories";
+import getCookie from "@/funcs/cookies/getCookie";
 import { apiBaseUrl } from "@/data/variables";
 
 function ExelOutputModal({ setIsExelOutputModalShow }) {
   const [isLoading, setIsLoading] = useState(false);
+  const [asnaf, setAsnaf] = useState([]);
+  const [brands, setBrands] = useState([]);
+  const [senfSubcategories, setSenfSubcategories] = useState([]);
+  const [isGetAsnafPending, setIsGetAsnafPending] = useState(false);
+  const [isGetBrandsPending, setIsGetBrandsPending] = useState(false);
+  const [isGetSenfSubcategoriesPending, setIsGetSenfSubcategoriesPending] =
+    useState(false);
 
   const {
     register,
     formState: { errors },
     handleSubmit,
     control,
+    setValue,
+    watch,
   } = useForm();
+
+  const selectedSenf = watch("senf");
+
+  useEffect(() => {
+    const token = getCookie("ramian-pakhsh-admin");
+
+    setIsGetAsnafPending(true);
+    getAsnaf(token).then((res) => {
+      setAsnaf(res?.body || []);
+      setIsGetAsnafPending(false);
+    });
+
+    setIsGetBrandsPending(true);
+    getBrands(token).then((res) => {
+      setBrands(res?.body || []);
+      setIsGetBrandsPending(false);
+    });
+  }, []);
+
+  const senfChangeHandler = (value) => {
+    setValue("subcategory", "");
+    setSenfSubcategories([]);
+
+    if (!value) return;
+
+    setIsGetSenfSubcategoriesPending(true);
+    getSenfSubcategories(getCookie("ramian-pakhsh-admin"), value).then(
+      (res) => {
+        setSenfSubcategories(res);
+        setIsGetSenfSubcategoriesPending(false);
+      }
+    );
+  };
 
   const onSubmit = (data) => {
     setIsLoading(true);
     exportExelOutput({
       start_time: data.start,
       end_time: data.end,
+      ...(data.senf && { senf_id: data.senf }),
+      ...(data.subcategory && { subcategory_id: data.subcategory }),
+      ...(data.brand && { brand_id: data.brand }),
     })
       .then((res) => {
         if (res?.file) {
@@ -118,6 +167,74 @@ function ExelOutputModal({ setIsExelOutputModalShow }) {
                   </p>
                 )}
               </div>
+
+              <div className="mt-6 space-y-2">
+                <label htmlFor="senf" className="block text-sm font-bold">
+                  دسته (اختیاری)
+                </label>
+                <select
+                  id="senf"
+                  className="border rounded px-3 py-3 w-full text-sm text-gray-700 outline-gray-300"
+                  {...register("senf")}
+                  onChange={(e) => senfChangeHandler(e.target.value)}
+                >
+                  <option value="">همه دسته‌ها</option>
+                  {isGetAsnafPending && (
+                    <option value="">در حال دریافت دسته‌ها...</option>
+                  )}
+                  {asnaf.map((senf) => (
+                    <option key={senf.id} value={senf.id}>
+                      {senf.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="mt-6 space-y-2">
+                <label htmlFor="subcategory" className="block text-sm font-bold">
+                  زیردسته (اختیاری)
+                </label>
+                <select
+                  id="subcategory"
+                  className="border rounded px-3 py-3 w-full text-sm text-gray-700 outline-gray-300"
+                  {...register("subcategory")}
+                  disabled={!selectedSenf}
+                >
+                  <option value="">
+                    {isGetSenfSubcategoriesPending
+                      ? "در حال دریافت زیردسته‌ها..."
+                      : "همه زیردسته‌ها"}
+                  </option>
+                  {senfSubcategories?.body?.map((subcategory) => (
+                    <option key={subcategory.id} value={subcategory.id}>
+                      {subcategory.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="mt-6 space-y-2">
+                <label htmlFor="brand" className="block text-sm font-bold">
+                  برند (اختیاری)
+                </label>
+                <select
+                  id="brand"
+                  className="border rounded px-3 py-3 w-full text-sm text-gray-700 outline-gray-300"
+                  {...register("brand")}
+                >
+                  <option value="">
+                    {isGetBrandsPending
+                      ? "در حال دریافت برندها..."
+                      : "همه برندها"}
+                  </option>
+                  {brands.map((brand) => (
+                    <option key={brand.id} value={brand.id}>
+                      {brand.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
               <div>
                 <button className="bg-[#CA8549] text-white rounded-full py-2 w-2/3 block mx-auto mt-16 text-sm md:text-base">
                   دانلود خروجی

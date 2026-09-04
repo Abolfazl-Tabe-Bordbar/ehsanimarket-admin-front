@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 function formatUserAddress(user) {
   if (user?.province && user?.city) {
     return `${user.province}، ${user.city}، ${user.address || ""}`.replace(/،\s*$/, "");
@@ -20,6 +22,7 @@ function UsersTable({ users, startIndex = 0 }) {
             <th>کد پستی</th>
             <th>نام کاربری</th>
             <th>تاریخ ثبت‌نام</th>
+            <th>عملیات</th>
           </tr>
         </thead>
         <tbody>
@@ -39,6 +42,14 @@ function UsersTable({ users, startIndex = 0 }) {
               <td className="dir-ltr text-left whitespace-nowrap">{user.username}</td>
               <td className="whitespace-nowrap">
                 {new Date(user.createdAt).toLocaleDateString("fa-IR")}
+              </td>
+              <td className="whitespace-nowrap">
+                <Link
+                  href={`/p-admin/users/${user.id}`}
+                  className="admin-btn-primary text-xs px-3 py-1.5 inline-flex"
+                >
+                  مشاهده جزئیات
+                </Link>
               </td>
             </tr>
           ))}

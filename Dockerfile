@@ -4,7 +4,9 @@ FROM node:alpine AS builder
 WORKDIR /app
 
 ARG NEXT_PUBLIC_API_URL=https://api.ehsanimarket.ir
+ARG NEXT_PUBLIC_SITE_URL=https://ehsanimarket.ir
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_SITE_URL=$NEXT_PUBLIC_SITE_URL
 
 COPY package*.json ./
 RUN npm install
@@ -20,6 +22,7 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=5281
 ENV NEXT_PUBLIC_API_URL=https://api.ehsanimarket.ir
+ENV NEXT_PUBLIC_SITE_URL=https://ehsanimarket.ir
 
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next ./.next

@@ -5,6 +5,10 @@ import PurchaseDetailsModal from "./PurchaseDetailsModal";
 import Swal from "sweetalert2";
 import changePurchaseStatus from "@/funcs/changePurchaseStatus";
 import Loader from "@/components/modules/Loader";
+import {
+  getPurchaseAdminMessage,
+  purchaseTabStatusConfig,
+} from "./purchaseHelpers";
 
 function PurchaseBox({ purchaseInfo, status, getPurchasesHandler = "" }) {
   const [isPurchaseDetailsModalShow, setIsPurchaseDetailsModalShow] =
@@ -71,6 +75,9 @@ function PurchaseBox({ purchaseInfo, status, getPurchasesHandler = "" }) {
     });
   };
 
+  const statusMeta = purchaseTabStatusConfig[status] || purchaseTabStatusConfig.pending;
+  const adminMessage = getPurchaseAdminMessage(purchaseInfo, status);
+
   return (
     <div>
       {isLoaderShow && <Loader />}
@@ -78,6 +85,7 @@ function PurchaseBox({ purchaseInfo, status, getPurchasesHandler = "" }) {
         <PurchaseDetailsModal
           setIsPurchaseDetailsModalShow={setIsPurchaseDetailsModalShow}
           purchaseInfo={purchaseInfo}
+          status={status}
         />
       )}
       <div className="admin-card py-4 px-4 flex flex-col gap-2 lg:flex-row justify-between relative">
@@ -104,6 +112,24 @@ function PurchaseBox({ purchaseInfo, status, getPurchasesHandler = "" }) {
               {purchaseInfo.total_price.toLocaleString("fa")}{" "}
               <span className="text-xs font-medium">تومان</span>
             </span>
+          </div>
+
+          <div className="w-full lg:w-auto space-y-2">
+            <span
+              className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${statusMeta.className}`}
+            >
+              {statusMeta.label}
+            </span>
+            <p className="text-xs lg:text-sm text-gray-600 leading-6 max-w-xl">
+              <span className="font-medium text-gray-500">
+                {status === "send"
+                  ? "پیام ارسال: "
+                  : status === "not-send"
+                    ? "دلیل ارسال نشدن: "
+                    : "وضعیت: "}
+              </span>
+              {adminMessage}
+            </p>
           </div>
         </div>
 

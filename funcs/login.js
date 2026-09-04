@@ -5,26 +5,35 @@ import { TopRightToast } from "@/components/modules/Toast";
 
 async function login(loginData, router) {
   try {
-    const { data } = await axios.post(`${baseUrl}/login`, loginData);
+    const { data } = await axios.post(`${baseUrl}/login`, loginData, {
+      timeout: 15000,
+    });
     if (!data.status) {
       TopRightToast.fire({
         icon: "error",
-        title: "چنین مدیری در سایت موجود نیست",
+        title: data.message || "چنین مدیری در سایت موجود نیست",
       });
-      return false;
-    } else {
-      setCookie("ramian-pakhsh-admin", data.token, {
-        secure: true,
-        "max-age": 3600 * 24 * 7,
-      });
-      router.push("/p-admin/dashboard");
       return false;
     }
+
+    const isSecure =
+      typeof window !== "undefined" && window.location.protocol === "https:";
+
+    setCookie("ramian-pakhsh-admin", data.token, {
+      secure: isSecure,
+      "max-age": 3600 * 24 * 7,
+    });
+    router.push("/p-admin/dashboard");
+    return true;
   } catch (error) {
     TopRightToast.fire({
       icon: "error",
-      title: "خطایی رخ داده است. دوباره تلاش کنید",
+      title:
+        error?.code === "ECONNABORTED"
+          ? "اتصال به سرور برقرار نشد. API لوکال را بررسی کنید."
+          : "خطایی رخ داده است. دوباره تلاش کنید",
     });
+    return false;
   }
 }
 

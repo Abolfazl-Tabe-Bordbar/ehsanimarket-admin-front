@@ -11,7 +11,8 @@ function AdminNavList({ badgeCount = 0, onNavigate, className = "" }) {
     <ul className={`space-y-1 ${className}`.trim()}>
       {adminNavItems.map((item) => {
         const Icon = item.icon;
-        const isActive = pathname === item.path;
+        const isActive =
+          pathname === item.path || pathname.startsWith(`${item.path}/`);
         const showBadge = item.badgeKey === "orders" && badgeCount > 0;
 
         return (

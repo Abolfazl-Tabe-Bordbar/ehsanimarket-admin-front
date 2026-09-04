@@ -250,6 +250,54 @@ function DashboardCharts({ charts }) {
           color={CHART_COLORS.green}
         />
       </ChartCard>
+
+      <ChartCard title="بازدید ۷ روز اخیر" subtitle="تعداد بازدید محصولات و مقالات" className="xl:col-span-2">
+        <BarChart
+          data={charts.viewsLast7Days || []}
+          valueKey="total"
+          color={CHART_COLORS.navy}
+        />
+      </ChartCard>
+
+      <ChartCard title="توزیع کل بازدیدها" subtitle="مجموع بازدید ثبت‌شده">
+        <DonutChart
+          segments={[
+            {
+              label: "محصولات",
+              value: charts.contentViews?.products || 0,
+              color: CHART_COLORS.navy,
+            },
+            {
+              label: "مقالات",
+              value: charts.contentViews?.articles || 0,
+              color: CHART_COLORS.gold,
+            },
+          ]}
+        />
+      </ChartCard>
+
+      <ChartCard title="بازدید روزانه به تفکیک" subtitle="محصول در مقابل مقاله">
+        <HorizontalBarChart
+          items={[
+            {
+              label: "بازدید محصولات (۷ روز)",
+              value: (charts.viewsLast7Days || []).reduce(
+                (sum, day) => sum + (day.products || 0),
+                0
+              ),
+              color: CHART_COLORS.navy,
+            },
+            {
+              label: "بازدید مقالات (۷ روز)",
+              value: (charts.viewsLast7Days || []).reduce(
+                (sum, day) => sum + (day.articles || 0),
+                0
+              ),
+              color: CHART_COLORS.gold,
+            },
+          ]}
+        />
+      </ChartCard>
     </div>
   );
 }

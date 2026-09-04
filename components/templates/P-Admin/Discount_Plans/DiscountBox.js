@@ -1,19 +1,26 @@
-'use client';
-import React, { useState } from 'react';
-import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
-import BorderColorOutlinedIcon from '@mui/icons-material/BorderColorOutlined';
-import ToggleOnOutlinedIcon from '@mui/icons-material/ToggleOnOutlined';
-import ToggleOffOutlinedIcon from '@mui/icons-material/ToggleOffOutlined';
-import Loader from '@/components/modules/Loader';
-import deleteDiscountPlan from '@/funcs/deleteDiscountPlan';
-import changeDiscountPlanStatus from '@/funcs/changeDiscountPlanStatus';
-import EditDiscountModal from './EditDiscountModal';
+"use client";
+import React, { useState } from "react";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import BorderColorOutlinedIcon from "@mui/icons-material/BorderColorOutlined";
+import ToggleOffOutlinedIcon from "@mui/icons-material/ToggleOffOutlined";
+import ToggleOnOutlinedIcon from "@mui/icons-material/ToggleOnOutlined";
+import LocalOfferOutlinedIcon from "@mui/icons-material/LocalOfferOutlined";
+import Loader from "@/components/modules/Loader";
+import deleteDiscountPlan from "@/funcs/deleteDiscountPlan";
+import changeDiscountPlanStatus from "@/funcs/changeDiscountPlanStatus";
+import EditDiscountModal from "./EditDiscountModal";
 
 const translateColors = {
-  bronze: 'برنزی',
-  silver: 'نقره ای',
-  golden: 'طلایی',
-}
+  bronze: "برنزی",
+  silver: "نقره‌ای",
+  golden: "طلایی",
+};
+
+const colorStyles = {
+  bronze: "bg-amber-50 text-amber-800 border-amber-200",
+  silver: "bg-slate-100 text-slate-700 border-slate-200",
+  golden: "bg-yellow-50 text-yellow-800 border-yellow-200",
+};
 
 function DiscountBox(props) {
   const [isEditDiscountModalShow, setIsEditDiscountModalShow] = useState(false);
@@ -21,7 +28,7 @@ function DiscountBox(props) {
 
   const deleteDiscountHandler = () => {
     setIsLoading(true);
-    deleteDiscountPlan(props.id).then((res) => {
+    deleteDiscountPlan(props.id).then(() => {
       setIsLoading(false);
       props.getDiscountPlansHandler();
     });
@@ -29,11 +36,13 @@ function DiscountBox(props) {
 
   const changeStatusHandler = () => {
     setIsLoading(true);
-    changeDiscountPlanStatus(props.id).then((res) => {
+    changeDiscountPlanStatus(props.id).then(() => {
       setIsLoading(false);
       props.getDiscountPlansHandler();
     });
   };
+
+  const tierClass = colorStyles[props?.color] || "bg-gray-50 text-gray-700 border-gray-200";
 
   return (
     <div>
@@ -44,78 +53,103 @@ function DiscountBox(props) {
           discountData={props}
         />
       )}
-      <div className="admin-card py-2 lg:px-4 flex justify-between items-center relative">
-        <div className="flex items-end lg:items-center lg:gap-6">
-          <div className="flex flex-col lg:flex-row mt-6 lg:mt-0">
-            <h2 className="text-sm lg:text-base font-bold whitespace-nowrap">
-              {props?.name}
-            </h2>
-            <div className="flex flex-wrap items-center mt-2 lg:mt-0">
-              <div className="whitespace-nowrap lg:mr-8 ml-6 text-xs lg:text-base">
-                <span>کد تخفیف : </span>{' '}
-                <span className="font-bold">{props?.code}</span>
-              </div>
-              <div className="whitespace-nowrap lg:mr-8 ml-6 text-xs lg:text-base">
-                <span>درصد تخفیف : </span>{' '}
-                <span className="font-bold">{props?.percentage}%</span>
-              </div>
-              <div className="line-clamp-1 text-xs lg:text-base">
-                <span>حداقل مبلغ :</span>{' '}
-                <span className="text-xs lg:text-lg font-bold">
-                  {Number(props?.minimum_price).toLocaleString('fa-IR')}{' '}
-                  <span className="text-[10px] lg:text-xs font-medium">
-                    تومان
-                  </span>
+
+      <article className="admin-card overflow-hidden">
+        <div className="flex flex-col gap-4 border-b border-gray-100 pb-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex min-w-0 items-center gap-3">
+            <div
+              className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border ${tierClass}`}
+              aria-hidden="true"
+            >
+              <LocalOfferOutlinedIcon sx={{ fontSize: 22 }} />
+            </div>
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <h2 className="truncate text-base font-bold text-gray-900">
+                  {props?.name}
+                </h2>
+                <span
+                  className={`rounded-full border px-2.5 py-0.5 text-[11px] font-semibold ${tierClass}`}
+                >
+                  {translateColors[props?.color] || props?.color}
                 </span>
               </div>
-              <div className="whitespace-nowrap lg:mr-8 mr-6 text-xs lg:text-base">
-                <span>رنگ تخفیف : </span>{' '}
-                <span className="font-bold">{translateColors[props?.color]}</span>
-              </div>
+              <p className="mt-1 text-xs text-gray-500">
+                کد:{" "}
+                <span className="dir-ltr inline-block rounded-md bg-gray-100 px-2 py-0.5 font-bold tracking-wide text-gray-800">
+                  {props?.code}
+                </span>
+              </p>
             </div>
           </div>
+
+          <div className="admin-card-actions shrink-0">
+            <button
+              type="button"
+              className={`admin-action ${
+                props?.is_active
+                  ? "text-emerald-700 hover:bg-emerald-50"
+                  : "text-gray-500 hover:bg-gray-100"
+              }`}
+              onClick={changeStatusHandler}
+            >
+              {props?.is_active ? (
+                <>
+                  <ToggleOffOutlinedIcon sx={{ fontSize: 18 }} />
+                  فعال
+                </>
+              ) : (
+                <>
+                  <ToggleOnOutlinedIcon sx={{ fontSize: 18 }} />
+                  غیرفعال
+                </>
+              )}
+            </button>
+            <button
+              type="button"
+              className="admin-action admin-action-edit"
+              onClick={() => setIsEditDiscountModalShow(true)}
+            >
+              <BorderColorOutlinedIcon sx={{ fontSize: 18 }} />
+              ویرایش
+            </button>
+            <button
+              type="button"
+              className="admin-action admin-action-delete"
+              onClick={deleteDiscountHandler}
+            >
+              <DeleteOutlineIcon sx={{ fontSize: 18 }} />
+              حذف
+            </button>
+          </div>
         </div>
-        <div className="absolute top-2 left-4 lg:static flex items-center gap-5 text-xs lg:text-base">
-          <div
-            className="flex items-center gap-1 text-[#004B8F] cursor-pointer"
-            onClick={changeStatusHandler}
-          >
-            {props?.is_active ? (
-              <>
-                فعال
-                <span className="text-sm lg:text-2xl">
-                  <ToggleOffOutlinedIcon fontSize="" />
-                </span>
-              </>
-            ) : (
-              <>
-                غیرفعال
-                <span className="text-sm lg:text-2xl">
-                  <ToggleOnOutlinedIcon fontSize="" />
-                </span>
-              </>
-            )}
+
+        <div className="grid grid-cols-1 gap-3 pt-4 sm:grid-cols-3">
+          <div className="rounded-xl border border-gray-100 bg-gray-50/80 px-4 py-3">
+            <p className="text-[11px] font-medium text-gray-500">درصد تخفیف</p>
+            <p className="mt-1 text-lg font-bold text-[#141c32]">
+              {props?.percentage}%
+            </p>
           </div>
-          <div
-            className="flex items-center gap-1 text-[#004B8F] cursor-pointer"
-            onClick={() => setIsEditDiscountModalShow(true)}
-          >
-            ویرایش
-            <span className="text-sm lg:text-2xl">
-              <BorderColorOutlinedIcon fontSize="" />
-            </span>
+          <div className="rounded-xl border border-gray-100 bg-gray-50/80 px-4 py-3">
+            <p className="text-[11px] font-medium text-gray-500">حداقل مبلغ سبد</p>
+            <p className="mt-1 text-lg font-bold text-[#CA8549]">
+              {Number(props?.minimum_price || 0).toLocaleString("fa-IR")}
+              <span className="mr-1 text-xs font-medium text-gray-500">تومان</span>
+            </p>
           </div>
-          <div
-            className="flex items-center gap-1 text-[#F51313] cursor-pointer"
-            onClick={deleteDiscountHandler}
-          >
-            حذف
-            <span className="text-sm lg:text-2xl">
-              <DeleteOutlineIcon fontSize="" />
-            </span>
+          <div className="rounded-xl border border-gray-100 bg-gray-50/80 px-4 py-3">
+            <p className="text-[11px] font-medium text-gray-500">وضعیت</p>
+            <p
+              className={`mt-1 text-sm font-bold ${
+                props?.is_active ? "text-emerald-700" : "text-gray-400"
+              }`}
+            >
+              {props?.is_active ? "در حال استفاده" : "غیرفعال"}
+            </p>
           </div>
         </div>
-      </div>
+      </article>
     </div>
   );
 }

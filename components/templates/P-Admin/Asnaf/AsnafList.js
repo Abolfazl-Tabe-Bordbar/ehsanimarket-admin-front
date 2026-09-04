@@ -14,13 +14,26 @@ function AsnafList({ data }) {
     });
   };
 
+  const categories = shownData?.body || [];
+
   return (
-    <div className="mt-6">
-      {!shownData.status ? (
-        <EmptyMessage text="هیچ دسته بندی ثبت نشده است." />
+    <div className="my-2">
+      {categories.length > 0 && (
+        <div className="mb-4">
+          <div className="admin-card flex items-center justify-between py-3 px-4">
+            <span className="text-sm text-gray-600">تعداد دسته‌بندی‌های اصلی</span>
+            <span className="text-lg font-bold text-[#141c32]">
+              {categories.length}
+            </span>
+          </div>
+        </div>
+      )}
+
+      {!categories.length ? (
+        <EmptyMessage text="هیچ دسته‌بندی ثبت نشده است." />
       ) : (
         <div className="admin-list">
-          {shownData.body?.map((senf) => (
+          {categories.map((senf) => (
             <SenfBox
               key={senf.id}
               getAsnafHandler={getAsnafHandler}

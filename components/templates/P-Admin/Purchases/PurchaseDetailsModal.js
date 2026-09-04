@@ -1,8 +1,15 @@
 import { uploadUrl } from "@/data/variables";
 import React from "react";
 import CloseIcon from "@mui/icons-material/Close";
+import {
+  getPurchaseAdminMessage,
+  purchaseTabStatusConfig,
+} from "./purchaseHelpers";
 
-function PurchaseDetails({ setIsPurchaseDetailsModalShow, purchaseInfo }) {
+function PurchaseDetails({ setIsPurchaseDetailsModalShow, purchaseInfo, status = "pending" }) {
+  const statusMeta = purchaseTabStatusConfig[status] || purchaseTabStatusConfig.pending;
+  const adminMessage = getPurchaseAdminMessage(purchaseInfo, status);
+
   return (
     <div className="admin-modal-overlay">
       <div className="bg-white w-full max-w-[1100px] rounded-xl my-4 mx-2 pb-7 pt-6 overflow-auto relative">
@@ -26,6 +33,27 @@ function PurchaseDetails({ setIsPurchaseDetailsModalShow, purchaseInfo }) {
           </div>
         </div>
         <div className="mt-10 px-5">
+          <div className="mb-6 rounded-2xl border border-gray-200 bg-gray-50 px-4 py-4 space-y-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-sm font-bold text-gray-700">وضعیت سفارش:</span>
+              <span
+                className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium ${statusMeta.className}`}
+              >
+                {statusMeta.label}
+              </span>
+            </div>
+            <p className="text-sm text-gray-700 leading-7">
+              <span className="font-bold text-gray-600">
+                {status === "send"
+                  ? "پیام ارسال: "
+                  : status === "not-send"
+                    ? "دلیل ارسال نشدن: "
+                    : "توضیح: "}
+              </span>
+              {adminMessage}
+            </p>
+          </div>
+
           <div className="flex flex-col md:flex-row gap-6">
             <div className="flex-[6] space-y-6">
               {purchaseInfo.orderItems.map((item) => (

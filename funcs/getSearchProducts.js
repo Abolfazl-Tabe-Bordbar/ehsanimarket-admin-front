@@ -2,19 +2,20 @@ import axios from "axios";
 import { baseUrl } from "@/data/variables";
 import getCookie from "./cookies/getCookie";
 import { TopRightToast } from "@/components/modules/Toast";
-import Swal from "sweetalert2";
+import { buildProductsApiQuery } from "@/components/templates/P-Admin/Products/productFilterHelpers";
 
-async function getSearchProducts(searchValue, page, limit) {
+async function getSearchProducts(searchValue, page, limit, filters = {}) {
   try {
-    const { data } = await axios.post(
-      `${baseUrl}/products/search?limit=${limit}&page=${page}`,
-      searchValue,
-      {
-        headers: {
-          cookies: getCookie("ramian-pakhsh-admin"),
-        },
-      }
-    );
+    const filterQuery = buildProductsApiQuery(filters);
+    const url = `${baseUrl}/products/search?limit=${limit}&page=${page}${
+      filterQuery ? `&${filterQuery}` : ""
+    }`;
+
+    const { data } = await axios.post(url, searchValue, {
+      headers: {
+        cookies: getCookie("ramian-pakhsh-admin"),
+      },
+    });
 
     if (!data.status) {
       TopRightToast.fire({
@@ -23,7 +24,7 @@ async function getSearchProducts(searchValue, page, limit) {
       });
     }
 
-    return data
+    return data;
   } catch (error) {
     TopRightToast.fire({
       icon: "error",
