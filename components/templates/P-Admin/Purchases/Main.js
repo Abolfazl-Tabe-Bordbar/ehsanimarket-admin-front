@@ -7,7 +7,20 @@ import AdminPageShell from "@/components/admin/ui/AdminPageShell";
 
 function Main({ status, sendPurchases, notSendPurchases, pendingPurchases }) {
   return (
-    <AdminPageShell title="خریدها" description="پیگیری سفارشات کاربران">
+    <AdminPageShell
+      title="خریدها"
+      description="پیگیری سفارشات کاربران"
+      actions={
+        <div className="flex flex-wrap gap-2">
+          <Link href="/p-admin/approval-messages" className="admin-btn-secondary">
+            پیام‌های تأیید
+          </Link>
+          <Link href="/p-admin/rejection-reasons" className="admin-btn-secondary">
+            دلایل رد خرید
+          </Link>
+        </div>
+      }
+    >
       <div className="admin-tabs">
         <Link
           href="/p-admin/purchases?p=1&status=pending"

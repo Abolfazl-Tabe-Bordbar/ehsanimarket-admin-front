@@ -1,14 +1,9 @@
 import { TopRightToast } from "@/components/modules/Toast";
 import { baseUrl } from "@/data/variables";
 
-async function getPurchases(token, page, limit, statusAfterPaid, rejectionReasonId = null) {
+async function getApprovalMessages(token) {
   try {
-    let url = `${baseUrl}/orders?page=${page}&limit=${limit}&status_after_paid=${statusAfterPaid}`;
-    if (rejectionReasonId) {
-      url += `&rejection_reason_id=${rejectionReasonId}`;
-    }
-
-    const res = await fetch(url, {
+    const res = await fetch(`${baseUrl}/order-approval-messages`, {
       headers: {
         cookies: token,
       },
@@ -24,4 +19,4 @@ async function getPurchases(token, page, limit, statusAfterPaid, rejectionReason
   }
 }
 
-export default getPurchases;
+export default getApprovalMessages;

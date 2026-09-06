@@ -4,11 +4,15 @@ import PurchaseBox from "./PurchaseBox";
 import EmptyMessage from "@/components/modules/EmptyMessage";
 import { useRouter, useSearchParams } from "next/navigation";
 import getPurchases from "@/funcs/getPurchases";
+import getRejectionReasons from "@/funcs/getRejectionReasons";
+import getApprovalMessages from "@/funcs/getApprovalMessages";
 import CustomPagination from "@/components/modules/CustomPagination";
 import getCookie from "@/funcs/cookies/getCookie";
 
 function PendingPurchasesList({ purchases }) {
   const [shownData, setShownData] = useState(purchases);
+  const [rejectionReasons, setRejectionReasons] = useState([]);
+  const [approvalMessages, setApprovalMessages] = useState([]);
 
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -32,6 +36,15 @@ function PendingPurchasesList({ purchases }) {
   }, [searchParams]);
 
   useEffect(() => {
+    getRejectionReasons(getCookie("ramian-pakhsh-admin")).then((res) => {
+      setRejectionReasons(res?.body || []);
+    });
+    getApprovalMessages(getCookie("ramian-pakhsh-admin")).then((res) => {
+      setApprovalMessages(res?.body || []);
+    });
+  }, []);
+
+  useEffect(() => {
     if (totalPages == 0) {
       router.push(`/p-admin/purchases?p=1&status=pending`);
     } else {
@@ -52,6 +65,8 @@ function PendingPurchasesList({ purchases }) {
                 purchaseInfo={purchase}
                 status="pending"
                 getPurchasesHandler={getPurchasesHandler}
+                rejectionReasons={rejectionReasons}
+                approvalMessages={approvalMessages}
               />
             ))}
           </div>

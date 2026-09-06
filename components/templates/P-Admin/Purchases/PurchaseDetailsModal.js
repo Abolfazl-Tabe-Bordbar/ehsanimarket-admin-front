@@ -1,39 +1,74 @@
+"use client";
+
 import { uploadUrl } from "@/data/variables";
 import React from "react";
 import CloseIcon from "@mui/icons-material/Close";
+import CalendarTodayOutlinedIcon from "@mui/icons-material/CalendarTodayOutlined";
+import ReceiptLongOutlinedIcon from "@mui/icons-material/ReceiptLongOutlined";
+import PersonOutlineOutlinedIcon from "@mui/icons-material/PersonOutlineOutlined";
+import LocalMallOutlinedIcon from "@mui/icons-material/LocalMallOutlined";
+import CopyButton from "./CopyButton";
 import {
-  getPurchaseAdminMessage,
+  getPurchaseAdminInternalMessage,
+  getPurchaseUserMessage,
   purchaseTabStatusConfig,
 } from "./purchaseHelpers";
 
-function PurchaseDetails({ setIsPurchaseDetailsModalShow, purchaseInfo, status = "pending" }) {
+function PurchaseDetails({
+  setIsPurchaseDetailsModalShow,
+  purchaseInfo,
+  status = "pending",
+}) {
   const statusMeta = purchaseTabStatusConfig[status] || purchaseTabStatusConfig.pending;
-  const adminMessage = getPurchaseAdminMessage(purchaseInfo, status);
+  const adminInternalMessage = getPurchaseAdminInternalMessage(purchaseInfo);
+  const userMessage = getPurchaseUserMessage(purchaseInfo, status);
+  const paymentRef = purchaseInfo?.payment?.ref_id;
 
   return (
-    <div className="admin-modal-overlay">
-      <div className="bg-white w-full max-w-[1100px] rounded-xl my-4 mx-2 pb-7 pt-6 overflow-auto relative">
-        <div className="pb-5 px-5 border-b border-b-[#444444]">
-          <div className="flex gap-3 md:gap-6 items-center">
-            <p className="text-xs md:text-base">
-              {new Date(purchaseInfo.createdAt).toLocaleDateString("fa")}
-            </p>
-            <div className="flex gap-2 items-center text-xs md:text-base">
-              <p>شناسه پرداخت :</p>
-              <p className="font-bold">{purchaseInfo.payment.ref_id}</p>
+    <div className="admin-modal-overlay" onClick={() => setIsPurchaseDetailsModalShow(false)}>
+      <div
+        className="admin-modal-panel !max-w-[1100px] !py-6 sm:!py-7"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <button
+          type="button"
+          className="admin-modal-close"
+          onClick={() => setIsPurchaseDetailsModalShow(false)}
+          aria-label="بستن"
+        >
+          <CloseIcon fontSize="small" />
+        </button>
+
+        <div className="space-y-6">
+          <div className="flex flex-col gap-4 border-b border-gray-100 pb-5 pr-10">
+            <div>
+              <h2 className="text-lg md:text-xl font-bold text-brand-navy">
+                جزئیات سفارش
+              </h2>
+              <p className="mt-1 text-sm text-gray-500">
+                {purchaseInfo.user.first_name} {purchaseInfo.user.last_name}
+              </p>
+            </div>
+
+            <div className="flex flex-wrap gap-3">
+              <div className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm">
+                <CalendarTodayOutlinedIcon sx={{ fontSize: 16 }} className="text-gray-500" />
+                <span className="text-gray-500">تاریخ خرید:</span>
+                <span className="font-bold text-brand-navy">
+                  {new Date(purchaseInfo.createdAt).toLocaleDateString("fa")}
+                </span>
+              </div>
+
+              <div className="inline-flex flex-wrap items-center gap-2 rounded-xl border border-blue-100 bg-blue-50/60 px-3 py-2 text-sm">
+                <ReceiptLongOutlinedIcon sx={{ fontSize: 16 }} className="text-brand-blue" />
+                <span className="text-gray-600">شناسه پرداخت:</span>
+                <span className="font-bold text-brand-navy break-all">{paymentRef}</span>
+                <CopyButton value={paymentRef} label="شناسه پرداخت کپی شد" />
+              </div>
             </div>
           </div>
-          <div
-            className="admin-modal-close"
-            onClick={() => setIsPurchaseDetailsModalShow(false)}
-          >
-            <span>
-              <CloseIcon />
-            </span>
-          </div>
-        </div>
-        <div className="mt-10 px-5">
-          <div className="mb-6 rounded-2xl border border-gray-200 bg-gray-50 px-4 py-4 space-y-2">
+
+          <div className="rounded-2xl border border-gray-200 bg-gradient-to-b from-gray-50 to-white p-4 md:p-5 space-y-3">
             <div className="flex flex-wrap items-center gap-2">
               <span className="text-sm font-bold text-gray-700">وضعیت سفارش:</span>
               <span
@@ -42,111 +77,122 @@ function PurchaseDetails({ setIsPurchaseDetailsModalShow, purchaseInfo, status =
                 {statusMeta.label}
               </span>
             </div>
-            <p className="text-sm text-gray-700 leading-7">
-              <span className="font-bold text-gray-600">
-                {status === "send"
-                  ? "پیام ارسال: "
-                  : status === "not-send"
-                    ? "دلیل ارسال نشدن: "
-                    : "توضیح: "}
-              </span>
-              {adminMessage}
-            </p>
+
+            {status === "not-send" ? (
+              <div className="grid gap-3 md:grid-cols-2">
+                <div className="rounded-xl border border-amber-100 bg-amber-50/70 px-3 py-3">
+                  <p className="text-xs font-bold text-gray-500 mb-1">
+                    پیام مدیریت و بخش فروش
+                  </p>
+                  <p className="text-sm text-gray-700 leading-7">{adminInternalMessage}</p>
+                </div>
+                <div className="rounded-xl border border-blue-100 bg-blue-50/70 px-3 py-3">
+                  <p className="text-xs font-bold text-gray-500 mb-1">پیام کاربر</p>
+                  <p className="text-sm text-gray-700 leading-7">{userMessage}</p>
+                </div>
+              </div>
+            ) : (
+              <div className="rounded-xl border border-gray-100 bg-white px-3 py-3">
+                <p className="text-xs font-bold text-gray-500 mb-1">
+                  {status === "send" ? "پیام ارسال" : "توضیح"}
+                </p>
+                <p className="text-sm text-gray-700 leading-7">{userMessage}</p>
+              </div>
+            )}
           </div>
 
-          <div className="flex flex-col md:flex-row gap-6">
-            <div className="flex-[6] space-y-6">
+          <div className="flex flex-col lg:flex-row gap-6">
+            <div className="flex-[6] space-y-3">
+              <div className="flex items-center gap-2 mb-1">
+                <LocalMallOutlinedIcon sx={{ fontSize: 18 }} className="text-brand-navy" />
+                <h3 className="text-base font-bold text-brand-navy">اقلام سفارش</h3>
+              </div>
+
               {purchaseInfo.orderItems.map((item) => (
                 <div
                   key={item.id}
-                  className="border rounded-2xl p-4 px-0 md:px-4 flex justify-between items-end relative"
+                  className="admin-card !p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
                 >
-                  <div className="flex items-center gap-4">
-                    <div>
+                  <div className="flex items-center gap-4 min-w-0">
+                    <div className="h-20 w-20 shrink-0 overflow-hidden rounded-xl border border-gray-100 bg-gray-50">
                       <img
                         src={`${uploadUrl}/products/${
-                          item.product_images_path
-                            ? item.product_images_path[0]
-                            : ""
+                          item.product_images_path ? item.product_images_path[0] : ""
                         }`}
-                        className="max-w-[80px] h-[80px]"
-                        alt=""
+                        className="h-full w-full object-contain p-2"
+                        alt={item.product_name}
                       />
                     </div>
-                    <div className="space-y-4 md:space-y-8">
-                      <h2 className="font-bold text-sm md:text-base">
+                    <div className="min-w-0 space-y-2">
+                      <h4 className="font-bold text-sm md:text-base text-brand-navy line-clamp-2">
                         {item.product_name}
-                      </h2>
-                      <div className="flex flex-col md:flex-row gap-2 md:gap-4 lg:gap-16">
-                        <p className="text-xs md:text-sm whitespace-nowrap">
-                          تعداد کالا :{" "}
-                          <span className="font-bold">
-                            {item.count.toLocaleString("fa")}
-                          </span>
-                        </p>
-                      </div>
+                      </h4>
+                      <p className="text-xs md:text-sm text-gray-500">
+                        تعداد:{" "}
+                        <span className="font-bold text-gray-700">
+                          {item.count.toLocaleString("fa")}
+                        </span>
+                      </p>
                     </div>
                   </div>
-                  <div className="text-xs md:text-sm lg:text-base absolute md:static md:-mb-0.5 bottom-4 left-2 whitespace-nowrap">
-                    <span>مبلغ :</span>{" "}
-                    <span className="text-xs">
-                      <span className="text-sm md:text-base lg:text-lg font-bold">
-                        {item.product_price.toLocaleString("fa")}
-                      </span>{" "}
-                      تومان
-                    </span>
+                  <div className="text-sm whitespace-nowrap sm:text-left">
+                    <span className="text-gray-500">مبلغ:</span>{" "}
+                    <span className="text-base md:text-lg font-bold text-brand-navy">
+                      {item.product_price.toLocaleString("fa")}
+                    </span>{" "}
+                    <span className="text-xs text-gray-500">تومان</span>
                   </div>
                 </div>
               ))}
             </div>
-            <div className="flex-[2] space-y-6">
-              <div className="border px-5 py-8 rounded-2xl space-y-6 h-fit">
-                <h2 className="md:text-lg font-bold text-center">فاکتور خرید</h2>
-                <div>
-                  <div className="flex justify-between items-center border-b border-b-black pb-8">
-                    <p>
-                      جمع کالاها (
-                      {purchaseInfo.orderItems.length.toLocaleString("fa")})
-                    </p>
-                    <p className="text-xs">
-                      <span className="text-lg">
-                        {purchaseInfo.total_price.toLocaleString("fa")}
-                      </span>{" "}
-                      تومان
-                    </p>
+
+            <div className="flex-[2] space-y-4">
+              <div className="admin-card space-y-5">
+                <h3 className="text-base font-bold text-brand-navy text-center">
+                  فاکتور خرید
+                </h3>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center border-b border-gray-100 pb-4 text-sm">
+                    <span className="text-gray-600">
+                      جمع کالاها ({purchaseInfo.orderItems.length.toLocaleString("fa")})
+                    </span>
+                    <span className="font-bold text-brand-navy">
+                      {purchaseInfo.total_price.toLocaleString("fa")} تومان
+                    </span>
                   </div>
-                  <div className="flex justify-between items-center pt-5">
-                    <p className="font-bold">جمع کل</p>
-                    <p className="text-xs">
-                      <span className="text-lg font-bold">
-                        {purchaseInfo.total_price.toLocaleString("fa")}
-                      </span>{" "}
-                      تومان
-                    </p>
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="font-bold text-brand-navy">جمع کل</span>
+                    <span className="text-lg font-bold text-brand-navy">
+                      {purchaseInfo.total_price.toLocaleString("fa")}{" "}
+                      <span className="text-xs font-medium text-gray-500">تومان</span>
+                    </span>
                   </div>
                 </div>
               </div>
-              <div className="border px-5 py-8 rounded-2xl space-y-6 h-fit">
-                <h2 className="md:text-lg font-bold text-center">اطلاعات گیرنده</h2>
-                <div className="space-y-6 text-sm md:text-base">
-                  <div className="flex gap-2">
-                    <p className="font-bold">نام گیرنده: </p>
-                    <p>
-                      {purchaseInfo.user.first_name}{" "}
-                      {purchaseInfo.user.last_name}
+
+              <div className="admin-card space-y-4">
+                <div className="flex items-center justify-center gap-2">
+                  <PersonOutlineOutlinedIcon sx={{ fontSize: 18 }} className="text-brand-navy" />
+                  <h3 className="text-base font-bold text-brand-navy">اطلاعات گیرنده</h3>
+                </div>
+                <div className="space-y-4 text-sm">
+                  <div>
+                    <p className="text-xs font-bold text-gray-500 mb-1">نام گیرنده</p>
+                    <p className="text-gray-700">
+                      {purchaseInfo.user.first_name} {purchaseInfo.user.last_name}
                     </p>
                   </div>
-                  <div className="flex gap-2">
-                    <p className="font-bold">شماره تماس: </p>
-                    <p>{purchaseInfo.user.phone_number}</p>
+                  <div>
+                    <p className="text-xs font-bold text-gray-500 mb-1">شماره تماس</p>
+                    <p className="text-gray-700">{purchaseInfo.user.phone_number}</p>
                   </div>
-                  <div className="flex gap-2">
-                    <p className="font-bold">آدرس: </p>
-                    <p>{purchaseInfo.user.address}</p>
+                  <div>
+                    <p className="text-xs font-bold text-gray-500 mb-1">آدرس</p>
+                    <p className="text-gray-700 leading-7">{purchaseInfo.user.address}</p>
                   </div>
-                  <div className="flex gap-2">
-                    <p className="font-bold">کد پستی: </p>
-                    <p>{purchaseInfo.user.post_code}</p>
+                  <div>
+                    <p className="text-xs font-bold text-gray-500 mb-1">کد پستی</p>
+                    <p className="text-gray-700">{purchaseInfo.user.post_code}</p>
                   </div>
                 </div>
               </div>

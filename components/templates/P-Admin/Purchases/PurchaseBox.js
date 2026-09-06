@@ -1,86 +1,92 @@
 "use client";
+
 import React, { useState } from "react";
 import KeyboardArrowDownOutlinedIcon from "@mui/icons-material/KeyboardArrowDownOutlined";
+import CalendarTodayOutlinedIcon from "@mui/icons-material/CalendarTodayOutlined";
+import PaymentsOutlinedIcon from "@mui/icons-material/PaymentsOutlined";
+import ReceiptLongOutlinedIcon from "@mui/icons-material/ReceiptLongOutlined";
+import PersonOutlineOutlinedIcon from "@mui/icons-material/PersonOutlineOutlined";
 import PurchaseDetailsModal from "./PurchaseDetailsModal";
+import RejectPurchasePanel from "./RejectPurchasePanel";
+import ApprovePurchasePanel from "./ApprovePurchasePanel";
 import Swal from "sweetalert2";
-import changePurchaseStatus from "@/funcs/changePurchaseStatus";
-import Loader from "@/components/modules/Loader";
 import {
-  getPurchaseAdminMessage,
+  getPurchaseAdminInternalMessage,
+  getPurchaseUserMessage,
   purchaseTabStatusConfig,
 } from "./purchaseHelpers";
+import CopyButton from "./CopyButton";
 
-function PurchaseBox({ purchaseInfo, status, getPurchasesHandler = "" }) {
+function MetaItem({ icon: Icon, label, value, highlight = false, copyValue = null }) {
+  return (
+    <div className="rounded-xl border border-gray-100 bg-gray-50/80 px-3 py-2.5 min-w-[140px]">
+      <div className="flex items-center gap-1.5 text-[11px] font-bold text-gray-500 mb-1">
+        <Icon sx={{ fontSize: 14 }} />
+        {label}
+      </div>
+      <div className="flex flex-wrap items-center gap-2">
+        <p
+          className={`text-sm leading-6 break-all ${
+            highlight ? "font-bold text-brand-navy" : "font-medium text-gray-700"
+          }`}
+        >
+          {value}
+        </p>
+        {copyValue ? (
+          <CopyButton value={copyValue} label="شناسه پرداخت کپی شد" />
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+function PurchaseBox({
+  purchaseInfo,
+  status,
+  getPurchasesHandler = "",
+  rejectionReasons = [],
+  approvalMessages = [],
+}) {
   const [isPurchaseDetailsModalShow, setIsPurchaseDetailsModalShow] =
     useState(false);
-  const [isLoaderShow, setIsLoaderShow] = useState(false);
+  const [activePanel, setActivePanel] = useState(null);
 
-  const confirmPurchase = () => {
-    Swal.fire({
-      title: "یک پیام برای خرید کاربر بگذارید",
-      text: "این پیام در پنل سفارشات کاربر نمایش داده می شود",
-      input: "text",
-      showCancelButton: true,
-      cancelButtonText: "لغو",
-      confirmButtonText: "تایید",
-      confirmButtonColor: "#004B8F",
-      inputAutoFocus: false,
-      inputValidator: (value) => {
-        if (!value) {
-          return "مسیج اجباری است";
-        }
-      },
-    }).then((result) => {
-      if (result.isConfirmed) {
-        setIsLoaderShow(true);
-        changePurchaseStatus({
-          orderId: purchaseInfo.id,
-          message: result.value,
-          new_order_status: 1,
-        }).then(() => {
-          setIsLoaderShow(false);
-          getPurchasesHandler();
-        });
-      }
-    });
+  const openRejectPanel = () => {
+    if (!rejectionReasons.length) {
+      Swal.fire({
+        icon: "warning",
+        title: "دلیلی برای رد ثبت نشده",
+        text: "ابتدا از بخش «دلایل رد خرید» حداقل یک دلیل تعریف کنید.",
+        confirmButtonText: "متوجه شدم",
+      });
+      return;
+    }
+
+    setActivePanel((current) => (current === "reject" ? null : "reject"));
   };
 
-  const cancelPurchase = () => {
-    Swal.fire({
-      title: "دلیل رد خرید کاربر را بنویسید",
-      text: "این پیام در پنل سفارشات کاربر نمایش داده می شود",
-      input: "text",
-      showCancelButton: true,
-      cancelButtonText: "لغو",
-      confirmButtonText: "رد",
-      confirmButtonColor: "#C92222",
-      inputAutoFocus: false,
-      inputValidator: (value) => {
-        if (!value) {
-          return "مسیج اجباری است";
-        }
-      },
-    }).then((result) => {
-      if (result.isConfirmed) {
-        setIsLoaderShow(true);
-        changePurchaseStatus({
-          orderId: purchaseInfo.id,
-          message: result.value,
-          new_order_status: 2,
-        }).then(() => {
-          setIsLoaderShow(false);
-          getPurchasesHandler();
-        });
-      }
-    });
+  const openApprovePanel = () => {
+    if (!approvalMessages.length) {
+      Swal.fire({
+        icon: "warning",
+        title: "پیامی برای تأیید ثبت نشده",
+        text: "ابتدا از بخش «پیام‌های تأیید سفارش» حداقل یک پیام تعریف کنید.",
+        confirmButtonText: "متوجه شدم",
+      });
+      return;
+    }
+
+    setActivePanel((current) => (current === "approve" ? null : "approve"));
   };
 
   const statusMeta = purchaseTabStatusConfig[status] || purchaseTabStatusConfig.pending;
-  const adminMessage = getPurchaseAdminMessage(purchaseInfo, status);
+  const adminInternalMessage = getPurchaseAdminInternalMessage(purchaseInfo);
+  const userMessage = getPurchaseUserMessage(purchaseInfo, status);
+  const fullName = `${purchaseInfo.user.first_name} ${purchaseInfo.user.last_name}`;
+  const paymentRef = purchaseInfo?.payment?.ref_id;
 
   return (
-    <div>
-      {isLoaderShow && <Loader />}
+    <div className="space-y-3">
       {isPurchaseDetailsModalShow && (
         <PurchaseDetailsModal
           setIsPurchaseDetailsModalShow={setIsPurchaseDetailsModalShow}
@@ -88,83 +94,134 @@ function PurchaseBox({ purchaseInfo, status, getPurchasesHandler = "" }) {
           status={status}
         />
       )}
-      <div className="admin-card py-4 px-4 flex flex-col gap-2 lg:flex-row justify-between relative">
-        <div className="flex flex-col lg:flex-row lg:items-center gap-2 lg:gap-8 w-full lg:w-auto">
-          <div className="flex justify-between w-full lg:gap-8 lg:w-auto">
-            <h2 className="line-clamp-1 text-sm lg:text-base font-bold">
-              {purchaseInfo.user.first_name} {purchaseInfo.user.last_name}
-            </h2>
-            <div className="whitespace-nowrap text-xs lg:text-base">
-              <span>تاریخ خرید :</span>{" "}
-              <span className="font-bold">
-                {new Date(purchaseInfo.createdAt).toLocaleDateString("fa")}
-              </span>
+
+      <div className="admin-card overflow-hidden !p-0">
+        <div className="p-4 md:p-5 space-y-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div className="flex items-start gap-3 min-w-0">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand-navy/5 text-brand-navy border border-brand-navy/10">
+                <PersonOutlineOutlinedIcon fontSize="small" />
+              </div>
+              <div className="min-w-0">
+                <h2 className="text-sm md:text-base font-bold text-brand-navy line-clamp-1">
+                  {fullName}
+                </h2>
+                {status === "pending" ? (
+                  <p className="mt-1 text-xs text-gray-500">
+                    این سفارش منتظر تأیید یا رد شماست
+                  </p>
+                ) : null}
+              </div>
             </div>
-          </div>
 
-          {/* <div className="whitespace-nowrap text-xs lg:text-base">
-          <span>وضعیت :</span>{" "}
-          <span className="font-bold text-[#C92222]">لغو شده</span>
-        </div> */}
-          <div className="whitespace-nowrap text-xs lg:text-base">
-            <span>مبلغ سفارش : </span>{" "}
-            <span className="text-sm lg:text-lg font-bold">
-              {purchaseInfo.total_price.toLocaleString("fa")}{" "}
-              <span className="text-xs font-medium">تومان</span>
-            </span>
-          </div>
-
-          <div className="w-full lg:w-auto space-y-2">
             <span
-              className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${statusMeta.className}`}
+              className={`inline-flex items-center self-start rounded-full border px-3 py-1 text-xs font-medium ${statusMeta.className}`}
             >
               {statusMeta.label}
             </span>
-            <p className="text-xs lg:text-sm text-gray-600 leading-6 max-w-xl">
-              <span className="font-medium text-gray-500">
-                {status === "send"
-                  ? "پیام ارسال: "
-                  : status === "not-send"
-                    ? "دلیل ارسال نشدن: "
-                    : "وضعیت: "}
-              </span>
-              {adminMessage}
-            </p>
           </div>
-        </div>
 
-        <div className="flex items-center gap-2">
-          {status === "pending" ? (
-            <>
-              <button
-                className="px-2 py-1 bg-[#C92222] text-white text-xs lg:text-base rounded-md"
-                onClick={cancelPurchase}
-              >
-                رد
-              </button>
-              <button
-                className="px-2 py-1 bg-[#004B8F] text-white text-xs lg:text-base rounded-md"
-                onClick={confirmPurchase}
-              >
-                تایید
-              </button>
-            </>
-          ) : (
-            ""
-          )}
-          <div
-            className={`whitespace-nowrap flex items-center gap-1 text-[#004B8F] cursor-pointer text-xs lg:text-base absolute lg:static left-4 ${
-              status == "pending" ? "bottom-4.5" : "bottom-6"
-            }`}
-            onClick={() => setIsPurchaseDetailsModalShow(true)}
-          >
-            نمایش جزئیات
-            <span className="text-sm lg:text-2xl">
-              <KeyboardArrowDownOutlinedIcon fontSize="" />
-            </span>
+          <div className="flex flex-wrap gap-2">
+            <MetaItem
+              icon={CalendarTodayOutlinedIcon}
+              label="تاریخ خرید"
+              value={new Date(purchaseInfo.createdAt).toLocaleDateString("fa")}
+            />
+            <MetaItem
+              icon={PaymentsOutlinedIcon}
+              label="مبلغ سفارش"
+              value={`${purchaseInfo.total_price.toLocaleString("fa")} تومان`}
+              highlight
+            />
+            {paymentRef ? (
+              <MetaItem
+                icon={ReceiptLongOutlinedIcon}
+                label="شناسه پرداخت"
+                value={paymentRef}
+                copyValue={paymentRef}
+              />
+            ) : null}
+          </div>
+
+          {status === "not-send" ? (
+            <div className="grid gap-2 md:grid-cols-2">
+              <div className="rounded-xl border border-amber-100 bg-amber-50/60 px-3 py-3">
+                <p className="text-[11px] font-bold text-amber-800 mb-1">
+                  پیام مدیریت و فروش
+                </p>
+                <p className="text-sm text-gray-700 leading-6">{adminInternalMessage}</p>
+              </div>
+              <div className="rounded-xl border border-blue-100 bg-blue-50/60 px-3 py-3">
+                <p className="text-[11px] font-bold text-brand-navy mb-1">پیام کاربر</p>
+                <p className="text-sm text-gray-700 leading-6">{userMessage}</p>
+              </div>
+            </div>
+          ) : status !== "pending" ? (
+            <div className="rounded-xl border border-emerald-100 bg-emerald-50/60 px-3 py-3">
+              <p className="text-[11px] font-bold text-emerald-800 mb-1">
+                {status === "send" ? "پیام ارسال" : "پیام"}
+              </p>
+              <p className="text-sm text-gray-700 leading-6">{userMessage}</p>
+            </div>
+          ) : null}
+
+          <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-3 pt-1 border-t border-gray-100">
+            <button
+              type="button"
+              className="inline-flex items-center justify-center gap-1 text-sm font-medium text-brand-navy hover:text-[#00386b] transition-colors"
+              onClick={() => setIsPurchaseDetailsModalShow(true)}
+            >
+              نمایش جزئیات
+              <KeyboardArrowDownOutlinedIcon sx={{ fontSize: 18 }} />
+            </button>
+
+            {status === "pending" ? (
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  className={`admin-btn !py-2 !px-4 text-sm ${
+                    activePanel === "reject"
+                      ? "!bg-red-700 !text-white"
+                      : "!bg-red-600 !text-white hover:!bg-red-700"
+                  }`}
+                  onClick={openRejectPanel}
+                >
+                  {activePanel === "reject" ? "بستن رد" : "رد"}
+                </button>
+                <button
+                  type="button"
+                  className={`admin-btn !py-2 !px-4 text-sm ${
+                    activePanel === "approve"
+                      ? "!bg-[#00386b] !text-white"
+                      : "!bg-[#004B8F] !text-white hover:!bg-[#00386b]"
+                  }`}
+                  onClick={openApprovePanel}
+                >
+                  {activePanel === "approve" ? "بستن تأیید" : "تایید"}
+                </button>
+              </div>
+            ) : null}
           </div>
         </div>
       </div>
+
+      {activePanel === "reject" ? (
+        <RejectPurchasePanel
+          purchaseInfo={purchaseInfo}
+          rejectionReasons={rejectionReasons}
+          onClose={() => setActivePanel(null)}
+          onSuccess={getPurchasesHandler}
+        />
+      ) : null}
+
+      {activePanel === "approve" ? (
+        <ApprovePurchasePanel
+          purchaseInfo={purchaseInfo}
+          approvalMessages={approvalMessages}
+          onClose={() => setActivePanel(null)}
+          onSuccess={getPurchasesHandler}
+        />
+      ) : null}
     </div>
   );
 }

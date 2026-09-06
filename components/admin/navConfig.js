@@ -10,7 +10,7 @@ import BusinessIcon from "@mui/icons-material/Business";
 import AdUnitsIcon from "@mui/icons-material/AdUnits";
 import ManageAccountsOutlinedIcon from "@mui/icons-material/ManageAccountsOutlined";
 import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
-import { DiscountOutlined, SellOutlined, SmsOutlined, RateReviewOutlined, LocalOfferOutlined } from "@mui/icons-material";
+import { DiscountOutlined, SellOutlined, SmsOutlined, RateReviewOutlined, LocalOfferOutlined, BlockOutlined, CheckCircleOutline } from "@mui/icons-material";
 
 export const adminNavItems = [
   {
@@ -55,6 +55,20 @@ export const adminNavItems = [
     description: "پیگیری سفارشات کاربران",
     icon: ShoppingBasketOutlinedIcon,
     badgeKey: "orders",
+  },
+  {
+    href: "/p-admin/rejection-reasons",
+    path: "/p-admin/rejection-reasons",
+    label: "دلایل رد خرید",
+    description: "تعریف دلایل آماده برای رد سفارش",
+    icon: BlockOutlined,
+  },
+  {
+    href: "/p-admin/approval-messages",
+    path: "/p-admin/approval-messages",
+    label: "پیام‌های تأیید",
+    description: "تعریف پیام‌های آماده برای تأیید سفارش",
+    icon: CheckCircleOutline,
   },
   {
     href: "/p-admin/users?p=1",

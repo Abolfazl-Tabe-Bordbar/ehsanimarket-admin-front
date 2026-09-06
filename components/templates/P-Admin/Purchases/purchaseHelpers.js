@@ -16,10 +16,26 @@ export const purchaseTabStatusConfig = {
   },
 };
 
-export function getPurchaseAdminMessage(purchaseInfo, tabStatus) {
+export function getPurchaseUserMessage(purchaseInfo, tabStatus) {
   const message = purchaseInfo?.status_after_paid_message?.trim();
   if (message) return message;
 
   const config = purchaseTabStatusConfig[tabStatus];
   return config?.emptyMessage || "";
+}
+
+export function getPurchaseAdminInternalMessage(purchaseInfo) {
+  const message =
+    purchaseInfo?.status_after_paid_admin_message?.trim() ||
+    purchaseInfo?.rejectionReason?.admin_message?.trim();
+
+  return message || "پیام داخلی ثبت نشده";
+}
+
+export function getPurchaseAdminMessage(purchaseInfo, tabStatus) {
+  if (tabStatus === "not-send") {
+    return getPurchaseAdminInternalMessage(purchaseInfo);
+  }
+
+  return getPurchaseUserMessage(purchaseInfo, tabStatus);
 }
