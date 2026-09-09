@@ -9,8 +9,8 @@ ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 ENV NEXT_PUBLIC_SITE_URL=$NEXT_PUBLIC_SITE_URL
 
 COPY package*.json ./
-RUN npm install
-
+RUN npm install --registry="https://mirror.abrha.net/repository/npm/"
+ 
 COPY . .
 RUN npm run build
 
