@@ -520,16 +520,22 @@ function AddProductModal({ setIsAddProductModalShow }) {
                     <input
                       id="weight_kg"
                       type="number"
-                      step="1"
+                      step="0.001"
                       min="0"
+                      placeholder="مثلاً 0.200"
                       className="border rounded-full px-3 py-2 w-full text-sm text-gray-700 outline-gray-300"
                       {...register("weight_kg", {
                         required: true,
                         min: 0,
-                        setValueAs: (v) =>
-                          v === "" || v === null ? v : Math.max(0, Math.floor(Number(v))),
+                        setValueAs: (v) => {
+                          if (v === "" || v === null) return v;
+                          const n = Number(v);
+                          if (!Number.isFinite(n) || n < 0) return 0;
+                          return Math.round(n * 1000) / 1000;
+                        },
                       })}
                     />
+                    <p className="text-xs text-gray-500 mr-1">تا ۳ رقم اعشار — مثلاً 0.200 یعنی ۲۰۰ گرم</p>
                     {errors.weight_kg?.type === "required" && (
                       <p className="text-red-500 text-xs mr-2">وزن محصول اجباری است</p>
                     )}

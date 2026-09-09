@@ -10,7 +10,7 @@ ENV NEXT_PUBLIC_SITE_URL=$NEXT_PUBLIC_SITE_URL
 
 COPY package*.json ./
 RUN npm install --registry="https://mirror-npm.runflare.com"
- 
+
 COPY . .
 RUN npm run build
 
