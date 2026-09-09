@@ -72,6 +72,7 @@ function EditProductModal({ setIsEditProductModalShow, productData }) {
           images: productImages,
           delete_images: deleteImages,
           count: data.count,
+          weight_kg: data.weight_kg,
           brand_id: data.brand_id || "",
         },
         productData.id,
@@ -110,6 +111,7 @@ function EditProductModal({ setIsEditProductModalShow, productData }) {
     setValue("description", productData.description);
     setValue("features", productData.features);
     setValue("count", productData.count);
+    setValue("weight_kg", Math.round(Number(productData.weight_kg ?? 0)));
     setValue("brand_id", productData.brand_id || productData.brand?.id || "");
     setProductImages(productData.images_path);
     setProductDescription(productData.description);
@@ -509,6 +511,27 @@ function EditProductModal({ setIsEditProductModalShow, productData }) {
                   <p className="text-red-500 text-xs mr-2">
                     تعداد محصول اجباری است
                   </p>
+                )}
+              </div>
+              <div className="space-y-2 col-span-2 md:col-span-1">
+                <label htmlFor="weight_kg" className="block text-sm font-bold">
+                  وزن (کیلوگرم)
+                </label>
+                <input
+                  id="weight_kg"
+                  type="number"
+                  step="1"
+                  min="0"
+                  className="border rounded-full px-3 py-2 w-full text-sm text-gray-700 outline-gray-300"
+                  {...register("weight_kg", {
+                    required: true,
+                    min: 0,
+                    setValueAs: (v) =>
+                      v === "" || v === null ? v : Math.max(0, Math.floor(Number(v))),
+                  })}
+                />
+                {errors.weight_kg?.type === "required" && (
+                  <p className="text-red-500 text-xs mr-2">وزن محصول اجباری است</p>
                 )}
               </div>
               <div className="space-y-2 col-span-2 md:col-span-1">

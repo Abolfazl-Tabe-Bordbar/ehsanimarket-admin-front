@@ -23,6 +23,12 @@ function PurchaseDetails({
   const adminInternalMessage = getPurchaseAdminInternalMessage(purchaseInfo);
   const userMessage = getPurchaseUserMessage(purchaseInfo, status);
   const paymentRef = purchaseInfo?.payment?.ref_id;
+  const productsSubtotal = purchaseInfo.orderItems.reduce(
+    (sum, item) => sum + Number(item.total_price || item.product_price * item.count),
+    0
+  );
+  const shippingCost = Number(purchaseInfo.shipping_cost || 0);
+  const discountAmount = Number(purchaseInfo.discount_amount || 0);
 
   return (
     <div className="admin-modal-overlay" onClick={() => setIsPurchaseDetailsModalShow(false)}>
@@ -157,9 +163,30 @@ function PurchaseDetails({
                       جمع کالاها ({purchaseInfo.orderItems.length.toLocaleString("fa")})
                     </span>
                     <span className="font-bold text-brand-navy">
-                      {purchaseInfo.total_price.toLocaleString("fa")} تومان
+                      {productsSubtotal.toLocaleString("fa")} تومان
                     </span>
                   </div>
+                  {shippingCost > 0 && (
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-gray-600">
+                        هزینه پست
+                        {purchaseInfo.total_weight_kg > 0 && (
+                          <span className="text-xs text-gray-400 mr-1">
+                            ({Number(purchaseInfo.total_weight_kg).toLocaleString("fa")} کیلو)
+                          </span>
+                        )}
+                      </span>
+                      <span className="font-bold text-brand-navy">
+                        {shippingCost.toLocaleString("fa")} تومان
+                      </span>
+                    </div>
+                  )}
+                  {discountAmount > 0 && (
+                    <div className="flex justify-between items-center text-sm text-green-700">
+                      <span>تخفیف</span>
+                      <span>-{discountAmount.toLocaleString("fa")} تومان</span>
+                    </div>
+                  )}
                   <div className="flex justify-between items-center text-sm">
                     <span className="font-bold text-brand-navy">جمع کل</span>
                     <span className="text-lg font-bold text-brand-navy">

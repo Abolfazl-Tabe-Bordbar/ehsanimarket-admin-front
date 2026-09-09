@@ -10,7 +10,7 @@ import BusinessIcon from "@mui/icons-material/Business";
 import AdUnitsIcon from "@mui/icons-material/AdUnits";
 import ManageAccountsOutlinedIcon from "@mui/icons-material/ManageAccountsOutlined";
 import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
-import { DiscountOutlined, SellOutlined, SmsOutlined, RateReviewOutlined, LocalOfferOutlined, BlockOutlined, CheckCircleOutline } from "@mui/icons-material";
+import { DiscountOutlined, SellOutlined, SmsOutlined, RateReviewOutlined, LocalOfferOutlined, BlockOutlined, CheckCircleOutline, LocalShippingOutlined } from "@mui/icons-material";
 
 export const adminNavItems = [
   {
@@ -71,6 +71,13 @@ export const adminNavItems = [
     icon: CheckCircleOutline,
   },
   {
+    href: "/p-admin/shipping-rates",
+    path: "/p-admin/shipping-rates",
+    label: "هزینه پست",
+    description: "تعریف هزینه پست بر اساس وزن برای هر شهر",
+    icon: LocalShippingOutlined,
+  },
+  {
     href: "/p-admin/users?p=1",
     path: "/p-admin/users",
     label: "کاربران سایت",
@@ -125,6 +132,13 @@ export const adminNavItems = [
     label: "تخفیف‌ها",
     description: "مدیریت کدهای تخفیف",
     icon: SellOutlined,
+  },
+  {
+    href: "/p-admin/sms-events",
+    path: "/p-admin/sms-events",
+    label: "ایونت‌های SMS",
+    description: "فعال/غیرفعال کردن پیامک‌های سیستمی",
+    icon: SmsOutlined,
   },
   {
     href: "/p-admin/system-notifications",
