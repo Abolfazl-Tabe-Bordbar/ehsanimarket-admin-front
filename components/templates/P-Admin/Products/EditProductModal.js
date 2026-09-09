@@ -17,8 +17,11 @@ import getSenfSubcategories from "@/funcs/getSenfSubcategories";
 import getBrands from "@/funcs/getBrands";
 import { useForm } from "react-hook-form";
 
-function EditProductModal({ setIsEditProductModalShow, productData }) {
-  console.log(productData);
+function EditProductModal({
+  setIsEditProductModalShow,
+  productData,
+  brands: initialBrands = [],
+}) {
   const [productImages, setProductImages] = useState([]);
   const [isProductImagesErrorShow, setIsProductImagesErrorShow] =
     useState(false);
@@ -28,7 +31,7 @@ function EditProductModal({ setIsEditProductModalShow, productData }) {
   const [isLoading, setIsLoading] = useState(false);
   const [flag, setFlag] = useState(false);
   const [senfSubcategories, setSenfSubcategories] = useState([]);
-  const [brands, setBrands] = useState([]);
+  const [brands, setBrands] = useState(initialBrands);
   const [isGetSenfSubcategoriesPending, setisGetSenfSubcategoriesPending] =
     useState(false);
   const [senfSelectBoxValue, setSenfSelectBoxValue] = useState("");
@@ -73,7 +76,11 @@ function EditProductModal({ setIsEditProductModalShow, productData }) {
           delete_images: deleteImages,
           count: data.count,
           weight_kg: data.weight_kg,
-          brand_id: data.brand_id || "",
+          brand_id:
+            data.brand_id ||
+            productData.brand_id ||
+            productData.brand?.id ||
+            "",
         },
         productData.id,
       ).then((res) => {
@@ -115,7 +122,6 @@ function EditProductModal({ setIsEditProductModalShow, productData }) {
       "weight_kg",
       Math.round(Number(productData.weight_kg ?? 0) * 1000) / 1000
     );
-    setValue("brand_id", productData.brand_id || productData.brand?.id || "");
     setProductImages(productData.images_path);
     setProductDescription(productData.description);
 
@@ -124,10 +130,17 @@ function EditProductModal({ setIsEditProductModalShow, productData }) {
       setAsnaf(res.body);
       setIsGetAsnafPending(false);
     });
-    getBrands(getCookie("ramian-pakhsh-admin")).then((res) => {
-      if (res?.status) setBrands(res.body || []);
-    });
+    if (!initialBrands.length) {
+      getBrands(getCookie("ramian-pakhsh-admin")).then((res) => {
+        if (res?.status) setBrands(res.body || []);
+      });
+    }
   }, []);
+
+  useEffect(() => {
+    const brandId = productData.brand_id ?? productData.brand?.id;
+    setValue("brand_id", brandId ? String(brandId) : "");
+  }, [brands, productData.brand_id, productData.brand?.id, setValue]);
 
   useEffect(() => {
     if (asnaf?.length) {
@@ -555,7 +568,7 @@ function EditProductModal({ setIsEditProductModalShow, productData }) {
                   >
                     <option value="">بدون برند</option>
                     {brands.map((brand) => (
-                      <option key={brand.id} value={brand.id}>
+                      <option key={brand.id} value={String(brand.id)}>
                         {brand.name}
                       </option>
                     ))}

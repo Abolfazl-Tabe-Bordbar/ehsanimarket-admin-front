@@ -123,6 +123,7 @@ function ProductsList({ data, asnaf = [], brands = [] }) {
               <ProductBox
                 key={product.id}
                 {...product}
+                brands={brands}
                 getProductsHandler={fetchProducts}
               />
             ))}

@@ -122,24 +122,40 @@ function AddProductModal({ setIsAddProductModalShow }) {
     }
   };
 
+  const validateExtraFields = () => {
+    const imagesValid = productImages.length > 0;
+    const descriptionValid = productDescription?.length >= 8;
+
+    setIsProductImagesErrorShow(!imagesValid);
+    setIsProductDescriptionErrorShow(!descriptionValid);
+
+    return imagesValid && descriptionValid;
+  };
+
   const onSubmit = (data) => {
-    if (productImages.length && productDescription?.length >= 8) {
-      setIsLoading(true);
-      createProduct({
-        name: data.name,
-        product_code: confirmedProductCode,
-        senf_id: data.subcategory || data.senf,
-        price: data.price,
-        description: productDescription,
-        features: data.features || [],
-        images: productImages,
-        count: data.count,
-        weight_kg: data.weight_kg,
-        brand_id: data.brand_id || "",
-      }).then(() => setIsLoading(false));
-    } else {
-      document.getElementById("addProductModal")?.scrollTo(0, 0);
+    if (!validateExtraFields()) {
+      document.getElementById("addProductModal")?.scrollTo({ top: 0, behavior: "smooth" });
+      return;
     }
+
+    setIsLoading(true);
+    createProduct({
+      name: data.name,
+      product_code: confirmedProductCode,
+      senf_id: data.subcategory || data.senf,
+      price: data.price,
+      description: productDescription,
+      features: data.features || [],
+      images: productImages,
+      count: data.count,
+      weight_kg: data.weight_kg,
+      brand_id: data.brand_id || "",
+    }).then(() => setIsLoading(false));
+  };
+
+  const onInvalid = () => {
+    validateExtraFields();
+    document.getElementById("addProductModal")?.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const senfChangeHandler = (value) => {
@@ -269,60 +285,100 @@ function AddProductModal({ setIsAddProductModalShow }) {
                 </div>
               </div>
 
-              <div>
-                <div>
-                  <label
-                    htmlFor="image"
-                    className="w-fit text-white bg-black text-xs md:text-sm rounded-full px-3 py-3 md:mr-4 flex items-center gap-2 cursor-pointer"
+              <div className="space-y-3 mb-6">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-sm font-bold text-brand-navy">تصاویر محصول</span>
+                  {productImages.length > 0 && (
+                    <span className="text-xs text-gray-500">
+                      {productImages.length.toLocaleString("fa-IR")} تصویر انتخاب شده
+                    </span>
+                  )}
+                </div>
+
+                {productImages.length > 0 && (
+                  <div className="flex flex-wrap gap-3">
+                    {productImages.map((image, index) => (
+                      <div
+                        key={`${image.name}-${index}`}
+                        className="relative shrink-0 rounded-xl border border-gray-200 bg-white p-2 shadow-sm"
+                      >
+                        <img
+                          src={URL.createObjectURL(image)}
+                          className="w-24 h-24 object-contain rounded-lg bg-gray-50"
+                          alt=""
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const next = productImages.filter((_, i) => i !== index);
+                            setProductImages(next);
+                            if (!next.length) setIsProductImagesErrorShow(true);
+                          }}
+                          className="absolute -top-2 -left-2 inline-flex items-center justify-center w-7 h-7 rounded-full bg-red-500 text-white shadow-md hover:bg-red-600 transition-colors"
+                          aria-label="حذف تصویر"
+                        >
+                          <DeleteOutlinedIcon sx={{ fontSize: 16 }} />
+                        </button>
+                        {index === 0 && (
+                          <span className="absolute bottom-2 right-2 text-[10px] font-medium bg-[#CA8549] text-white px-1.5 py-0.5 rounded-md">
+                            اصلی
+                          </span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <label
+                  htmlFor="image"
+                  className={`flex flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed px-4 py-8 cursor-pointer transition-colors ${
+                    isProductImagesErrorShow
+                      ? "border-red-300 bg-red-50/40 hover:border-red-400"
+                      : "border-gray-200 bg-gray-50/70 hover:border-[#CA8549]/40 hover:bg-[#CA8549]/[0.03]"
+                  }`}
+                >
+                  <div
+                    className={`flex h-12 w-12 items-center justify-center rounded-full ${
+                      isProductImagesErrorShow ? "bg-red-100" : "bg-[#CA8549]/10"
+                    }`}
                   >
-                    <AddPhotoAlternateOutlinedIcon className="text-xl md:text-2xl" />
-                    افزودن عکس محصول
-                  </label>
+                    <AddPhotoAlternateOutlinedIcon
+                      className={isProductImagesErrorShow ? "text-red-500" : "text-[#CA8549]"}
+                      sx={{ fontSize: 28 }}
+                    />
+                  </div>
+                  <span className="text-sm font-medium text-brand-navy">
+                    {productImages.length ? "افزودن تصویر دیگر" : "انتخاب تصویر محصول"}
+                  </span>
+                  <span className="text-xs text-gray-500 text-center leading-6">
+                    فرمت‌های JPG، PNG و WebP · حداقل یک تصویر الزامی است
+                  </span>
                   <input
                     type="file"
                     id="image"
                     className="hidden"
                     accept="image/*"
                     onChange={(e) => {
-                      setProductImages([...productImages, e.target.files[0]]);
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      setProductImages((prev) => [...prev, file]);
                       setIsProductImagesErrorShow(false);
+                      e.target.value = "";
                     }}
                   />
-                </div>
+                </label>
+
                 {isProductImagesErrorShow && (
-                  <p className="text-red-500 text-xs md:mr-4 mt-2">
-                    تصویر محصول اجباری است
+                  <p className="text-red-600 text-xs mr-1 bg-red-50 border border-red-100 rounded-lg px-3 py-2">
+                    لطفاً حداقل یک تصویر برای محصول انتخاب کنید.
                   </p>
                 )}
-                <div className="flex flex-wrap gap-2 mt-6 text-sm md:text-base">
-                  {productImages?.map((image, index) => (
-                    <div key={index} className="relative">
-                      <img
-                        src={URL.createObjectURL(image)}
-                        className="rounded w-[110px] h-[100px] object-contain"
-                        alt=""
-                      />
-                      <div
-                        className="text-white bg-[#C92222] bg-opacity-90 absolute bottom-3 right-1/2 translate-x-1/2 rounded-sm flex px-0.5 cursor-pointer"
-                        onClick={() => {
-                          setProductImages(
-                            productImages.filter((_, i) => i !== index)
-                          );
-                          productImages.length === 1 &&
-                            setIsProductImagesErrorShow(true);
-                        }}
-                      >
-                        حذف <DeleteOutlinedIcon className="text-base md:text-2xl" />
-                      </div>
-                    </div>
-                  ))}
-                </div>
               </div>
 
               <div className="mt-2">
                 <form
                   className="grid grid-cols-2 gap-y-4 md:gap-x-10"
-                  onSubmit={handleSubmit(onSubmit)}
+                  onSubmit={handleSubmit(onSubmit, onInvalid)}
                 >
                   <input type="hidden" {...register("product_code")} />
 
@@ -380,6 +436,11 @@ function AddProductModal({ setIsAddProductModalShow }) {
                             required: true,
                           })}
                         />
+                        {errors.features?.[index]?.name?.type === "required" && (
+                          <p className="text-red-500 text-xs mr-2">
+                            نام ویژگی اجباری است
+                          </p>
+                        )}
                       </div>
                       <div className="space-y-2 col-span-2 md:col-span-1">
                         <label
@@ -396,6 +457,11 @@ function AddProductModal({ setIsAddProductModalShow }) {
                             required: true,
                           })}
                         />
+                        {errors.features?.[index]?.value?.type === "required" && (
+                          <p className="text-red-500 text-xs mr-2">
+                            مقدار ویژگی اجباری است
+                          </p>
+                        )}
                       </div>
                       <span
                         className="absolute -bottom-6 left-0 cursor-pointer text-red-500 text-sm md:text-base"
@@ -451,11 +517,6 @@ function AddProductModal({ setIsAddProductModalShow }) {
                           </option>
                         ))}
                       </select>
-                      {errors.senf?.type === "required" && (
-                        <p className="text-red-500 text-xs mr-2">
-                          انتخاب دسته بندی اجباری است
-                        </p>
-                      )}
                       <label
                         htmlFor="senf"
                         className="absolute left-2 top-0.5 text-[#4b4b4b] -z-[1] pointer-events-none"
@@ -463,6 +524,11 @@ function AddProductModal({ setIsAddProductModalShow }) {
                         <KeyboardArrowDownOutlinedIcon fontSize="large" />
                       </label>
                     </div>
+                    {errors.senf?.type === "required" && (
+                      <p className="text-red-500 text-xs mr-2">
+                        انتخاب دسته بندی اجباری است
+                      </p>
+                    )}
                   </div>
 
                   <div className="space-y-2 col-span-2 md:col-span-1">
@@ -482,11 +548,6 @@ function AddProductModal({ setIsAddProductModalShow }) {
                           </option>
                         ))}
                       </select>
-                      {errors.subcategory?.type === "required" && (
-                        <p className="text-red-500 text-xs mr-2">
-                          انتخاب زیردسته اجباری است
-                        </p>
-                      )}
                       <label
                         htmlFor="subcategory"
                         className="absolute left-2 top-0.5 text-[#4b4b4b] -z-[1] pointer-events-none"
@@ -494,6 +555,11 @@ function AddProductModal({ setIsAddProductModalShow }) {
                         <KeyboardArrowDownOutlinedIcon fontSize="large" />
                       </label>
                     </div>
+                    {errors.subcategory?.type === "required" && (
+                      <p className="text-red-500 text-xs mr-2">
+                        انتخاب زیردسته اجباری است
+                      </p>
+                    )}
                   </div>
 
                   <div className="space-y-2 col-span-2 md:col-span-1">
@@ -539,22 +605,25 @@ function AddProductModal({ setIsAddProductModalShow }) {
                     {errors.weight_kg?.type === "required" && (
                       <p className="text-red-500 text-xs mr-2">وزن محصول اجباری است</p>
                     )}
+                    {errors.weight_kg?.type === "min" && (
+                      <p className="text-red-500 text-xs mr-2">وزن نمی‌تواند منفی باشد</p>
+                    )}
                   </div>
 
                   <div className="space-y-2 col-span-2 md:col-span-1">
                     <label htmlFor="brand_id" className="block text-sm font-bold">
-                      برند (اختیاری)
+                      برند
                     </label>
                     <div className="relative z-50">
                       <select
                         id="brand_id"
                         className="bg-transparent border rounded-full px-3 py-2 w-full text-sm text-gray-700 outline-gray-300 appearance-none"
-                        {...register("brand_id")}
                         defaultValue=""
+                        {...register("brand_id", { required: true })}
                       >
-                        <option value="">بدون برند</option>
+                        <option value="">انتخاب برند</option>
                         {brands.map((brand) => (
-                          <option key={brand.id} value={brand.id}>
+                          <option key={brand.id} value={String(brand.id)}>
                             {brand.name}
                           </option>
                         ))}
@@ -566,6 +635,9 @@ function AddProductModal({ setIsAddProductModalShow }) {
                         <KeyboardArrowDownOutlinedIcon fontSize="large" />
                       </label>
                     </div>
+                    {errors.brand_id?.type === "required" && (
+                      <p className="text-red-500 text-xs mr-2">انتخاب برند اجباری است</p>
+                    )}
                   </div>
 
                   <div className="space-y-2 col-span-2">
@@ -591,15 +663,6 @@ function AddProductModal({ setIsAddProductModalShow }) {
                     <button
                       type="submit"
                       className="bg-[#CA8549] text-white rounded-full py-2 w-3/4 md:w-2/4 block mx-auto mt-16"
-                      onClick={() => {
-                        productImages.length
-                          ? setIsProductImagesErrorShow(false)
-                          : setIsProductImagesErrorShow(true);
-
-                        productDescription?.length >= 8
-                          ? setIsProductDescriptionErrorShow(false)
-                          : setIsProductDescriptionErrorShow(true);
-                      }}
                     >
                       ثبت محصول
                     </button>
