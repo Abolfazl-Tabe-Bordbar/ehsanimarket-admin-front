@@ -29,7 +29,7 @@ function Sidebar() {
           پنل مدیریت
         </p>
       </div>
-      <nav className="admin-sidebar-scroll flex-1 overflow-y-auto px-3 py-5">
+      <nav className="admin-sidebar-scroll admin-scroll-y flex-1 overflow-y-auto px-3 py-5">
         <AdminNavList badgeCount={ordersCount} />
       </nav>
       <div className="border-t border-white/10 px-4 py-4">

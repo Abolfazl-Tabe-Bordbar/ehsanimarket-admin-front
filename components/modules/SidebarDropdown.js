@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import getCookie from "@/funcs/cookies/getCookie";
 import isLogin from "@/funcs/isLogin";
@@ -10,9 +10,10 @@ import { getNavItemByPath } from "@/components/admin/navConfig";
 
 function SidebarDropdown() {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [isOpen, setIsOpen] = useState(false);
   const [ordersCount, setOrdersCount] = useState(0);
-  const currentItem = getNavItemByPath(pathname);
+  const currentItem = getNavItemByPath(pathname, searchParams.get("stage"));
   const CurrentIcon = currentItem?.icon;
 
   useEffect(() => {

@@ -11,6 +11,7 @@ async function getUsers(token, page, limit, filters = {}) {
     if (filters.province) params.set("province", filters.province);
     if (filters.city) params.set("city", filters.city);
     if (filters.q) params.set("q", filters.q);
+    if (filters.tag_id) params.set("tag_id", filters.tag_id);
 
     const res = await fetch(`${baseUrl}/users?${params.toString()}`, {
       headers: {

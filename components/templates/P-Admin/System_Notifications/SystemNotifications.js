@@ -25,6 +25,15 @@ function SystemNotifications({ systemMessages }) {
   const productBackInStockMessage = systemMessagesData.find(
     (message) => message.tag === "product_back_in_stock"
   );
+  const orderPaidMessage = systemMessagesData.find(
+    (message) => message.tag === "order_paid"
+  );
+  const orderApprovedMessage = systemMessagesData.find(
+    (message) => message.tag === "order_approved"
+  );
+  const orderRejectedMessage = systemMessagesData.find(
+    (message) => message.tag === "order_rejected"
+  );
 
   const [loginMessageValue, setLoginMessageValue] = useState(loginMessage?.msg || "");
   const [registrationOtpMessageValue, setRegistrationOtpMessageValue] =
@@ -41,6 +50,18 @@ function SystemNotifications({ systemMessages }) {
   const [productBackInStockMessageValue, setProductBackInStockMessageValue] = useState(
     productBackInStockMessage?.msg ||
       "محصول «productName» دوباره موجود شد.\nproductUrl"
+  );
+  const [orderPaidMessageValue, setOrderPaidMessageValue] = useState(
+    orderPaidMessage?.msg ||
+      "fullname عزیز، خرید شما ثبت شد و در حال آماده‌سازی است."
+  );
+  const [orderApprovedMessageValue, setOrderApprovedMessageValue] = useState(
+    orderApprovedMessage?.msg ||
+      "fullname عزیز، سفارش orderId شما تأیید شد.\nmessage"
+  );
+  const [orderRejectedMessageValue, setOrderRejectedMessageValue] = useState(
+    orderRejectedMessage?.msg ||
+      "fullname عزیز، سفارش orderId شما رد شد.\nmessage"
   );
   const [isLoading, setIsLoading] = useState(false);
 
@@ -166,6 +187,78 @@ function SystemNotifications({ systemMessages }) {
     }
   };
 
+  const editOrderPaidMessage = () => {
+    if (!orderPaidMessageValue.trim()) {
+      Swal.fire("توجه!", "وارد کردن پیام ثبت خرید اجباری است", "warning");
+    } else if (!orderPaidMessage?.id) {
+      Swal.fire(
+        "توجه!",
+        "رکورد پیام در پایگاه داده یافت نشد. API را ری‌استارت کنید.",
+        "warning"
+      );
+    } else {
+      setIsLoading(true);
+      editSystemNotification(
+        {
+          tag: "order_paid",
+          msg_id: "order_paid",
+          msg: orderPaidMessageValue,
+        },
+        orderPaidMessage.id
+      ).then(() => {
+        setIsLoading(false);
+      });
+    }
+  };
+
+  const editOrderApprovedMessage = () => {
+    if (!orderApprovedMessageValue.trim()) {
+      Swal.fire("توجه!", "وارد کردن پیام تأیید سفارش اجباری است", "warning");
+    } else if (!orderApprovedMessage?.id) {
+      Swal.fire(
+        "توجه!",
+        "رکورد پیام در پایگاه داده یافت نشد. API را ری‌استارت کنید.",
+        "warning"
+      );
+    } else {
+      setIsLoading(true);
+      editSystemNotification(
+        {
+          tag: "order_approved",
+          msg_id: "order_approved",
+          msg: orderApprovedMessageValue,
+        },
+        orderApprovedMessage.id
+      ).then(() => {
+        setIsLoading(false);
+      });
+    }
+  };
+
+  const editOrderRejectedMessage = () => {
+    if (!orderRejectedMessageValue.trim()) {
+      Swal.fire("توجه!", "وارد کردن پیام رد سفارش اجباری است", "warning");
+    } else if (!orderRejectedMessage?.id) {
+      Swal.fire(
+        "توجه!",
+        "رکورد پیام در پایگاه داده یافت نشد. API را ری‌استارت کنید.",
+        "warning"
+      );
+    } else {
+      setIsLoading(true);
+      editSystemNotification(
+        {
+          tag: "order_rejected",
+          msg_id: "order_rejected",
+          msg: orderRejectedMessageValue,
+        },
+        orderRejectedMessage.id
+      ).then(() => {
+        setIsLoading(false);
+      });
+    }
+  };
+
   return (
     <>
       {isLoading && <Loader />}
@@ -173,7 +266,7 @@ function SystemNotifications({ systemMessages }) {
         <div>
           <h2 className="admin-section-title !border-0 !pb-0 mb-2">تنظیمات پیام‌های سیستمی</h2>
           <p className="text-sm text-gray-500">
-            سیستم دارای <b>۶ نوع پیام</b> می‌باشد. در هر بخش می‌توانید متن پیام را
+            سیستم دارای <b>۹ نوع پیام</b> می‌باشد. در هر بخش می‌توانید متن پیام را
             تنظیم کرده و از متغیرهای مشخص‌شده استفاده نمایید.
           </p>
         </div>
@@ -367,9 +460,141 @@ function SystemNotifications({ systemMessages }) {
             </div>
           </div>
 
+          <div className="rounded-2xl border border-sky-200 bg-sky-50/60 p-5">
+            <h3 className="font-semibold text-base text-sky-800 mb-2">
+              ۶. پیام ثبت خرید پس از پرداخت
+            </h3>
+
+            <p className="text-sm text-gray-600 mb-3">
+              این پیام پس از پرداخت موفق سفارش برای کاربر ارسال می‌شود.
+            </p>
+
+            <div className="text-xs bg-sky-100 text-sky-800 p-3 rounded-lg mb-3">
+              متغیرهای قابل استفاده:
+              <ul className="list-disc list-inside mt-1">
+                <li>
+                  <b>fullname</b> : نام و نام خانوادگی کاربر
+                </li>
+                <li>
+                  <b>orderId</b> : شماره سفارش
+                </li>
+                <li>
+                  <b>totalPrice</b> : مبلغ کل سفارش (تومان)
+                </li>
+              </ul>
+            </div>
+
+            <textarea
+              rows="4"
+              className="admin-input"
+              value={orderPaidMessageValue}
+              onChange={(e) => setOrderPaidMessageValue(e.target.value)}
+            />
+
+            <div className="flex justify-end mt-4">
+              <button
+                type="button"
+                className="admin-btn-accent"
+                onClick={editOrderPaidMessage}
+              >
+                ذخیره
+              </button>
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-green-200 bg-green-50/60 p-5">
+            <h3 className="font-semibold text-base text-green-800 mb-2">
+              ۷. پیام تأیید سفارش توسط مدیر
+            </h3>
+
+            <p className="text-sm text-gray-600 mb-3">
+              این پیام پس از تأیید سفارش توسط مدیر برای کاربر ارسال می‌شود.
+            </p>
+
+            <div className="text-xs bg-green-100 text-green-800 p-3 rounded-lg mb-3">
+              متغیرهای قابل استفاده:
+              <ul className="list-disc list-inside mt-1">
+                <li>
+                  <b>fullname</b> : نام و نام خانوادگی کاربر
+                </li>
+                <li>
+                  <b>orderId</b> : شماره سفارش
+                </li>
+                <li>
+                  <b>totalPrice</b> : مبلغ کل سفارش (تومان)
+                </li>
+                <li>
+                  <b>message</b> : پیامی که مدیر هنگام تأیید وارد می‌کند
+                </li>
+              </ul>
+            </div>
+
+            <textarea
+              rows="4"
+              className="admin-input"
+              value={orderApprovedMessageValue}
+              onChange={(e) => setOrderApprovedMessageValue(e.target.value)}
+            />
+
+            <div className="flex justify-end mt-4">
+              <button
+                type="button"
+                className="admin-btn-accent"
+                onClick={editOrderApprovedMessage}
+              >
+                ذخیره
+              </button>
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-rose-200 bg-rose-50/60 p-5">
+            <h3 className="font-semibold text-base text-rose-800 mb-2">
+              ۸. پیام رد سفارش توسط مدیر
+            </h3>
+
+            <p className="text-sm text-gray-600 mb-3">
+              این پیام پس از رد سفارش توسط مدیر برای کاربر ارسال می‌شود.
+            </p>
+
+            <div className="text-xs bg-rose-100 text-rose-800 p-3 rounded-lg mb-3">
+              متغیرهای قابل استفاده:
+              <ul className="list-disc list-inside mt-1">
+                <li>
+                  <b>fullname</b> : نام و نام خانوادگی کاربر
+                </li>
+                <li>
+                  <b>orderId</b> : شماره سفارش
+                </li>
+                <li>
+                  <b>totalPrice</b> : مبلغ کل سفارش (تومان)
+                </li>
+                <li>
+                  <b>message</b> : پیام دلیل رد که به کاربر نمایش داده می‌شود
+                </li>
+              </ul>
+            </div>
+
+            <textarea
+              rows="4"
+              className="admin-input"
+              value={orderRejectedMessageValue}
+              onChange={(e) => setOrderRejectedMessageValue(e.target.value)}
+            />
+
+            <div className="flex justify-end mt-4">
+              <button
+                type="button"
+                className="admin-btn-accent"
+                onClick={editOrderRejectedMessage}
+              >
+                ذخیره
+              </button>
+            </div>
+          </div>
+
           <div className="rounded-2xl border border-emerald-200 bg-emerald-50/60 p-5">
             <h3 className="font-semibold text-base text-emerald-800 mb-2">
-              ۶. پیام موجود شدن محصول
+              ۹. پیام موجود شدن محصول
             </h3>
 
             <p className="text-sm text-gray-600 mb-3">

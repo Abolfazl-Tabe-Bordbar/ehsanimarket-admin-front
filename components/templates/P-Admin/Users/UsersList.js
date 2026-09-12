@@ -6,18 +6,21 @@ import EmptyMessage from "@/components/modules/EmptyMessage";
 import AdminSearchBar from "@/components/admin/ui/AdminSearchBar";
 import { useRouter, useSearchParams } from "next/navigation";
 import getUsers from "@/funcs/getUsers";
+import getUserTags from "@/funcs/getUserTags";
 import exportUsersExcel from "@/funcs/exportUsersExcel";
 import CustomPagination from "@/components/modules/CustomPagination";
 import getCookie from "@/funcs/cookies/getCookie";
 import Loader from "@/components/modules/Loader";
 import { getCitiesByProvince, getProvinceNames } from "@/data/iranLocations";
 import { apiBaseUrl } from "@/data/variables";
+import UsersImportPanel from "./UsersImportPanel";
 
-function buildFilterQuery(province, city, q) {
+function buildFilterQuery(province, city, q, tagId) {
   const params = new URLSearchParams();
   if (province) params.set("province", province);
   if (city) params.set("city", city);
   if (q) params.set("q", q);
+  if (tagId) params.set("tag_id", tagId);
   const query = params.toString();
   return query ? `&${query}` : "";
 }
@@ -26,6 +29,7 @@ function UsersList({ data }) {
   const [shownData, setShownData] = useState(data);
   const [isLoading, setIsLoading] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [tagOptions, setTagOptions] = useState([]);
   const requestIdRef = useRef(0);
 
   const searchParams = useSearchParams();
@@ -36,6 +40,7 @@ function UsersList({ data }) {
   const provinceFilter = searchParams.get("province") || "";
   const cityFilter = searchParams.get("city") || "";
   const searchValue = searchParams.get("q") || "";
+  const tagFilter = searchParams.get("tag_id") || "";
   const [searchInput, setSearchInput] = useState(searchValue);
   const totalPages = Math.max(1, Math.ceil((shownData?.countAll || 0) / itemsPerPage));
 
@@ -45,7 +50,12 @@ function UsersList({ data }) {
     [provinceFilter]
   );
 
-  const paginationQuery = buildFilterQuery(provinceFilter, cityFilter, searchValue);
+  const paginationQuery = buildFilterQuery(
+    provinceFilter,
+    cityFilter,
+    searchValue,
+    tagFilter
+  );
 
   useEffect(() => {
     setSearchInput(searchValue);
@@ -56,8 +66,9 @@ function UsersList({ data }) {
       province: provinceFilter,
       city: cityFilter,
       q: searchValue,
+      tag_id: tagFilter,
     }),
-    [provinceFilter, cityFilter, searchValue]
+    [provinceFilter, cityFilter, searchValue, tagFilter]
   );
 
   const loadUsers = useCallback(
@@ -84,36 +95,39 @@ function UsersList({ data }) {
     [itemsPerPage]
   );
 
-  const pushFiltersToUrl = (page, province, city, q) => {
+  const pushFiltersToUrl = (page, province, city, q, tagId) => {
     const params = new URLSearchParams();
     params.set("p", String(page));
     if (province) params.set("province", province);
     if (city) params.set("city", city);
     if (q?.trim()) params.set("q", q.trim());
+    if (tagId) params.set("tag_id", tagId);
     router.push(`/p-admin/users?${params.toString()}`);
   };
 
   const updateFilter = (key, value) => {
     const nextProvince = key === "province" ? value : provinceFilter;
     const nextCity = key === "province" ? "" : key === "city" ? value : cityFilter;
+    const nextTag = key === "tag_id" ? value : tagFilter;
     const nextFilters = {
       province: nextProvince,
       city: nextCity,
       q: searchValue,
+      tag_id: nextTag,
     };
 
-    pushFiltersToUrl(1, nextProvince, nextCity, searchValue);
+    pushFiltersToUrl(1, nextProvince, nextCity, searchValue, nextTag);
     loadUsers(1, nextFilters);
   };
 
   const searchHandler = (value) => {
-    pushFiltersToUrl(1, provinceFilter, cityFilter, value.trim());
+    pushFiltersToUrl(1, provinceFilter, cityFilter, value.trim(), tagFilter);
   };
 
   const clearFilters = () => {
     setSearchInput("");
     router.push("/p-admin/users?p=1");
-    loadUsers(1, { province: "", city: "", q: "" });
+    loadUsers(1, { province: "", city: "", q: "", tag_id: "" });
   };
 
   const exportHandler = () => {
@@ -135,17 +149,25 @@ function UsersList({ data }) {
   };
 
   useEffect(() => {
+    getUserTags(getCookie("ramian-pakhsh-admin")).then((res) => {
+      if (res?.status) setTagOptions(res.body || []);
+    });
+  }, []);
+
+  useEffect(() => {
     loadUsers(currentPage, currentFilters);
   }, [currentPage, currentFilters, loadUsers]);
 
   useEffect(() => {
     const maxPage = Math.max(1, Math.ceil((shownData?.countAll || 0) / itemsPerPage));
     if ((shownData?.countAll || 0) > 0 && currentPage > maxPage) {
-      pushFiltersToUrl(maxPage, provinceFilter, cityFilter, searchValue);
+      pushFiltersToUrl(maxPage, provinceFilter, cityFilter, searchValue, tagFilter);
     }
-  }, [shownData?.countAll, currentPage, provinceFilter, cityFilter, searchValue, itemsPerPage]);
+  }, [shownData?.countAll, currentPage, provinceFilter, cityFilter, searchValue, tagFilter, itemsPerPage]);
 
-  const hasActiveFilters = Boolean(provinceFilter || cityFilter || searchValue.trim());
+  const hasActiveFilters = Boolean(
+    provinceFilter || cityFilter || searchValue.trim() || tagFilter
+  );
 
   return (
     <div className="space-y-5">
@@ -159,9 +181,11 @@ function UsersList({ data }) {
         placeholder="جستجو در نام، شماره تماس یا نام کاربری..."
       />
 
+      <UsersImportPanel onImported={() => loadUsers(currentPage, currentFilters)} />
+
       <div className="admin-section">
         <div className="flex flex-col lg:flex-row lg:items-end gap-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 flex-1">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 flex-1">
             <div>
               <label htmlFor="province-filter" className="block text-xs font-bold text-gray-600 mb-2">
                 استان
@@ -196,6 +220,25 @@ function UsersList({ data }) {
                 {cityOptions.map((city) => (
                   <option key={city} value={city}>
                     {city}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label htmlFor="tag-filter" className="block text-xs font-bold text-gray-600 mb-2">
+                تگ
+              </label>
+              <select
+                id="tag-filter"
+                className="admin-input"
+                value={tagFilter}
+                onChange={(e) => updateFilter("tag_id", e.target.value)}
+              >
+                <option value="">همه تگ‌ها</option>
+                {tagOptions.map((tag) => (
+                  <option key={tag.id} value={tag.id}>
+                    {tag.name}
                   </option>
                 ))}
               </select>

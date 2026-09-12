@@ -12,6 +12,7 @@ import { purchaseTabStatusConfig } from "@/components/templates/P-Admin/Purchase
 import { siteUrl, uploadUrl } from "@/data/variables";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import KeyboardArrowDownOutlinedIcon from "@mui/icons-material/KeyboardArrowDownOutlined";
+import UserTagsEditor from "./UserTagsEditor";
 
 const tabs = [
   { id: "info", label: "اطلاعات کاربر" },
@@ -72,6 +73,7 @@ function UserDetailMain({ userId }) {
   const [activeTab, setActiveTab] = useState("info");
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [data, setData] = useState(null);
+  const [userTags, setUserTags] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -81,6 +83,7 @@ function UserDetailMain({ userId }) {
     getUserDetail(getCookie("ramian-pakhsh-admin"), userId).then((res) => {
       if (!cancelled) {
         setData(res);
+        setUserTags(res?.body?.user?.tags || []);
         setIsLoading(false);
       }
     });
@@ -196,6 +199,25 @@ function UserDetailMain({ userId }) {
               <span>{user.post_code || "—"}</span>
             </div>
           </div>
+
+          <UserTagsEditor
+            userId={user.id}
+            initialTags={userTags}
+            onUpdated={(tags) => {
+              setUserTags(tags);
+              setData((prev) =>
+                prev?.body
+                  ? {
+                      ...prev,
+                      body: {
+                        ...prev.body,
+                        user: { ...prev.body.user, tags },
+                      },
+                    }
+                  : prev
+              );
+            }}
+          />
         </div>
       )}
 

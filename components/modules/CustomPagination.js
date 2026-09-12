@@ -5,13 +5,9 @@ import React from "react";
 
 const CustomPagination = ({ currentPage, totalPages, status = "none", extraQuery = "" }) => {
   const statusQuery =
-    status === "send"
-      ? "&status=send"
-      : status === "not-send"
-        ? "&status=not-send"
-        : status === "pending"
-          ? "&status=pending"
-          : "";
+    status && status !== "none"
+      ? `&status=${status}`
+      : "";
   const suffix = `${statusQuery}${extraQuery}`;
 
   const generatePageNumbers = () => {

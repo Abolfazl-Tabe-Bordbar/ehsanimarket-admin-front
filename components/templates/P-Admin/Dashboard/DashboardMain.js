@@ -16,9 +16,11 @@ import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import ArticleOutlinedIcon from "@mui/icons-material/ArticleOutlined";
 
 const orderStatusLabels = {
-  0: { label: "در انتظار ارسال", className: "bg-amber-100 text-amber-800" },
-  1: { label: "ارسال‌شده", className: "bg-emerald-100 text-emerald-800" },
-  2: { label: "لغو شده", className: "bg-red-100 text-red-700" },
+  0: { label: "در انتظار تایید", className: "bg-amber-100 text-amber-800" },
+  1: { label: "در حال آماده‌سازی", className: "bg-blue-100 text-blue-800" },
+  2: { label: "رد شده", className: "bg-red-100 text-red-700" },
+  3: { label: "در حال ارسال", className: "bg-indigo-100 text-indigo-800" },
+  4: { label: "ارسال شده", className: "bg-emerald-100 text-emerald-800" },
 };
 
 function formatPrice(value) {
@@ -241,14 +243,15 @@ function DashboardMain({ stats: initialStats, adminName }) {
               icon={ShoppingBasketOutlinedIcon}
             />
             <StatCard
-              title="ارسال‌شده"
-              value={stats.orders?.sent}
-              href="/p-admin/purchases?p=1&status=send"
+              title="ارسال شده"
+              value={stats.orders?.shipped ?? stats.orders?.sent}
+              href="/p-admin/purchases?p=1&status=shipped"
               accent="green"
             />
             <StatCard
               title="نظرات در انتظار"
               value={pendingComments}
+              href="/p-admin/products?p=1&pending_comments=yes"
               accent={pendingComments > 0 ? "red" : "navy"}
             />
           </div>

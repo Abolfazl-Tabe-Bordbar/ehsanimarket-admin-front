@@ -7,12 +7,19 @@ import CalendarTodayOutlinedIcon from "@mui/icons-material/CalendarTodayOutlined
 import ReceiptLongOutlinedIcon from "@mui/icons-material/ReceiptLongOutlined";
 import PersonOutlineOutlinedIcon from "@mui/icons-material/PersonOutlineOutlined";
 import LocalMallOutlinedIcon from "@mui/icons-material/LocalMallOutlined";
+import AccessTimeOutlinedIcon from "@mui/icons-material/AccessTimeOutlined";
 import CopyButton from "./CopyButton";
 import {
+  formatPurchaseDateTime,
+  formatPurchaseProcessingDuration,
   getPurchaseAdminInternalMessage,
+  getPurchaseProcessingDurationLabel,
+  getPurchaseReviewDate,
+  getPurchaseReviewDateLabel,
   getPurchaseUserMessage,
   purchaseTabStatusConfig,
 } from "./purchaseHelpers";
+import PurchaseStageTimeline from "./PurchaseStageTimeline";
 
 function PurchaseDetails({
   setIsPurchaseDetailsModalShow,
@@ -29,6 +36,7 @@ function PurchaseDetails({
   );
   const shippingCost = Number(purchaseInfo.shipping_cost || 0);
   const discountAmount = Number(purchaseInfo.discount_amount || 0);
+  const reviewDate = getPurchaseReviewDate(purchaseInfo, status);
 
   return (
     <div className="admin-modal-overlay" onClick={() => setIsPurchaseDetailsModalShow(false)}>
@@ -71,8 +79,44 @@ function PurchaseDetails({
                 <span className="font-bold text-brand-navy break-all">{paymentRef}</span>
                 <CopyButton value={paymentRef} label="شناسه پرداخت کپی شد" />
               </div>
+
+              {reviewDate ? (
+                <div
+                  className={`inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-sm ${
+                    status === "not-send"
+                      ? "border-red-100 bg-red-50/60"
+                      : "border-emerald-100 bg-emerald-50/60"
+                  }`}
+                >
+                  <CalendarTodayOutlinedIcon sx={{ fontSize: 16 }} className="text-gray-500" />
+                  <span className="text-gray-600">{getPurchaseReviewDateLabel(status)}:</span>
+                  <span className="font-bold text-brand-navy">
+                    {formatPurchaseDateTime(reviewDate)}
+                  </span>
+                </div>
+              ) : null}
+
+              <div
+                className={`inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-sm ${
+                  status === "pending"
+                    ? "border-amber-100 bg-amber-50/60"
+                    : status === "not-send"
+                      ? "border-red-100 bg-red-50/40"
+                      : "border-emerald-100 bg-emerald-50/40"
+                }`}
+              >
+                <AccessTimeOutlinedIcon sx={{ fontSize: 16 }} className="text-gray-500" />
+                <span className="text-gray-600">
+                  {getPurchaseProcessingDurationLabel(status)}:
+                </span>
+                <span className="font-bold text-brand-navy">
+                  {formatPurchaseProcessingDuration(purchaseInfo, status)}
+                </span>
+              </div>
             </div>
           </div>
+
+          <PurchaseStageTimeline purchaseInfo={purchaseInfo} />
 
           <div className="rounded-2xl border border-gray-200 bg-gradient-to-b from-gray-50 to-white p-4 md:p-5 space-y-3">
             <div className="flex flex-wrap items-center gap-2">

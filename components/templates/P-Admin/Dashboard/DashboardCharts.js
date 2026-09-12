@@ -4,6 +4,7 @@ import React from "react";
 
 const CHART_COLORS = {
   navy: "#253c8a",
+  blue: "#2563eb",
   gold: "#CA8549",
   green: "#059669",
   amber: "#d97706",
@@ -178,17 +179,27 @@ function DashboardCharts({ charts }) {
 
   const orderSegments = [
     {
-      label: "در انتظار ارسال",
+      label: "در انتظار تایید",
       value: charts.orderStatus?.pending || 0,
       color: CHART_COLORS.amber,
     },
     {
-      label: "ارسال‌شده",
-      value: charts.orderStatus?.sent || 0,
+      label: "در حال آماده‌سازی",
+      value: charts.orderStatus?.preparing || 0,
+      color: CHART_COLORS.blue,
+    },
+    {
+      label: "در حال ارسال",
+      value: charts.orderStatus?.shipping || 0,
+      color: CHART_COLORS.navy,
+    },
+    {
+      label: "ارسال شده",
+      value: charts.orderStatus?.shipped || charts.orderStatus?.sent || 0,
       color: CHART_COLORS.green,
     },
     {
-      label: "لغو شده",
+      label: "رد شده",
       value: charts.orderStatus?.cancelled || 0,
       color: CHART_COLORS.red,
     },

@@ -1,53 +1,71 @@
 import React from "react";
 import Link from "next/link";
-import SendPurchasesList from "./SendPurchasesList";
-import NotSendPurchasesList from "./NotSendPurchasesList";
-import PendingPurchasesList from "./PendingPurchasesList";
+import PurchasesList from "./PurchasesList";
+import PurchaseStatusTabs from "./PurchaseStatusTabs";
 import AdminPageShell from "@/components/admin/ui/AdminPageShell";
+import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
+import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
+import OutboxOutlinedIcon from "@mui/icons-material/OutboxOutlined";
+import BlockOutlinedIcon from "@mui/icons-material/BlockOutlined";
 
-function Main({ status, sendPurchases, notSendPurchases, pendingPurchases }) {
+const quickLinks = [
+  {
+    href: "/p-admin/approval-messages?stage=approve",
+    label: "پیام‌های تایید",
+    icon: CheckCircleOutlineIcon,
+    className: "border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100",
+  },
+  {
+    href: "/p-admin/approval-messages?stage=preparing",
+    label: "پیام‌های آماده‌سازی",
+    icon: Inventory2OutlinedIcon,
+    className: "border-sky-200 bg-sky-50 text-sky-700 hover:bg-sky-100",
+  },
+  {
+    href: "/p-admin/approval-messages?stage=shipping",
+    label: "پیام‌های ارسال",
+    icon: OutboxOutlinedIcon,
+    className: "border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100",
+  },
+  {
+    href: "/p-admin/rejection-reasons",
+    label: "دلایل رد خرید",
+    icon: BlockOutlinedIcon,
+    className: "border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100",
+  },
+];
+
+function Main({ status, purchasesByStatus = {} }) {
+  const activePurchases = purchasesByStatus[status] || purchasesByStatus.pending;
+  const tabCounts = Object.fromEntries(
+    Object.entries(purchasesByStatus).map(([key, value]) => [key, value?.countAll || 0])
+  );
+
   return (
     <AdminPageShell
       title="خریدها"
-      description="پیگیری سفارشات کاربران"
+      description="پیگیری مراحل سفارشات کاربران"
       actions={
         <div className="flex flex-wrap gap-2">
-          <Link href="/p-admin/approval-messages" className="admin-btn-secondary">
-            پیام‌های تأیید
-          </Link>
-          <Link href="/p-admin/rejection-reasons" className="admin-btn-secondary">
-            دلایل رد خرید
-          </Link>
+          {quickLinks.map((link) => {
+            const Icon = link.icon;
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-xs md:text-sm font-bold transition-colors ${link.className}`}
+              >
+                <Icon sx={{ fontSize: 16 }} />
+                {link.label}
+              </Link>
+            );
+          })}
         </div>
       }
     >
-      <div className="admin-tabs">
-        <Link
-          href="/p-admin/purchases?p=1&status=pending"
-          className={`admin-tab ${status === "pending" ? "admin-tab-active" : ""}`}
-        >
-          خریدهای جاری
-        </Link>
-        <Link
-          href="/p-admin/purchases?p=1&status=send"
-          className={`admin-tab ${status === "send" ? "admin-tab-active" : ""}`}
-        >
-          ارسال‌شده
-        </Link>
-        <Link
-          href="/p-admin/purchases?p=1&status=not-send"
-          className={`admin-tab ${status === "not-send" ? "admin-tab-active" : ""}`}
-        >
-          ارسال‌نشده
-        </Link>
-      </div>
-      {status === "send" ? (
-        <SendPurchasesList purchases={sendPurchases} />
-      ) : status === "not-send" ? (
-        <NotSendPurchasesList purchases={notSendPurchases} />
-      ) : status === "pending" ? (
-        <PendingPurchasesList purchases={pendingPurchases} />
-      ) : null}
+      <PurchaseStatusTabs status={status} counts={tabCounts} />
+
+      <PurchasesList purchases={activePurchases} tabStatus={status} />
     </AdminPageShell>
   );
 }

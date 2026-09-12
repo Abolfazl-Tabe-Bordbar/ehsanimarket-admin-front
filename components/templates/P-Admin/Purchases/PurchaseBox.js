@@ -6,16 +6,26 @@ import CalendarTodayOutlinedIcon from "@mui/icons-material/CalendarTodayOutlined
 import PaymentsOutlinedIcon from "@mui/icons-material/PaymentsOutlined";
 import ReceiptLongOutlinedIcon from "@mui/icons-material/ReceiptLongOutlined";
 import PersonOutlineOutlinedIcon from "@mui/icons-material/PersonOutlineOutlined";
+import AccessTimeOutlinedIcon from "@mui/icons-material/AccessTimeOutlined";
+import SmsOutlinedIcon from "@mui/icons-material/SmsOutlined";
 import PurchaseDetailsModal from "./PurchaseDetailsModal";
 import RejectPurchasePanel from "./RejectPurchasePanel";
 import ApprovePurchasePanel from "./ApprovePurchasePanel";
+import AdvancePurchasePanel from "./AdvancePurchasePanel";
+import { purchaseNextStepConfig } from "./purchaseHelpers";
 import Swal from "sweetalert2";
 import {
+  formatPurchaseDateTime,
+  formatPurchaseProcessingDuration,
   getPurchaseAdminInternalMessage,
+  getPurchaseProcessingDurationLabel,
+  getPurchaseReviewDate,
+  getPurchaseReviewDateLabel,
   getPurchaseUserMessage,
   purchaseTabStatusConfig,
 } from "./purchaseHelpers";
 import CopyButton from "./CopyButton";
+import PurchaseStageTimeline from "./PurchaseStageTimeline";
 
 function MetaItem({ icon: Icon, label, value, highlight = false, copyValue = null }) {
   return (
@@ -46,6 +56,7 @@ function PurchaseBox({
   getPurchasesHandler = "",
   rejectionReasons = [],
   approvalMessages = [],
+  stageMessages = [],
 }) {
   const [isPurchaseDetailsModalShow, setIsPurchaseDetailsModalShow] =
     useState(false);
@@ -70,7 +81,7 @@ function PurchaseBox({
       Swal.fire({
         icon: "warning",
         title: "پیامی برای تأیید ثبت نشده",
-        text: "ابتدا از بخش «پیام‌های تأیید سفارش» حداقل یک پیام تعریف کنید.",
+        text: "ابتدا از بخش «پیام‌های تایید» حداقل یک پیام تعریف کنید.",
         confirmButtonText: "متوجه شدم",
       });
       return;
@@ -79,11 +90,30 @@ function PurchaseBox({
     setActivePanel((current) => (current === "approve" ? null : "approve"));
   };
 
+  const openAdvancePanel = () => {
+    if (!stageMessages.length) {
+      Swal.fire({
+        icon: "warning",
+        title: "پیامی برای این مرحله ثبت نشده",
+        text:
+          status === "preparing"
+            ? "ابتدا از بخش «پیام‌های آماده‌سازی» حداقل یک پیام تعریف کنید."
+            : "ابتدا از بخش «پیام‌های ارسال» حداقل یک پیام تعریف کنید.",
+        confirmButtonText: "متوجه شدم",
+      });
+      return;
+    }
+
+    setActivePanel((current) => (current === "advance" ? null : "advance"));
+  };
+
   const statusMeta = purchaseTabStatusConfig[status] || purchaseTabStatusConfig.pending;
+  const nextStepConfig = purchaseNextStepConfig[status];
   const adminInternalMessage = getPurchaseAdminInternalMessage(purchaseInfo);
   const userMessage = getPurchaseUserMessage(purchaseInfo, status);
   const fullName = `${purchaseInfo.user.first_name} ${purchaseInfo.user.last_name}`;
   const paymentRef = purchaseInfo?.payment?.ref_id;
+  const reviewDate = getPurchaseReviewDate(purchaseInfo, status);
 
   return (
     <div className="space-y-3">
@@ -108,7 +138,11 @@ function PurchaseBox({
                 </h2>
                 {status === "pending" ? (
                   <p className="mt-1 text-xs text-gray-500">
-                    این سفارش منتظر تأیید یا رد شماست
+                    این سفارش منتظر تایید یا رد شماست
+                  </p>
+                ) : nextStepConfig ? (
+                  <p className="mt-1 text-xs text-gray-500">
+                    برای رفتن به مرحله بعد، دکمه پایین را بزنید
                   </p>
                 ) : null}
               </div>
@@ -141,7 +175,31 @@ function PurchaseBox({
                 copyValue={paymentRef}
               />
             ) : null}
+            {reviewDate ? (
+              <MetaItem
+                icon={CalendarTodayOutlinedIcon}
+                label={getPurchaseReviewDateLabel(status)}
+                value={formatPurchaseDateTime(reviewDate)}
+              />
+            ) : null}
+            <MetaItem
+              icon={AccessTimeOutlinedIcon}
+              label={getPurchaseProcessingDurationLabel(status)}
+              value={formatPurchaseProcessingDuration(purchaseInfo, status)}
+              highlight={status === "shipped" || status === "send"}
+            />
           </div>
+
+          <PurchaseStageTimeline purchaseInfo={purchaseInfo} compact />
+
+          {status === "pending" ? (
+            <div className="flex items-start gap-2 rounded-xl border border-sky-100 bg-sky-50/70 px-3 py-2.5">
+              <SmsOutlinedIcon sx={{ fontSize: 18 }} className="text-sky-600 mt-0.5 shrink-0" />
+              <p className="text-xs text-sky-800 leading-6">
+                پس از تایید یا رد، پیام به‌صورت خودکار برای کاربر ارسال می‌شود.
+              </p>
+            </div>
+          ) : null}
 
           {status === "not-send" ? (
             <div className="grid gap-2 md:grid-cols-2">
@@ -158,9 +216,7 @@ function PurchaseBox({
             </div>
           ) : status !== "pending" ? (
             <div className="rounded-xl border border-emerald-100 bg-emerald-50/60 px-3 py-3">
-              <p className="text-[11px] font-bold text-emerald-800 mb-1">
-                {status === "send" ? "پیام ارسال" : "پیام"}
-              </p>
+              <p className="text-[11px] font-bold text-emerald-800 mb-1">پیام کاربر</p>
               <p className="text-sm text-gray-700 leading-6">{userMessage}</p>
             </div>
           ) : null}
@@ -197,9 +253,17 @@ function PurchaseBox({
                   }`}
                   onClick={openApprovePanel}
                 >
-                  {activePanel === "approve" ? "بستن تأیید" : "تایید"}
+                  {activePanel === "approve" ? "بستن تایید" : "تایید"}
                 </button>
               </div>
+            ) : nextStepConfig ? (
+              <button
+                type="button"
+                className="admin-btn-primary !py-2 !px-4 text-sm"
+                onClick={openAdvancePanel}
+              >
+                {activePanel === "advance" ? "بستن" : nextStepConfig.buttonLabel}
+              </button>
             ) : null}
           </div>
         </div>
@@ -218,6 +282,16 @@ function PurchaseBox({
         <ApprovePurchasePanel
           purchaseInfo={purchaseInfo}
           approvalMessages={approvalMessages}
+          onClose={() => setActivePanel(null)}
+          onSuccess={getPurchasesHandler}
+        />
+      ) : null}
+
+      {activePanel === "advance" ? (
+        <AdvancePurchasePanel
+          purchaseInfo={purchaseInfo}
+          tabStatus={status}
+          stageMessages={stageMessages}
           onClose={() => setActivePanel(null)}
           onSuccess={getPurchasesHandler}
         />

@@ -18,16 +18,65 @@ const TAG_ORDER = [
   "user_reset_password",
   "user_login",
   "user_registration_welcome",
+  "order_paid",
+  "order_approved",
+  "order_rejected",
   "admin_product_balance",
   "product_back_in_stock",
   "article_published",
 ];
 
-function SmsEventsClient({ systemMessages }) {
-  const meta = systemMessages?.body?.meta || {};
-  const initialData = systemMessages?.body?.data || [];
+const FALLBACK_META = {
+  order_paid: {
+    title: "ثبت خرید پس از پرداخت",
+    description:
+      "اطلاع به کاربر پس از پرداخت موفق که سفارش ثبت و در حال آماده‌سازی است",
+    category: "user",
+    critical: false,
+  },
+  order_approved: {
+    title: "تأیید سفارش توسط مدیر",
+    description: "اطلاع به کاربر پس از تأیید سفارش توسط مدیر",
+    category: "user",
+    critical: false,
+  },
+  order_rejected: {
+    title: "رد سفارش توسط مدیر",
+    description: "اطلاع به کاربر پس از رد سفارش توسط مدیر",
+    category: "user",
+    critical: false,
+  },
+};
 
-  const [events, setEvents] = useState(initialData);
+function buildEventsFromResponse(systemMessages) {
+  const dbData = systemMessages?.body?.data || [];
+  const apiTags = systemMessages?.body?.tags || [];
+  const tags = [...new Set([...TAG_ORDER, ...apiTags])];
+
+  return tags.map((tag) => {
+    const existing = dbData.find((item) => item.tag === tag);
+    if (existing) return existing;
+
+    return {
+      id: null,
+      tag,
+      is_enabled: true,
+      pendingSetup: true,
+    };
+  });
+}
+
+function SmsEventsClient({ systemMessages }) {
+  const meta = {
+    ...FALLBACK_META,
+    ...(systemMessages?.body?.meta || {}),
+  };
+  const initialEvents = useMemo(
+    () => buildEventsFromResponse(systemMessages),
+    [systemMessages]
+  );
+
+  const [events, setEvents] = useState(initialEvents);
   const [loadingId, setLoadingId] = useState(null);
 
   const groupedEvents = useMemo(() => {
@@ -43,6 +92,11 @@ function SmsEventsClient({ systemMessages }) {
   }, [events, meta]);
 
   const handleToggle = async (event) => {
+    if (!event.id) {
+      alert("این رویداد هنوز در پایگاه داده ثبت نشده است. API را ری‌استارت کنید.");
+      return;
+    }
+
     const nextEnabled = !event.is_enabled;
     setLoadingId(event.id);
 
@@ -91,7 +145,7 @@ function SmsEventsClient({ systemMessages }) {
 
                 return (
                   <div
-                    key={event.id}
+                    key={event.tag}
                     className={`rounded-2xl border p-5 transition-colors ${
                       isEnabled
                         ? "border-emerald-200 bg-emerald-50/40"
@@ -122,6 +176,12 @@ function SmsEventsClient({ systemMessages }) {
                         <p className="text-sm text-gray-600 mt-1">
                           {info.description}
                         </p>
+                        {event.pendingSetup && (
+                          <p className="text-xs text-amber-700 mt-2">
+                            این رویداد هنوز در پایگاه داده ثبت نشده. API را
+                            ری‌استارت کنید.
+                          </p>
+                        )}
                       </div>
 
                       <button
@@ -129,7 +189,7 @@ function SmsEventsClient({ systemMessages }) {
                         role="switch"
                         aria-checked={isEnabled}
                         aria-label={`${isEnabled ? "غیرفعال" : "فعال"} کردن ${info.title || event.tag}`}
-                        disabled={loadingId === event.id}
+                        disabled={loadingId === event.id || event.pendingSetup}
                         onClick={() => handleToggle(event)}
                         className={`relative inline-flex h-8 w-14 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy/30 disabled:opacity-50 ${
                           isEnabled ? "bg-emerald-500" : "bg-gray-300"

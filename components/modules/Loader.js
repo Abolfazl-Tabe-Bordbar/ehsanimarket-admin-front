@@ -1,11 +1,17 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import CircularProgress from "@mui/material/CircularProgress";
 
 function Loader() {
-  if (typeof document === "undefined") return null;
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
 
   return createPortal(
     <div

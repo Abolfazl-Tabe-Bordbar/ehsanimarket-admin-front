@@ -26,9 +26,10 @@ function MessageBox(props) {
       <MessageFormPanel
         key={props.id}
         mode="edit"
+        stage={props.stage || "approve"}
         messageId={props.id}
         defaultUserMessage={props.user_message}
-        title="ویرایش پیام تأیید"
+        title="ویرایش پیام"
         submitLabel="ذخیره تغییرات"
         onClose={() => setIsEditing(false)}
         onSuccess={props.getMessagesHandler}

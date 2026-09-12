@@ -8,23 +8,28 @@ export const metadata = {
 };
 
 async function Purchases({ searchParams }) {
-  const status = (await searchParams)?.status
-    ? (await searchParams).status
-    : "pending";
+  const params = await searchParams;
+  const status = params?.status || "pending";
   const token = (await cookies()).get("ramian-pakhsh-admin")?.value;
 
-  const pendingPurchases = await getPurchases(token, 0, 5, 0);
-  const sendPurchases = await getPurchases(token, 0, 5, 1);
-  const notSendPurchases = await getPurchases(token, 0, 5, 2);
+  const [pendingPurchases, preparingPurchases, shippingPurchases, shippedPurchases, notSendPurchases] =
+    await Promise.all([
+      getPurchases(token, 0, 5, 0),
+      getPurchases(token, 0, 5, 1),
+      getPurchases(token, 0, 5, 3),
+      getPurchases(token, 0, 5, 4),
+      getPurchases(token, 0, 5, 2),
+    ]);
 
-  return (
-    <Main
-      status={status}
-      pendingPurchases={pendingPurchases}
-      sendPurchases={sendPurchases}
-      notSendPurchases={notSendPurchases}
-    />
-  );
+  const purchasesByStatus = {
+    pending: pendingPurchases,
+    preparing: preparingPurchases,
+    shipping: shippingPurchases,
+    shipped: shippedPurchases,
+    "not-send": notSendPurchases,
+  };
+
+  return <Main status={status} purchasesByStatus={purchasesByStatus} />;
 }
 
 export default Purchases;

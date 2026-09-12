@@ -20,6 +20,7 @@ async function Products({ searchParams }) {
     brand_id: params.brand || "",
     stock: params.stock || "",
     discount: params.discount || "",
+    pending_comments: params.pending_comments || "",
   };
 
   const [data, asnafData, brandsData] = await Promise.all([

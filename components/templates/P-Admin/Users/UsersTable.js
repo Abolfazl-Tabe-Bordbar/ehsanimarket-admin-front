@@ -21,6 +21,7 @@ function UsersTable({ users, startIndex = 0 }) {
             <th>آدرس</th>
             <th>کد پستی</th>
             <th>نام کاربری</th>
+            <th className="w-1">تگ‌ها</th>
             <th>تاریخ ثبت‌نام</th>
             <th>عملیات</th>
           </tr>
@@ -40,6 +41,24 @@ function UsersTable({ users, startIndex = 0 }) {
               </td>
               <td className="whitespace-nowrap">{user.post_code || "—"}</td>
               <td className="dir-ltr text-left whitespace-nowrap">{user.username}</td>
+              <td className="whitespace-nowrap">
+                <div className="flex flex-wrap gap-1">
+                  {(user.tags || []).length ? (
+                    user.tags.map((tag) => (
+                      <span
+                        key={tag.id}
+                        className="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] text-white whitespace-nowrap shrink-0"
+                        style={{ backgroundColor: tag.color }}
+                        title={tag.name}
+                      >
+                        {tag.name}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="text-gray-400 text-xs">—</span>
+                  )}
+                </div>
+              </td>
               <td className="whitespace-nowrap">
                 {new Date(user.createdAt).toLocaleDateString("fa-IR")}
               </td>

@@ -3,11 +3,12 @@
 import React from "react";
 import MessageFormPanel from "./MessageFormPanel";
 
-function AddMessagePanel({ onClose, onSuccess }) {
+function AddMessagePanel({ stage = "approve", onClose, onSuccess }) {
   return (
     <MessageFormPanel
       mode="add"
-      title="افزودن پیام تأیید"
+      stage={stage}
+      title="افزودن پیام"
       submitLabel="ثبت پیام"
       onClose={onClose}
       onSuccess={onSuccess}

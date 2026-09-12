@@ -32,6 +32,37 @@ function ProductsList({ data, asnaf = [], brands = [] }) {
     setSearchInput(searchValue);
   }, [searchValue]);
 
+  const applyPendingCommentsFilter = (res) => {
+    if (filters.pending_comments !== "yes" || !res) return res;
+
+    const sourceRows = Array.isArray(res.body?.rows)
+      ? res.body.rows
+      : Array.isArray(res.body)
+        ? res.body
+        : [];
+
+    const filteredRows = sourceRows.filter(
+      (product) => Number(product.pendingCommentsCount || 0) > 0
+    );
+
+    if (Array.isArray(res.body?.rows)) {
+      return {
+        ...res,
+        body: {
+          ...res.body,
+          rows: filteredRows,
+          count: filteredRows.length,
+        },
+      };
+    }
+
+    return {
+      ...res,
+      body: filteredRows,
+      countAll: filteredRows.length,
+    };
+  };
+
   const fetchProducts = () => {
     const page = Number(searchParams.get("p")) ? Number(searchParams.get("p")) - 1 : 0;
     const apiFilters = {
@@ -40,23 +71,32 @@ function ProductsList({ data, asnaf = [], brands = [] }) {
       brand_id: filters.brand_id,
       stock: filters.stock,
       discount: filters.discount,
+      pending_comments: filters.pending_comments,
     };
 
     if (searchValue.trim()) {
       getSearchProducts({ name: searchValue.trim() }, page, itemsPerPage, apiFilters).then(
         (res) => {
-          setShownData({
+          const nextData = applyPendingCommentsFilter({
             status: res?.status,
-            body: res?.body?.rows,
-            countAll: res?.body?.count,
+            body: {
+              rows: res?.body?.rows,
+              count: res?.body?.count,
+            },
+          });
+
+          setShownData({
+            status: nextData?.status,
+            body: nextData?.body?.rows,
+            countAll: nextData?.body?.count,
           });
         }
       );
       return;
     }
 
-    getProducts(getCookie("ramian-pakhsh-admin"), page, itemsPerPage, apiFilters).then(
-      (res) => setShownData(res)
+    getProducts(getCookie("ramian-pakhsh-admin"), page, itemsPerPage, apiFilters).then((res) =>
+      setShownData(applyPendingCommentsFilter(res))
     );
   };
 

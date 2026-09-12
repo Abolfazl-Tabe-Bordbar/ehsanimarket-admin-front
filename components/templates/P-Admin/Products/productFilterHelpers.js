@@ -1,5 +1,5 @@
 export function buildProductsFilterQuery(searchParams) {
-  const keys = ["senf", "subcategory", "brand", "stock", "discount", "q"];
+  const keys = ["senf", "subcategory", "brand", "stock", "discount", "pending_comments", "q"];
   const params = new URLSearchParams();
 
   keys.forEach((key) => {
@@ -18,6 +18,7 @@ export function getProductsFiltersFromParams(searchParams) {
     brand_id: searchParams.get("brand") || "",
     stock: searchParams.get("stock") || "",
     discount: searchParams.get("discount") || "",
+    pending_comments: searchParams.get("pending_comments") || "",
     q: searchParams.get("q") || "",
   };
 }
@@ -29,6 +30,7 @@ export function hasActiveProductFilters(filters) {
       filters.brand_id ||
       filters.stock ||
       filters.discount ||
+      filters.pending_comments ||
       filters.q
   );
 }
@@ -41,6 +43,7 @@ export function buildProductsApiQuery(filters = {}) {
   if (filters.brand_id) params.set("brand_id", filters.brand_id);
   if (filters.stock) params.set("stock", filters.stock);
   if (filters.discount) params.set("discount", filters.discount);
+  if (filters.pending_comments) params.set("pending_comments", filters.pending_comments);
 
   return params.toString();
 }

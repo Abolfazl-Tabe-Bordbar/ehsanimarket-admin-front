@@ -9,6 +9,7 @@ import editApprovalMessage from "@/funcs/editApprovalMessage";
 
 function MessageFormPanel({
   mode = "add",
+  stage = "approve",
   messageId,
   defaultUserMessage = "",
   title,
@@ -28,7 +29,10 @@ function MessageFormPanel({
   });
 
   const onSubmit = (data) => {
-    const payload = { user_message: data.user_message?.trim() };
+    const payload = {
+      user_message: data.user_message?.trim(),
+      stage,
+    };
 
     setIsLoading(true);
     const request =

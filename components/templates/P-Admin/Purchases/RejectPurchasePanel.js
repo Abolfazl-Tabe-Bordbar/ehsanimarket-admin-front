@@ -5,6 +5,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import BlockOutlinedIcon from "@mui/icons-material/BlockOutlined";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import StorefrontOutlinedIcon from "@mui/icons-material/StorefrontOutlined";
+import SmsOutlinedIcon from "@mui/icons-material/SmsOutlined";
 import changePurchaseStatus from "@/funcs/changePurchaseStatus";
 import Loader from "@/components/modules/Loader";
 
@@ -56,6 +57,10 @@ function RejectPurchasePanel({
               </h3>
               <p className="mt-1 text-xs md:text-sm text-gray-500 leading-6">
                 برای هر دلیل، پیام داخلی و پیام کاربر جداگانه ثبت شده است.
+              </p>
+              <p className="mt-2 inline-flex items-center gap-1.5 rounded-lg border border-sky-100 bg-sky-50/80 px-2.5 py-1.5 text-[11px] md:text-xs text-sky-800 leading-5">
+                <SmsOutlinedIcon sx={{ fontSize: 15 }} />
+                پس از تایید یا رد، پیام به‌صورت خودکار برای کاربر ارسال می‌شود.
               </p>
             </div>
           </div>

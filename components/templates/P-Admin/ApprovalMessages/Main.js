@@ -1,14 +1,36 @@
 import React from "react";
+import Link from "next/link";
 import AdminPageShell from "@/components/admin/ui/AdminPageShell";
 import ApprovalMessagesClient from "./ApprovalMessagesClient";
+import { orderMessageStageConfig } from "../Purchases/purchaseHelpers";
 
-function Main({ data }) {
+const tabs = [
+  { key: "approve", label: "تایید" },
+  { key: "preparing", label: "آماده‌سازی" },
+  { key: "shipping", label: "ارسال" },
+];
+
+function Main({ data, stage = "approve" }) {
+  const stageConfig = orderMessageStageConfig[stage] || orderMessageStageConfig.approve;
+
   return (
     <AdminPageShell
-      title="پیام‌های تأیید سفارش"
-      description="تعریف پیام‌های آماده برای تأیید سفارشات پرداخت‌شده"
+      title={stageConfig.title}
+      description={stageConfig.description}
     >
-      <ApprovalMessagesClient data={data} />
+      <div className="admin-tabs flex-wrap mb-4">
+        {tabs.map((tab) => (
+          <Link
+            key={tab.key}
+            href={`/p-admin/approval-messages?stage=${tab.key}`}
+            className={`admin-tab ${stage === tab.key ? "admin-tab-active" : ""}`}
+          >
+            {tab.label}
+          </Link>
+        ))}
+      </div>
+
+      <ApprovalMessagesClient data={data} stage={stage} />
     </AdminPageShell>
   );
 }

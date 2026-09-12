@@ -15,6 +15,7 @@ function ProductFilters({ asnaf = [], brands = [] }) {
   const selectedBrand = searchParams.get("brand") || "";
   const selectedStock = searchParams.get("stock") || "";
   const selectedDiscount = searchParams.get("discount") || "";
+  const pendingCommentsOnly = searchParams.get("pending_comments") === "yes";
 
   useEffect(() => {
     if (!selectedSenf) {
@@ -55,10 +56,25 @@ function ProductFilters({ asnaf = [], brands = [] }) {
     selectedSubcategory ||
     selectedBrand ||
     selectedStock ||
-    selectedDiscount;
+    selectedDiscount ||
+    pendingCommentsOnly;
 
   return (
     <div className="rounded-2xl border border-gray-200 bg-white p-4 md:p-5 space-y-4">
+      {pendingCommentsOnly && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-red-200 bg-red-50/70 px-3 py-2.5">
+          <p className="text-sm text-red-700 font-medium">
+            فقط محصولات دارای نظر تایید‌نشده نمایش داده می‌شوند
+          </p>
+          <button
+            type="button"
+            onClick={() => updateFilters({ pending_comments: "" })}
+            className="text-xs text-red-600 hover:text-red-800 font-medium"
+          >
+            حذف فیلتر
+          </button>
+        </div>
+      )}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-3">
         <div className="space-y-1.5">
           <label htmlFor="filter-senf" className="block text-xs font-bold text-gray-600">

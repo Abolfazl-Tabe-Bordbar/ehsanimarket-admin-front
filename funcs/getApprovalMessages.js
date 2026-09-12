@@ -1,9 +1,10 @@
 import { TopRightToast } from "@/components/modules/Toast";
 import { baseUrl } from "@/data/variables";
 
-async function getApprovalMessages(token) {
+async function getApprovalMessages(token, stage = "") {
   try {
-    const res = await fetch(`${baseUrl}/order-approval-messages`, {
+    const query = stage ? `?stage=${encodeURIComponent(stage)}` : "";
+    const res = await fetch(`${baseUrl}/order-approval-messages${query}`, {
       headers: {
         cookies: token,
       },

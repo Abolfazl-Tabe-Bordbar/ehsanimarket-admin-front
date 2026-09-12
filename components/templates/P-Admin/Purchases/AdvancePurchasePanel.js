@@ -2,29 +2,34 @@
 
 import React, { useState } from "react";
 import CloseIcon from "@mui/icons-material/Close";
-import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
+import ArrowBackOutlinedIcon from "@mui/icons-material/ArrowBackOutlined";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import SmsOutlinedIcon from "@mui/icons-material/SmsOutlined";
 import changePurchaseStatus from "@/funcs/changePurchaseStatus";
 import Loader from "@/components/modules/Loader";
+import { purchaseNextStepConfig } from "./purchaseHelpers";
 
-function ApprovePurchasePanel({
+function AdvancePurchasePanel({
   purchaseInfo,
-  approvalMessages = [],
+  tabStatus,
+  stageMessages = [],
   onClose,
   onSuccess,
 }) {
+  const stepConfig = purchaseNextStepConfig[tabStatus];
   const [selectedMessageId, setSelectedMessageId] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const selectedMessage = approvalMessages.find(
+  if (!stepConfig) return null;
+
+  const selectedMessage = stageMessages.find(
     (message) => String(message.id) === String(selectedMessageId)
   );
 
   const handleSubmit = () => {
     if (!selectedMessage) {
-      setError("لطفاً یکی از پیام‌های تأیید را انتخاب کنید.");
+      setError("لطفاً یکی از پیام‌ها را انتخاب کنید.");
       return;
     }
 
@@ -33,7 +38,7 @@ function ApprovePurchasePanel({
     changePurchaseStatus({
       orderId: purchaseInfo.id,
       message: selectedMessage.user_message,
-      new_order_status: 1,
+      new_order_status: stepConfig.nextStatus,
     }).then(() => {
       setIsLoading(false);
       onSuccess?.();
@@ -44,26 +49,22 @@ function ApprovePurchasePanel({
   return (
     <>
       {isLoading && <Loader />}
-      <div className="mt-3 rounded-2xl border border-emerald-100 bg-gradient-to-b from-emerald-50/80 to-white p-4 md:p-5 shadow-sm">
+      <div className="mt-3 rounded-2xl border border-brand-navy/10 bg-gradient-to-b from-brand-navy/[0.04] to-white p-4 md:p-5 shadow-sm">
         <div className="flex items-start justify-between gap-3 mb-4">
           <div className="flex items-start gap-3 min-w-0">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700">
-              <CheckCircleOutlineIcon fontSize="small" />
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-navy/10 text-brand-navy">
+              <ArrowBackOutlinedIcon fontSize="small" />
             </div>
             <div className="min-w-0">
               <h3 className="text-sm md:text-base font-bold text-brand-navy">
-                پیام تأیید را انتخاب کنید
+                {stepConfig.title}
               </h3>
               <p className="mt-1 text-xs md:text-sm text-gray-500 leading-6">
-                این پیام در پنل سفارشات{" "}
-                <span className="font-bold text-gray-700">
-                  {purchaseInfo.user.first_name} {purchaseInfo.user.last_name}
-                </span>{" "}
-                نمایش داده می‌شود.
+                {stepConfig.description}
               </p>
               <p className="mt-2 inline-flex items-center gap-1.5 rounded-lg border border-sky-100 bg-sky-50/80 px-2.5 py-1.5 text-[11px] md:text-xs text-sky-800 leading-5">
                 <SmsOutlinedIcon sx={{ fontSize: 15 }} />
-                پس از تایید، پیام آماده‌سازی به‌صورت خودکار برای کاربر ارسال می‌شود.
+                پس از تأیید این مرحله، پیام به‌صورت خودکار برای کاربر ارسال می‌شود.
               </p>
             </div>
           </div>
@@ -78,7 +79,7 @@ function ApprovePurchasePanel({
         </div>
 
         <div className="grid gap-2 sm:grid-cols-2">
-          {approvalMessages.map((message) => {
+          {stageMessages.map((message) => {
             const isSelected = String(selectedMessageId) === String(message.id);
 
             return (
@@ -91,15 +92,15 @@ function ApprovePurchasePanel({
                 }}
                 className={`rounded-xl border px-4 py-3 text-right transition-all ${
                   isSelected
-                    ? "border-emerald-300 bg-white shadow-sm ring-2 ring-emerald-200"
-                    : "border-gray-200 bg-white/80 hover:border-emerald-200 hover:bg-white"
+                    ? "border-brand-navy/30 bg-white shadow-sm ring-2 ring-brand-navy/10"
+                    : "border-gray-200 bg-white/80 hover:border-brand-navy/20 hover:bg-white"
                 }`}
               >
                 <div className="flex items-start gap-3">
                   <span
                     className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border ${
                       isSelected
-                        ? "border-emerald-500 bg-emerald-500"
+                        ? "border-brand-navy bg-brand-navy"
                         : "border-gray-300 bg-white"
                     }`}
                   >
@@ -133,10 +134,10 @@ function ApprovePurchasePanel({
         <div className="mt-4 flex flex-wrap items-center gap-2">
           <button
             type="button"
-            className="admin-btn !bg-[#004B8F] !text-white hover:!bg-[#00386b] !py-2 !px-5 text-sm"
+            className="admin-btn-primary !py-2 !px-5 text-sm"
             onClick={handleSubmit}
           >
-            تایید و شروع آماده‌سازی
+            {stepConfig.buttonLabel}
           </button>
           <button
             type="button"
@@ -151,4 +152,4 @@ function ApprovePurchasePanel({
   );
 }
 
-export default ApprovePurchasePanel;
+export default AdvancePurchasePanel;
