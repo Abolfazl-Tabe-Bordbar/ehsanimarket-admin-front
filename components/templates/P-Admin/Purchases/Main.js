@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Suspense } from "react";
 import Link from "next/link";
 import PurchasesList from "./PurchasesList";
 import PurchaseStatusTabs from "./PurchaseStatusTabs";
@@ -65,7 +65,15 @@ function Main({ status, purchasesByStatus = {} }) {
     >
       <PurchaseStatusTabs status={status} counts={tabCounts} />
 
-      <PurchasesList purchases={activePurchases} tabStatus={status} />
+      <Suspense
+        fallback={
+          <div className="mt-6 rounded-2xl border border-gray-200 bg-white p-8 text-center text-sm text-gray-500">
+            در حال بارگذاری سفارش‌ها...
+          </div>
+        }
+      >
+        <PurchasesList purchases={activePurchases} tabStatus={status} />
+      </Suspense>
     </AdminPageShell>
   );
 }

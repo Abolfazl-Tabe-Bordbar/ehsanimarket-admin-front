@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { adminNavGroups } from "../navConfig";
@@ -17,7 +18,7 @@ function isNavItemActive(item, pathname, stage) {
   return true;
 }
 
-function AdminNavList({ badgeCount = 0, onNavigate, className = "" }) {
+function AdminNavListContent({ badgeCount = 0, onNavigate, className = "" }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const stage = searchParams.get("stage");
@@ -57,6 +58,31 @@ function AdminNavList({ badgeCount = 0, onNavigate, className = "" }) {
         </section>
       ))}
     </div>
+  );
+}
+
+function AdminNavListFallback({ className = "" }) {
+  return (
+    <div className={`space-y-5 ${className}`.trim()}>
+      {[1, 2, 3].map((group) => (
+        <div key={group} className="space-y-2">
+          <div className="mx-3 h-3 w-16 rounded bg-white/10" />
+          <div className="space-y-1">
+            {[1, 2].map((item) => (
+              <div key={item} className="mx-1 h-10 rounded-xl bg-white/5" />
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function AdminNavList(props) {
+  return (
+    <Suspense fallback={<AdminNavListFallback className={props.className} />}>
+      <AdminNavListContent {...props} />
+    </Suspense>
   );
 }
 

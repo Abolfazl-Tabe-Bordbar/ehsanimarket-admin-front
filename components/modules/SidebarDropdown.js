@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import getCookie from "@/funcs/cookies/getCookie";
@@ -8,7 +8,7 @@ import isLogin from "@/funcs/isLogin";
 import AdminNavList from "@/components/admin/ui/AdminNavList";
 import { getNavItemByPath } from "@/components/admin/navConfig";
 
-function SidebarDropdown() {
+function SidebarDropdownContent() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [isOpen, setIsOpen] = useState(false);
@@ -61,6 +61,22 @@ function SidebarDropdown() {
         </div>
       </div>
     </div>
+  );
+}
+
+function SidebarDropdownFallback() {
+  return (
+    <div className="md:hidden px-4 pt-4">
+      <div className="h-14 rounded-2xl bg-brand-navy/20 animate-pulse" />
+    </div>
+  );
+}
+
+function SidebarDropdown() {
+  return (
+    <Suspense fallback={<SidebarDropdownFallback />}>
+      <SidebarDropdownContent />
+    </Suspense>
   );
 }
 
