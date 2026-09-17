@@ -79,7 +79,7 @@ const aboutItems = [
     inputType: "textarea",
     rows: 5,
   },
-  { type: "divider", label: "بنر و تماس" },
+  { type: "divider", label: "بنر صفحه درباره ما" },
   {
     type: "image",
     key: "about_image_banner",
@@ -91,6 +91,28 @@ const aboutItems = [
     key: "about_image_cta",
     label: "تصویر بخش تماس (CTA)",
     fallback: "/images/contact-us.jpg",
+  },
+];
+
+const contactBannerItems = [
+  { type: "divider", label: "بنر تماس صفحه اصلی" },
+  {
+    type: "image",
+    key: "contact_banner_mobile",
+    label: "بنر تماس — موبایل",
+    fallback: "/images/contact-banner-mobile.jpg",
+  },
+  {
+    type: "image",
+    key: "contact_banner_tablet",
+    label: "بنر تماس — تبلت",
+    fallback: "/images/contact-banner-tablet.jpg",
+  },
+  {
+    type: "image",
+    key: "contact_banner_laptop",
+    label: "بنر تماس — دسکتاپ",
+    fallback: "/images/contact-banner-desktop.jpg",
   },
 ];
 
@@ -285,6 +307,36 @@ function SiteSettingsMain({ initialSettings }) {
                 field={item}
                 form={form}
                 onChange={handleChange}
+              />
+            );
+          })}
+        </section>
+
+        <section className="admin-section">
+          <SectionHeader title="بنر تماس" showSave isLoading={isLoading} />
+          <p className="text-xs leading-6 text-gray-500">
+            برای هر دستگاه یک تصویر جداگانه بارگذاری کنید. این بنر در صفحه اصلی نمایش داده
+            می‌شود.
+          </p>
+          {contactBannerItems.map((item) => {
+            if (item.type === "divider") {
+              return (
+                <p
+                  key={item.label}
+                  className="text-xs font-bold text-[#CA8549] pt-2 border-t border-gray-100"
+                >
+                  {item.label}
+                </p>
+              );
+            }
+
+            return (
+              <ImageField
+                key={item.key}
+                item={item}
+                form={form}
+                previewMap={previewMap}
+                onImageChange={handleImageChange}
               />
             );
           })}

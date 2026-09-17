@@ -28,6 +28,9 @@ const IMAGE_FIELDS = [
   "about_image_section_2",
   "about_image_banner",
   "about_image_cta",
+  "contact_banner_mobile",
+  "contact_banner_tablet",
+  "contact_banner_laptop",
 ];
 
 async function updateSiteSettings(settingsData, imageFiles = {}) {
