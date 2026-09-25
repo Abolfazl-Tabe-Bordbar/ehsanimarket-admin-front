@@ -1,3 +1,24 @@
+export function getFestivalTagsForPurchase(purchaseInfo) {
+  if (Array.isArray(purchaseInfo?.festivalTags) && purchaseInfo.festivalTags.length) {
+    return purchaseInfo.festivalTags.filter((tag) => tag?.id != null && tag?.name);
+  }
+
+  let raw = purchaseInfo?.festival_tags;
+  if (typeof raw === "string") {
+    try {
+      raw = JSON.parse(raw);
+    } catch {
+      raw = null;
+    }
+  }
+
+  if (!Array.isArray(raw)) return [];
+
+  return raw
+    .filter((tag) => tag?.id != null && tag?.name)
+    .map((tag) => ({ id: Number(tag.id), name: String(tag.name) }));
+}
+
 export const purchaseTabStatusConfig = {
   pending: {
     label: "در انتظار تایید",

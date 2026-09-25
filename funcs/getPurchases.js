@@ -12,6 +12,7 @@ async function getPurchases(token, page, limit, statusAfterPaid, rejectionReason
       headers: {
         cookies: token,
       },
+      cache: "no-store",
     });
     const resData = await res.json();
 

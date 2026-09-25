@@ -14,14 +14,15 @@ import ApprovePurchasePanel from "./ApprovePurchasePanel";
 import AdvancePurchasePanel from "./AdvancePurchasePanel";
 import { purchaseNextStepConfig } from "./purchaseHelpers";
 import Swal from "sweetalert2";
+import PurchaseProcessingDurationValue from "./PurchaseProcessingDurationValue";
 import {
   formatPurchaseDateTime,
-  formatPurchaseProcessingDuration,
   getPurchaseAdminInternalMessage,
   getPurchaseProcessingDurationLabel,
   getPurchaseReviewDate,
   getPurchaseReviewDateLabel,
   getPurchaseUserMessage,
+  getFestivalTagsForPurchase,
   purchaseTabStatusConfig,
 } from "./purchaseHelpers";
 import CopyButton from "./CopyButton";
@@ -155,7 +156,7 @@ function PurchaseBox({
               >
                 {statusMeta.label}
               </span>
-              <FestivalPurchaseTag festivalTags={purchaseInfo.festivalTags} />
+              <FestivalPurchaseTag festivalTags={getFestivalTagsForPurchase(purchaseInfo)} />
             </div>
           </div>
 
@@ -189,7 +190,9 @@ function PurchaseBox({
             <MetaItem
               icon={AccessTimeOutlinedIcon}
               label={getPurchaseProcessingDurationLabel(status)}
-              value={formatPurchaseProcessingDuration(purchaseInfo, status)}
+              value={
+                <PurchaseProcessingDurationValue purchaseInfo={purchaseInfo} tabStatus={status} />
+              }
               highlight={status === "shipped" || status === "send"}
             />
           </div>

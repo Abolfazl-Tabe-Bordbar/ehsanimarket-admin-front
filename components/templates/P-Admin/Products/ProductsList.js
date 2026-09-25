@@ -14,6 +14,7 @@ import {
   getProductsFiltersFromParams,
   hasActiveProductFilters,
 } from "./productFilterHelpers";
+import ProductInventoryImportPanel from "./ProductInventoryImportPanel";
 
 function ProductsList({ data, asnaf = [], brands = [] }) {
   const [shownData, setShownData] = useState(data);
@@ -135,6 +136,8 @@ function ProductsList({ data, asnaf = [], brands = [] }) {
 
   return (
     <div className="my-6 space-y-6">
+      <ProductInventoryImportPanel onImported={fetchProducts} />
+
       <ProductFilters asnaf={asnaf} brands={brands} />
 
       <AdminSearchBar

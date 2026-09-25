@@ -9,14 +9,15 @@ import PersonOutlineOutlinedIcon from "@mui/icons-material/PersonOutlineOutlined
 import LocalMallOutlinedIcon from "@mui/icons-material/LocalMallOutlined";
 import AccessTimeOutlinedIcon from "@mui/icons-material/AccessTimeOutlined";
 import CopyButton from "./CopyButton";
+import PurchaseProcessingDurationValue from "./PurchaseProcessingDurationValue";
 import {
   formatPurchaseDateTime,
-  formatPurchaseProcessingDuration,
   getPurchaseAdminInternalMessage,
   getPurchaseProcessingDurationLabel,
   getPurchaseReviewDate,
   getPurchaseReviewDateLabel,
   getPurchaseUserMessage,
+  getFestivalTagsForPurchase,
   purchaseTabStatusConfig,
 } from "./purchaseHelpers";
 import PurchaseStageTimeline from "./PurchaseStageTimeline";
@@ -64,7 +65,7 @@ function PurchaseDetails({
                 {purchaseInfo.user.first_name} {purchaseInfo.user.last_name}
               </p>
               <div className="mt-2">
-                <FestivalPurchaseTag festivalTags={purchaseInfo.festivalTags} />
+                <FestivalPurchaseTag festivalTags={getFestivalTagsForPurchase(purchaseInfo)} />
               </div>
             </div>
 
@@ -114,7 +115,7 @@ function PurchaseDetails({
                   {getPurchaseProcessingDurationLabel(status)}:
                 </span>
                 <span className="font-bold text-brand-navy">
-                  {formatPurchaseProcessingDuration(purchaseInfo, status)}
+                  <PurchaseProcessingDurationValue purchaseInfo={purchaseInfo} tabStatus={status} />
                 </span>
               </div>
             </div>
