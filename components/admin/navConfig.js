@@ -21,6 +21,7 @@ import {
   LocalShippingOutlined,
   LabelOutlined,
   SendOutlined,
+  CelebrationOutlined,
   Inventory2Outlined,
   OutboxOutlined,
 } from "@mui/icons-material";
@@ -197,6 +198,13 @@ export const adminNavGroups = [
     id: "discounts",
     title: "تخفیف",
     items: [
+      {
+        href: "/p-admin/festivals",
+        path: "/p-admin/festivals",
+        label: "جشنواره",
+        description: "جشنواره ارسال رایگان بر اساس شهر و مبلغ سبد",
+        icon: CelebrationOutlined,
+      },
       {
         href: "/p-admin/discount-plans",
         path: "/p-admin/discount-plans",

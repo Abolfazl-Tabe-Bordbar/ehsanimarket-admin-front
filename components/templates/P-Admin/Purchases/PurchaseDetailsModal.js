@@ -20,6 +20,7 @@ import {
   purchaseTabStatusConfig,
 } from "./purchaseHelpers";
 import PurchaseStageTimeline from "./PurchaseStageTimeline";
+import FestivalPurchaseTag from "./FestivalPurchaseTag";
 
 function PurchaseDetails({
   setIsPurchaseDetailsModalShow,
@@ -62,6 +63,9 @@ function PurchaseDetails({
               <p className="mt-1 text-sm text-gray-500">
                 {purchaseInfo.user.first_name} {purchaseInfo.user.last_name}
               </p>
+              <div className="mt-2">
+                <FestivalPurchaseTag festivalTags={purchaseInfo.festivalTags} />
+              </div>
             </div>
 
             <div className="flex flex-wrap gap-3">

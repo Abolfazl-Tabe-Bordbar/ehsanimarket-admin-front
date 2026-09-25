@@ -26,6 +26,7 @@ import {
 } from "./purchaseHelpers";
 import CopyButton from "./CopyButton";
 import PurchaseStageTimeline from "./PurchaseStageTimeline";
+import FestivalPurchaseTag from "./FestivalPurchaseTag";
 
 function MetaItem({ icon: Icon, label, value, highlight = false, copyValue = null }) {
   return (
@@ -148,11 +149,14 @@ function PurchaseBox({
               </div>
             </div>
 
-            <span
-              className={`inline-flex items-center self-start rounded-full border px-3 py-1 text-xs font-medium ${statusMeta.className}`}
-            >
-              {statusMeta.label}
-            </span>
+            <div className="flex flex-col items-end gap-2 self-start">
+              <span
+                className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium ${statusMeta.className}`}
+              >
+                {statusMeta.label}
+              </span>
+              <FestivalPurchaseTag festivalTags={purchaseInfo.festivalTags} />
+            </div>
           </div>
 
           <div className="flex flex-wrap gap-2">

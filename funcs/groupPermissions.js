@@ -11,11 +11,13 @@ const PERMISSION_GROUPS = {
   articles: { label: "مقالات", order: 9 },
   testimonials: { label: "نظرات مشتریان", order: 10 },
   brands: { label: "برندها", order: 11 },
-  user: { label: "تگ و پیامک کاربران", order: 12 },
+  festivals: { label: "جشنواره", order: 12 },
+  user: { label: "تگ و پیامک کاربران", order: 13 },
 };
 
 export function getPermissionGroupKey(name = "") {
   if (name.startsWith("discount_plans")) return "discount_plans";
+  if (name.startsWith("festivals")) return "festivals";
   if (name.startsWith("user_tags") || name.startsWith("user_sms")) return "user";
   const prefix = name.split("_")[0];
   return PERMISSION_GROUPS[prefix] ? prefix : "other";

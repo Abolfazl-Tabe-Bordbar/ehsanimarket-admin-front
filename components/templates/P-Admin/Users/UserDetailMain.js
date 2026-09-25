@@ -13,6 +13,7 @@ import { siteUrl, uploadUrl } from "@/data/variables";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import KeyboardArrowDownOutlinedIcon from "@mui/icons-material/KeyboardArrowDownOutlined";
 import UserTagsEditor from "./UserTagsEditor";
+import FestivalPurchaseTag from "@/components/templates/P-Admin/Purchases/FestivalPurchaseTag";
 
 const tabs = [
   { id: "info", label: "اطلاعات کاربر" },
@@ -253,6 +254,7 @@ function UserDetailMain({ userId }) {
                     >
                       {statusBadge.label}
                     </span>
+                    <FestivalPurchaseTag festivalTags={order.festivalTags} />
                   </div>
 
                   {canShowDetails ? (
