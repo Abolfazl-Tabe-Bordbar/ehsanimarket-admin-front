@@ -7,16 +7,30 @@ import CategoryOutlinedIcon from "@mui/icons-material/CategoryOutlined";
 import EditSenfModal from "./EditSenfModal";
 import deleteSenf from "@/funcs/deleteSenf";
 import Loader from "@/components/modules/Loader";
+import Swal from "sweetalert2";
 
 function SenfBox(props) {
   const [isEditSenfModalShow, setIsEditSenfModalShow] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   const deleteSenfHandler = () => {
-    setIsLoading(true);
-    deleteSenf(props.id).then(() => {
-      setIsLoading(false);
-      props.getAsnafHandler();
+    Swal.fire({
+      title: "حذف دسته‌بندی",
+      html: `با حذف <strong>${props.name}</strong>، تمام محصولات وابسته به این دسته‌بندی نیز حذف می‌شوند.<br/>این عمل قابل بازگشت نیست.`,
+      icon: "warning",
+      showCancelButton: true,
+      cancelButtonText: "لغو",
+      confirmButtonText: "بله، حذف شود",
+      confirmButtonColor: "#F51313",
+      focusCancel: true,
+    }).then((result) => {
+      if (!result.isConfirmed) return;
+
+      setIsLoading(true);
+      deleteSenf(props.id).then(() => {
+        setIsLoading(false);
+        props.getAsnafHandler();
+      });
     });
   };
 

@@ -7,6 +7,7 @@ import FolderOutlinedIcon from "@mui/icons-material/FolderOutlined";
 import Loader from "@/components/modules/Loader";
 import deleteSubcategory from "@/funcs/deleteSubcategory";
 import EditSubcategoryModal from "./EditSubcategoryModal";
+import Swal from "sweetalert2";
 
 function SubcategoryBox(props) {
   const [isEditSubcategoryModalShow, setIsEditSubcategoryModalShow] =
@@ -14,10 +15,23 @@ function SubcategoryBox(props) {
   const [isLoading, setIsLoading] = useState(false);
 
   const deleteSubcategoryHandler = () => {
-    setIsLoading(true);
-    deleteSubcategory(props.id).then(() => {
-      setIsLoading(false);
-      props.getSubcategoriesHandler();
+    Swal.fire({
+      title: "حذف زیردسته",
+      html: `با حذف <strong>${props.name}</strong>، تمام محصولات وابسته به این زیردسته نیز حذف می‌شوند.<br/>این عمل قابل بازگشت نیست.`,
+      icon: "warning",
+      showCancelButton: true,
+      cancelButtonText: "لغو",
+      confirmButtonText: "بله، حذف شود",
+      confirmButtonColor: "#F51313",
+      focusCancel: true,
+    }).then((result) => {
+      if (!result.isConfirmed) return;
+
+      setIsLoading(true);
+      deleteSubcategory(props.id).then(() => {
+        setIsLoading(false);
+        props.getSubcategoriesHandler();
+      });
     });
   };
 
