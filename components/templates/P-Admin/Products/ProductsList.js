@@ -1,20 +1,22 @@
 "use client";
+
 import React, { useEffect, useState } from "react";
-import ProductBox from "./ProductBox";
-import ProductFilters from "./ProductFilters";
-import CustomPagination from "@/components/modules/CustomPagination";
-import EmptyMessage from "@/components/modules/EmptyMessage";
-import AdminSearchBar from "@/components/admin/ui/AdminSearchBar";
-import getProducts from "@/funcs/getProducts";
-import { useSearchParams, useRouter } from "next/navigation";
-import getCookie from "@/funcs/cookies/getCookie";
-import getSearchProducts from "@/funcs/getSearchProducts";
 import {
   buildProductsFilterQuery,
   getProductsFiltersFromParams,
   hasActiveProductFilters,
 } from "./productFilterHelpers";
+import { useRouter, useSearchParams } from "next/navigation";
+
+import AdminSearchBar from "@/components/admin/ui/AdminSearchBar";
+import CustomPagination from "@/components/modules/CustomPagination";
+import EmptyMessage from "@/components/modules/EmptyMessage";
+import ProductBox from "./ProductBox";
+import ProductFilters from "./ProductFilters";
 import ProductInventoryImportPanel from "./ProductInventoryImportPanel";
+import getCookie from "@/funcs/cookies/getCookie";
+import getProducts from "@/funcs/getProducts";
+import getSearchProducts from "@/funcs/getSearchProducts";
 
 function ProductsList({ data, asnaf = [], brands = [] }) {
   const [shownData, setShownData] = useState(data);
@@ -145,7 +147,7 @@ function ProductsList({ data, asnaf = [], brands = [] }) {
         onChange={setSearchInput}
         onSearch={searchProductHandler}
         onClear={() => searchProductHandler("")}
-        placeholder="جستجو در نام محصول..."
+        placeholder="جستجو در نام محصول و یا کد محصول ......"
       />
 
       {!shownData?.body?.length ? (
