@@ -18,6 +18,19 @@ function isNavItemActive(item, pathname, stage) {
   return true;
 }
 
+function isPathUnder(pathname, path) {
+  return pathname === path || pathname.startsWith(`${path}/`);
+}
+
+// زیرمنو (آیتم دارای parentPath) فقط وقتی دیده می‌شود که صفحه والد یا یکی از هم‌گروه‌هایش باز باشد
+function isSubItemVisible(item, items, pathname) {
+  if (!item.parentPath) return true;
+  if (isPathUnder(pathname, item.parentPath)) return true;
+  return items.some(
+    (sibling) => sibling.parentPath === item.parentPath && isPathUnder(pathname, sibling.path)
+  );
+}
+
 function AdminNavListContent({ badgeCount = 0, onNavigate, className = "" }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -30,12 +43,13 @@ function AdminNavListContent({ badgeCount = 0, onNavigate, className = "" }) {
           <p className="admin-nav-group-title">{group.title}</p>
           <ul className="space-y-1">
             {group.items.map((item) => {
+              if (!isSubItemVisible(item, group.items, pathname)) return null;
               const Icon = item.icon;
               const isActive = isNavItemActive(item, pathname, stage);
               const showBadge = item.badgeKey === "orders" && badgeCount > 0;
 
               return (
-                <li key={item.href}>
+                <li key={item.href} className={item.parentPath ? "mr-5" : undefined}>
                   <Link
                     href={item.href}
                     onClick={onNavigate}
