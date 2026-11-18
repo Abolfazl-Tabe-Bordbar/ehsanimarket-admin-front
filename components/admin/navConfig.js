@@ -85,6 +85,7 @@ export const adminNavGroups = [
       {
         href: "/p-admin/rejection-reasons",
         path: "/p-admin/rejection-reasons",
+        parentPath: "/p-admin/purchases",
         label: "دلایل رد خرید",
         description: "تعریف دلایل آماده برای رد سفارش",
         icon: BlockOutlined,
