@@ -1,6 +1,7 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useEffect, useState } from "react";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { adminNavGroups } from "../navConfig";
@@ -22,19 +23,36 @@ function isPathUnder(pathname, path) {
   return pathname === path || pathname.startsWith(`${path}/`);
 }
 
-// زیرمنو (آیتم دارای parentPath) فقط وقتی دیده می‌شود که صفحه والد یا یکی از هم‌گروه‌هایش باز باشد
-function isSubItemVisible(item, items, pathname) {
-  if (!item.parentPath) return true;
-  if (isPathUnder(pathname, item.parentPath)) return true;
+// زیرمنو به‌طور پیش‌فرض وقتی باز است که صفحه والد یا یکی از زیرمنوهایش باز باشد
+function isSectionOpenByDefault(parentPath, items, pathname) {
+  if (isPathUnder(pathname, parentPath)) return true;
   return items.some(
-    (sibling) => sibling.parentPath === item.parentPath && isPathUnder(pathname, sibling.path)
+    (sibling) => sibling.parentPath === parentPath && isPathUnder(pathname, sibling.path)
   );
+}
+
+function hasSubItems(item, items) {
+  return items.some((other) => other.parentPath === item.path);
 }
 
 function AdminNavListContent({ badgeCount = 0, onNavigate, className = "" }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const stage = searchParams.get("stage");
+  // باز/بسته کردن دستی زیرمنو؛ با رفتن به صفحه دیگر به حالت پیش‌فرض برمی‌گردد
+  const [toggled, setToggled] = useState({});
+
+  useEffect(() => {
+    setToggled({});
+  }, [pathname]);
+
+  const isSectionOpen = (parentPath, items) =>
+    toggled[parentPath] ?? isSectionOpenByDefault(parentPath, items, pathname);
+
+  const toggleSection = (parentPath, items) => {
+    const next = !isSectionOpen(parentPath, items);
+    setToggled((prev) => ({ ...prev, [parentPath]: next }));
+  };
 
   return (
     <div className={`space-y-5 ${className}`.trim()}>
@@ -43,17 +61,22 @@ function AdminNavListContent({ badgeCount = 0, onNavigate, className = "" }) {
           <p className="admin-nav-group-title">{group.title}</p>
           <ul className="space-y-1">
             {group.items.map((item) => {
-              if (!isSubItemVisible(item, group.items, pathname)) return null;
+              if (item.parentPath && !isSectionOpen(item.parentPath, group.items)) return null;
               const Icon = item.icon;
+              const isParent = hasSubItems(item, group.items);
+              const isOpen = isParent && isSectionOpen(item.path, group.items);
               const isActive = isNavItemActive(item, pathname, stage);
               const showBadge = item.badgeKey === "orders" && badgeCount > 0;
 
               return (
-                <li key={item.href} className={item.parentPath ? "mr-5" : undefined}>
+                <li
+                  key={item.href}
+                  className={item.parentPath ? "mr-5" : isParent ? "relative" : undefined}
+                >
                   <Link
                     href={item.href}
                     onClick={onNavigate}
-                    className={`admin-nav-link ${isActive ? "admin-nav-link-active" : ""}`}
+                    className={`admin-nav-link ${isActive ? "admin-nav-link-active" : ""} ${isParent ? "pl-11" : ""}`}
                   >
                     <span className="admin-nav-icon">
                       <Icon fontSize="small" />
@@ -65,6 +88,21 @@ function AdminNavListContent({ badgeCount = 0, onNavigate, className = "" }) {
                       </span>
                     )}
                   </Link>
+                  {isParent && (
+                    <button
+                      type="button"
+                      onClick={() => toggleSection(item.path, group.items)}
+                      aria-expanded={isOpen}
+                      aria-label={isOpen ? `بستن زیرمنوی ${item.label}` : `باز کردن زیرمنوی ${item.label}`}
+                      title={isOpen ? "بستن" : "باز کردن"}
+                      className="absolute left-2 top-1/2 -translate-y-1/2 flex h-7 w-7 items-center justify-center rounded-lg text-white/80 transition-colors hover:bg-white/15 hover:text-white"
+                    >
+                      <ExpandMoreIcon
+                        fontSize="small"
+                        className={`transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+                      />
+                    </button>
+                  )}
                 </li>
               );
             })}
