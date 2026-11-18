@@ -55,8 +55,6 @@ function combineDateAndTime(date, time) {
 
 const toFaDigits = (value) => String(value).replace(/\d/g, (d) => "۰۱۲۳۴۵۶۷۸۹"[d]);
 const pad2 = (value) => String(value).padStart(2, "0");
-const HOUR_OPTIONS = Array.from({ length: 24 }, (_, i) => pad2(i));
-const MINUTE_OPTIONS = Array.from({ length: 12 }, (_, i) => pad2(i * 5));
 
 function hourHint(hour) {
   const h = Number(hour);
@@ -67,46 +65,88 @@ function hourHint(hour) {
   return "شب";
 }
 
-// انتخاب ساعت به‌صورت ۲۴ ساعته (بدون AM/PM)
+// خانه عددی دو رقمی برای ساعت/دقیقه؛ اعداد فارسی هم پذیرفته می‌شوند
+function TimeNumberInput({ value, max, onChange, onFilled, inputRef, ariaLabel }) {
+  const [draft, setDraft] = useState(value);
+  const focusedRef = useRef(false);
+
+  // تا وقتی کاربر در حال تایپ است، متن خانه با مقدار فرم بازنویسی نمی‌شود
+  useEffect(() => {
+    if (!focusedRef.current) setDraft(value);
+  }, [value]);
+
+  const handleChange = (raw, typed) => {
+    let digits = normalizeAmountDigits(raw);
+    if (digits.length > 2) {
+      // بیش از دو رقم: رقم تازه به انتهای مقدار قبلی اضافه می‌شود (هر جای خانه که تایپ شده باشد)
+      const typedDigit = normalizeAmountDigits(typed || "");
+      digits = typedDigit ? `${draft}${typedDigit}` : digits;
+    }
+    digits = digits.slice(-2);
+    setDraft(digits);
+    if (digits === "") return;
+    const number = Math.min(Number(digits), max);
+    onChange(pad2(number));
+    if (digits.length === 2) onFilled?.();
+  };
+
+  const handleBlur = (event) => {
+    focusedRef.current = false;
+    // مقدار فعلی خود خانه خوانده می‌شود (نه draft قدیمی) چون پرش خودکار به دقیقه هم blur می‌دهد
+    const digits = normalizeAmountDigits(event.target.value).slice(-2);
+    const number = digits === "" ? 0 : Math.min(Number(digits), max);
+    const next = pad2(number);
+    setDraft(next);
+    onChange(next);
+  };
+
+  return (
+    <input
+      ref={inputRef}
+      type="text"
+      inputMode="numeric"
+      value={draft}
+      onChange={(e) => handleChange(e.target.value, e.nativeEvent?.data)}
+      onFocus={(e) => {
+        focusedRef.current = true;
+        e.target.select();
+      }}
+      onBlur={handleBlur}
+      aria-label={ariaLabel}
+      placeholder="00"
+      className="w-12 rounded-lg border border-gray-200 bg-white py-2 text-center text-sm font-bold outline-none hover:border-[#CA8549]/60 focus:border-[#CA8549]"
+    />
+  );
+}
+
+// ساعت ۲۴ ساعته (بدون AM/PM) که مستقیم تایپ می‌شود
 function TimeField({ value, onChange, label }) {
   const [hour = "00", minute = "00"] = String(value || "00:00").split(":");
-  const minutes = MINUTE_OPTIONS.includes(minute) ? MINUTE_OPTIONS : [...MINUTE_OPTIONS, minute].sort();
-  const selectClass =
-    "w-14 cursor-pointer rounded-lg border border-gray-200 bg-white px-1 py-2 text-center text-sm font-bold outline-none hover:border-[#CA8549]/60 focus:border-[#CA8549]";
+  const minuteRef = useRef(null);
 
   return (
     <div className="shrink-0" role="group" aria-label={label}>
       <div dir="ltr" className="flex items-end gap-1">
         <label className="flex flex-col items-center gap-0.5">
           <span className="text-[10px] text-gray-500">ساعت</span>
-          <select
-            className={selectClass}
+          <TimeNumberInput
             value={hour}
-            onChange={(e) => onChange(`${e.target.value}:${minute}`)}
-            aria-label={`${label} - ساعت`}
-          >
-            {HOUR_OPTIONS.map((h) => (
-              <option key={h} value={h}>
-                {h}
-              </option>
-            ))}
-          </select>
+            max={23}
+            onChange={(h) => onChange(`${h}:${minute}`)}
+            onFilled={() => minuteRef.current?.focus()}
+            ariaLabel={`${label} - ساعت`}
+          />
         </label>
         <span className="pb-2 text-sm font-bold text-gray-400">:</span>
         <label className="flex flex-col items-center gap-0.5">
           <span className="text-[10px] text-gray-500">دقیقه</span>
-          <select
-            className={selectClass}
+          <TimeNumberInput
             value={minute}
-            onChange={(e) => onChange(`${hour}:${e.target.value}`)}
-            aria-label={`${label} - دقیقه`}
-          >
-            {minutes.map((m) => (
-              <option key={m} value={m}>
-                {m}
-              </option>
-            ))}
-          </select>
+            max={59}
+            onChange={(m) => onChange(`${hour}:${m}`)}
+            inputRef={minuteRef}
+            ariaLabel={`${label} - دقیقه`}
+          />
         </label>
       </div>
       <p className="mt-1 text-center text-[10px] text-gray-400">
