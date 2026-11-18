@@ -1,6 +1,10 @@
 # مرحله Build
 FROM node:22-alpine AS builder
 
+# منطقه زمانی ایران برای تاریخ‌هایی که سمت سرور ساخته می‌شوند
+RUN apk add --no-cache tzdata
+ENV TZ=Asia/Tehran
+
 WORKDIR /app
 
 ARG NEXT_PUBLIC_API_URL=https://api.ehsanimarket.ir
@@ -16,6 +20,9 @@ RUN npm run build
 
 # مرحله Run
 FROM node:22-alpine AS runner
+
+RUN apk add --no-cache tzdata
+ENV TZ=Asia/Tehran
 
 WORKDIR /app
 
