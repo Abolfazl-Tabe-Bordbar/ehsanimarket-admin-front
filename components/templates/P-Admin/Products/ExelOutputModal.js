@@ -13,7 +13,6 @@ import getAsnaf from "@/funcs/getAsnaf";
 import getBrands from "@/funcs/getBrands";
 import getSenfSubcategories from "@/funcs/getSenfSubcategories";
 import getCookie from "@/funcs/cookies/getCookie";
-import { apiBaseUrl } from "@/data/variables";
 
 function ExelOutputModal({ setIsExelOutputModalShow }) {
   const [isLoading, setIsLoading] = useState(false);
@@ -77,11 +76,7 @@ function ExelOutputModal({ setIsExelOutputModalShow }) {
       ...(data.brand && { brand_id: data.brand }),
     })
       .then((res) => {
-        if (res?.file) {
-          const linkElem = document.createElement("a");
-          linkElem.href = `${apiBaseUrl}${res?.file}`;
-          linkElem.download = "";
-          linkElem.click();
+        if (res?.status) {
           setIsExelOutputModalShow(false);
         }
       })

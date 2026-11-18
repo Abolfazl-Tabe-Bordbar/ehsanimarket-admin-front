@@ -1,6 +1,5 @@
 import axios from "axios";
 import { baseUrl } from "@/data/variables";
-import setCookie from "./cookies/setCookie";
 import { TopRightToast } from "@/components/modules/Toast";
 
 async function login(loginData, router) {
@@ -16,13 +15,7 @@ async function login(loginData, router) {
       return false;
     }
 
-    const isSecure =
-      typeof window !== "undefined" && window.location.protocol === "https:";
-
-    setCookie("ramian-pakhsh-admin", data.token, {
-      secure: isSecure,
-      "max-age": 3600 * 24 * 7,
-    });
+    // توکن را route پروکسی در کوکی HttpOnly ذخیره کرده است
     router.push("/p-admin/dashboard");
     return true;
   } catch (error) {

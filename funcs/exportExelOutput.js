@@ -1,28 +1,8 @@
-import axios from "axios";
-import { baseUrl } from "@/data/variables";
-import getCookie from "./cookies/getCookie";
-import { TopRightToast } from "@/components/modules/Toast";
+import downloadExcelExport from "./downloadExcelExport";
 
+// فایل مستقیم دانلود می‌شود و خروجی { status } است
 async function exportExelOutput(exportData) {
-  try {
-    const { data } = await axios.post(`${baseUrl}/products/export`, exportData, {
-      headers: {
-        cookies: getCookie("ramian-pakhsh-admin"),
-      },
-    });
-
-    TopRightToast.fire({
-      icon: data.status ? "success" : "error",
-      title: data.message,
-    });
-
-    return data
-  } catch (error) {
-    TopRightToast.fire({
-      icon: "error",
-      title: "خطایی رخ داده است. دوباره تلاش کنید",
-    });
-  }
+  return downloadExcelExport("/products/export", exportData, "products.xlsx");
 }
 
 export default exportExelOutput;

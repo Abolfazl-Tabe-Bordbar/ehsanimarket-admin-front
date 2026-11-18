@@ -12,7 +12,6 @@ import CustomPagination from "@/components/modules/CustomPagination";
 import getCookie from "@/funcs/cookies/getCookie";
 import Loader from "@/components/modules/Loader";
 import { getCitiesByProvince, getProvinceNames } from "@/data/iranLocations";
-import { apiBaseUrl } from "@/data/variables";
 import UsersImportPanel from "./UsersImportPanel";
 
 function buildFilterQuery(province, city, q, tagId) {
@@ -138,11 +137,7 @@ function UsersList({ data }) {
       q: searchValue.trim() || undefined,
     })
       .then((res) => {
-        if (res?.file) {
-          const linkElem = document.createElement("a");
-          linkElem.href = `${apiBaseUrl}${res.file}`;
-          linkElem.download = "";
-          linkElem.click();
+        if (res?.status) {
         }
       })
       .finally(() => setIsExporting(false));

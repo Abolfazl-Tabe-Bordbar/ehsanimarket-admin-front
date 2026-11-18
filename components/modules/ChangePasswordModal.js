@@ -53,7 +53,7 @@ function ChangePasswordModal({ setIsChangePasswordModalShow }) {
                   type={isPasswordShow ? "text" : "password"}
                   className="border rounded px-3 py-3 w-full text-sm text-gray-700 outline-gray-300"
                   id="password"
-                  {...register("password", { required: true, minLength: 6 })}
+                  {...register("password", { required: true, minLength: 8, pattern: /^(?=.*[A-Za-z])(?=.*\d).+$/ })}
                 />
                 <span className="absolute left-4 top-8 text-gray-900 cursor-pointer">
                   {isPasswordShow ? (
@@ -73,9 +73,9 @@ function ChangePasswordModal({ setIsChangePasswordModalShow }) {
                     رمز عبور اجباری است
                   </p>
                 )}
-                {errors.password?.type === "minLength" && (
+                {(errors.password?.type === "minLength" || errors.password?.type === "pattern") && (
                   <p className="text-red-500 text-xs mr-2">
-                    رمز عبور حداقل باید ۶ کاراکتر باشد
+                    رمز عبور حداقل باید ۸ کاراکتر و شامل حروف انگلیسی و عدد باشد
                   </p>
                 )}
               </div>

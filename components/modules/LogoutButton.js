@@ -3,14 +3,15 @@
 import React from "react";
 import { useRouter } from "next/navigation";
 import LogoutIcon from "@mui/icons-material/Logout";
-import deleteCookie from "@/funcs/cookies/deleteCookie";
+import logout from "@/funcs/logout";
 
 function LogoutButton() {
   const router = useRouter();
 
-  function logoutHandler() {
-    deleteCookie("ramian-pakhsh-admin");
+  async function logoutHandler() {
+    await logout();
     router.push("/");
+    router.refresh();
   }
 
   return (

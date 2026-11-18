@@ -1,5 +1,5 @@
 # مرحله Build
-FROM node:alpine AS builder
+FROM node:22-alpine AS builder
 
 WORKDIR /app
 
@@ -9,13 +9,13 @@ ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 ENV NEXT_PUBLIC_SITE_URL=$NEXT_PUBLIC_SITE_URL
 
 COPY package*.json ./
-RUN npm install --registry="https://package-mirror.liara.ir/repository/npm/"
+RUN npm install
 
 COPY . .
 RUN npm run build
 
 # مرحله Run
-FROM node:alpine AS runner
+FROM node:22-alpine AS runner
 
 WORKDIR /app
 

@@ -7,7 +7,6 @@ import exportNewsletterExcel from "@/funcs/exportNewsletterExcel";
 import getCookie from "@/funcs/cookies/getCookie";
 import EmptyMessage from "@/components/modules/EmptyMessage";
 import Loader from "@/components/modules/Loader";
-import { apiBaseUrl } from "@/data/variables";
 import NewsletterImportPanel from "./NewsletterImportPanel";
 
 function SubscribersList({ data }) {
@@ -36,11 +35,7 @@ function SubscribersList({ data }) {
       status: statusFilter === "all" ? undefined : statusFilter,
     })
       .then((res) => {
-        if (res?.file) {
-          const linkElem = document.createElement("a");
-          linkElem.href = `${apiBaseUrl}${res.file}`;
-          linkElem.download = "";
-          linkElem.click();
+        if (res?.status) {
         }
       })
       .finally(() => setIsExporting(false));

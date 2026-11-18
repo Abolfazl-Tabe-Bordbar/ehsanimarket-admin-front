@@ -91,11 +91,16 @@ function AddAdminModal({ setIsAddAdminModalShow }) {
                   type="password"
                   className="border rounded-full px-3 py-3 w-full text-sm text-gray-700 outline-gray-300"
                   id="password"
-                  {...register("password", { required: true })}
+                  {...register("password", { required: true, minLength: 8, pattern: /^(?=.*[A-Za-z])(?=.*\d).+$/ })}
                 />
                 {errors.password?.type === "required" && (
                   <p className="text-red-500 text-xs mr-2">
                     رمز عبور اجباری است
+                  </p>
+                )}
+                {(errors.password?.type === "minLength" || errors.password?.type === "pattern") && (
+                  <p className="text-red-500 text-xs mr-2">
+                    رمز عبور حداقل باید ۸ کاراکتر و شامل حروف انگلیسی و عدد باشد
                   </p>
                 )}
               </div>
