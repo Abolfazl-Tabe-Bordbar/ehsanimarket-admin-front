@@ -53,6 +53,69 @@ function combineDateAndTime(date, time) {
   return value;
 }
 
+const toFaDigits = (value) => String(value).replace(/\d/g, (d) => "۰۱۲۳۴۵۶۷۸۹"[d]);
+const pad2 = (value) => String(value).padStart(2, "0");
+const HOUR_OPTIONS = Array.from({ length: 24 }, (_, i) => pad2(i));
+const MINUTE_OPTIONS = Array.from({ length: 12 }, (_, i) => pad2(i * 5));
+
+function hourHint(hour) {
+  const h = Number(hour);
+  if (h < 5) return "بامداد";
+  if (h < 12) return "صبح";
+  if (h < 14) return "ظهر";
+  if (h < 18) return "بعدازظهر";
+  return "شب";
+}
+
+// انتخاب ساعت به‌صورت ۲۴ ساعته (بدون AM/PM)
+function TimeField({ value, onChange, label }) {
+  const [hour = "00", minute = "00"] = String(value || "00:00").split(":");
+  const minutes = MINUTE_OPTIONS.includes(minute) ? MINUTE_OPTIONS : [...MINUTE_OPTIONS, minute].sort();
+  const selectClass =
+    "w-14 cursor-pointer rounded-lg border border-gray-200 bg-white px-1 py-2 text-center text-sm font-bold outline-none hover:border-[#CA8549]/60 focus:border-[#CA8549]";
+
+  return (
+    <div className="shrink-0" role="group" aria-label={label}>
+      <div dir="ltr" className="flex items-end gap-1">
+        <label className="flex flex-col items-center gap-0.5">
+          <span className="text-[10px] text-gray-500">ساعت</span>
+          <select
+            className={selectClass}
+            value={hour}
+            onChange={(e) => onChange(`${e.target.value}:${minute}`)}
+            aria-label={`${label} - ساعت`}
+          >
+            {HOUR_OPTIONS.map((h) => (
+              <option key={h} value={h}>
+                {h}
+              </option>
+            ))}
+          </select>
+        </label>
+        <span className="pb-2 text-sm font-bold text-gray-400">:</span>
+        <label className="flex flex-col items-center gap-0.5">
+          <span className="text-[10px] text-gray-500">دقیقه</span>
+          <select
+            className={selectClass}
+            value={minute}
+            onChange={(e) => onChange(`${hour}:${e.target.value}`)}
+            aria-label={`${label} - دقیقه`}
+          >
+            {minutes.map((m) => (
+              <option key={m} value={m}>
+                {m}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+      <p className="mt-1 text-center text-[10px] text-gray-400">
+        {toFaDigits(`${hour}:${minute}`)} {hourHint(hour)}
+      </p>
+    </div>
+  );
+}
+
 const FESTIVAL_TYPE_OPTIONS = [
   {
     value: "free_shipping",
@@ -470,42 +533,28 @@ function FestivalFormPanel({ onClose, festival, onSaved }) {
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
               <label className="block text-sm font-bold">تاریخ و ساعت شروع</label>
-              <div className="flex gap-2">
-                <div className="min-w-0 flex-1">
+              <div className="flex items-start gap-2">
+                <div className="min-w-0 flex-1 pt-[18px]">
                   <PersianDateField
                     value={startsAt}
                     onChange={setStartsAt}
                     placeholder="انتخاب تاریخ شروع"
                   />
                 </div>
-                <input
-                  type="time"
-                  dir="ltr"
-                  className="admin-input !w-28 shrink-0 text-center"
-                  value={startTime}
-                  onChange={(e) => setStartTime(e.target.value)}
-                  aria-label="ساعت شروع"
-                />
+                <TimeField value={startTime} onChange={setStartTime} label="ساعت شروع" />
               </div>
             </div>
             <div className="space-y-2">
               <label className="block text-sm font-bold">تاریخ و ساعت پایان</label>
-              <div className="flex gap-2">
-                <div className="min-w-0 flex-1">
+              <div className="flex items-start gap-2">
+                <div className="min-w-0 flex-1 pt-[18px]">
                   <PersianDateField
                     value={endsAt}
                     onChange={setEndsAt}
                     placeholder="انتخاب تاریخ پایان"
                   />
                 </div>
-                <input
-                  type="time"
-                  dir="ltr"
-                  className="admin-input !w-28 shrink-0 text-center"
-                  value={endTime}
-                  onChange={(e) => setEndTime(e.target.value)}
-                  aria-label="ساعت پایان"
-                />
+                <TimeField value={endTime} onChange={setEndTime} label="ساعت پایان" />
               </div>
             </div>
           </div>
