@@ -18,7 +18,18 @@ function getStatus(festival) {
   return { label: "در حال اجرا", className: "text-emerald-700" };
 }
 
+function formatDateTime(value) {
+  return new Date(value).toLocaleString("fa-IR", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
 function FestivalBox({ festival, onChanged, onEdit, isEditing = false }) {
+  const isDiscount = festival.type === "discount";
   const [isLoading, setIsLoading] = useState(false);
   const status = getStatus(festival);
 
@@ -50,7 +61,16 @@ function FestivalBox({ festival, onChanged, onEdit, isEditing = false }) {
               <CelebrationOutlinedIcon sx={{ fontSize: 22 }} />
             </div>
             <div className="min-w-0">
-              <h2 className="truncate text-base font-bold text-gray-900">{festival.name}</h2>
+              <div className="flex min-w-0 items-center gap-2">
+                <h2 className="truncate text-base font-bold text-gray-900">{festival.name}</h2>
+                <span
+                  className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                    isDiscount ? "bg-red-50 text-red-600" : "bg-blue-50 text-blue-700"
+                  }`}
+                >
+                  {isDiscount ? "تخفیف درصدی" : "ارسال رایگان"}
+                </span>
+              </div>
               {festival.description ? (
                 <p className="mt-1 line-clamp-2 text-xs text-gray-500">{festival.description}</p>
               ) : null}
@@ -100,17 +120,29 @@ function FestivalBox({ festival, onChanged, onEdit, isEditing = false }) {
 
         <div className="grid grid-cols-1 gap-3 pt-4 sm:grid-cols-4">
           <div className="rounded-xl border border-gray-100 bg-gray-50/80 px-4 py-3">
-            <p className="text-[11px] font-medium text-gray-500">حداقل سبد</p>
-            <p className="mt-1 text-lg font-bold text-[#CA8549]">
-              {Number(festival.min_cart_amount || 0).toLocaleString("fa-IR")}
-              <span className="mr-1 text-xs font-medium text-gray-500">تومان</span>
-            </p>
+            {isDiscount ? (
+              <>
+                <p className="text-[11px] font-medium text-gray-500">درصد تخفیف</p>
+                <p className="mt-1 text-lg font-bold text-red-600">
+                  {Number(festival.discount_percent || 0).toLocaleString("fa-IR")}٪
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="text-[11px] font-medium text-gray-500">حداقل سبد</p>
+                <p className="mt-1 text-lg font-bold text-[#CA8549]">
+                  {Number(festival.min_cart_amount || 0).toLocaleString("fa-IR")}
+                  <span className="mr-1 text-xs font-medium text-gray-500">تومان</span>
+                </p>
+              </>
+            )}
           </div>
           <div className="rounded-xl border border-gray-100 bg-gray-50/80 px-4 py-3">
             <p className="text-[11px] font-medium text-gray-500">بازه زمانی</p>
-            <p className="mt-1 text-sm font-bold text-[#141c32]">
-              {new Date(festival.starts_at).toLocaleDateString("fa-IR")} تا{" "}
-              {new Date(festival.ends_at).toLocaleDateString("fa-IR")}
+            <p className="mt-1 text-xs font-bold leading-6 text-[#141c32]">
+              {formatDateTime(festival.starts_at)}
+              <br />
+              تا {formatDateTime(festival.ends_at)}
             </p>
           </div>
           <div className="rounded-xl border border-gray-100 bg-gray-50/80 px-4 py-3">

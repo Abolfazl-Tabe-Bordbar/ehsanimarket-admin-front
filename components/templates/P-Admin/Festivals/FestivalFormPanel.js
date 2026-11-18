@@ -37,6 +37,35 @@ function formatAmountThousands(digits) {
   return digits.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
 
+function toTimeValue(date, fallback) {
+  if (!date) return fallback;
+  const value = new Date(date);
+  if (Number.isNaN(value.getTime())) return fallback;
+  return `${String(value.getHours()).padStart(2, "0")}:${String(value.getMinutes()).padStart(2, "0")}`;
+}
+
+// تاریخ انتخاب‌شده + ساعت (به وقت مرورگر مدیر) => زمان دقیق
+function combineDateAndTime(date, time) {
+  if (!date) return null;
+  const value = new Date(date);
+  const [hours, minutes] = String(time || "00:00").split(":").map(Number);
+  value.setHours(Number.isFinite(hours) ? hours : 0, Number.isFinite(minutes) ? minutes : 0, 0, 0);
+  return value;
+}
+
+const FESTIVAL_TYPE_OPTIONS = [
+  {
+    value: "free_shipping",
+    title: "ارسال رایگان",
+    hint: "برای شهرهای انتخابی و با حداقل مبلغ خرید",
+  },
+  {
+    value: "discount",
+    title: "تخفیف درصدی",
+    hint: "درصد تخفیف روی قیمت اصلی محصولات تا زمان پایان",
+  },
+];
+
 function FestivalFormPanel({ onClose, festival, onSaved }) {
   const panelRef = useRef(null);
   const isEdit = Boolean(festival?.id);
@@ -47,6 +76,12 @@ function FestivalFormPanel({ onClose, festival, onSaved }) {
   const [endsAt, setEndsAt] = useState(
     festival?.ends_at ? new Date(festival.ends_at) : null
   );
+  const [startTime, setStartTime] = useState(() => toTimeValue(festival?.starts_at, "00:00"));
+  const [endTime, setEndTime] = useState(() => toTimeValue(festival?.ends_at, "23:59"));
+  const [festivalType, setFestivalType] = useState(
+    festival?.type === "discount" ? "discount" : "free_shipping"
+  );
+  const isDiscount = festivalType === "discount";
   const [selectedProvince, setSelectedProvince] = useState("");
   const [selectedCities, setSelectedCities] = useState(() =>
     Array.isArray(festival?.city_names) ? [...festival.city_names] : []
@@ -74,6 +109,7 @@ function FestivalFormPanel({ onClose, festival, onSaved }) {
       name: festival?.name || "",
       description: festival?.description || "",
       min_cart_amount: Number(festival?.min_cart_amount) || "",
+      discount_percent: Number(festival?.discount_percent) || "",
       is_active: festival?.is_active !== false,
     },
   });
@@ -93,10 +129,8 @@ function FestivalFormPanel({ onClose, festival, onSaved }) {
   }, [festival?.id]);
 
   useEffect(() => {
-    register("min_cart_amount", {
-      required: true,
-      validate: (value) => Number(value) >= 1 || "invalid",
-    });
+    // اعتبارسنجی حداقل سبد فقط برای جشنواره ارسال رایگان (داخل onSubmit)
+    register("min_cart_amount");
   }, [register]);
 
   useEffect(() => {
@@ -267,9 +301,27 @@ function FestivalFormPanel({ onClose, festival, onSaved }) {
       setFormError("تاریخ شروع و پایان را مشخص کنید");
       return;
     }
-    if (!selectedCities.length) {
-      setFormError("حداقل یک شهر را انتخاب کنید");
+    const startDateTime = combineDateAndTime(startsAt, startTime);
+    const endDateTime = combineDateAndTime(endsAt, endTime);
+    if (endDateTime <= startDateTime) {
+      setFormError("زمان پایان باید بعد از زمان شروع باشد");
       return;
+    }
+    const discountPercent = Number(data.discount_percent);
+    if (isDiscount) {
+      if (!Number.isInteger(discountPercent) || discountPercent < 1 || discountPercent > 90) {
+        setFormError("درصد تخفیف باید عددی بین ۱ تا ۹۰ باشد");
+        return;
+      }
+    } else {
+      if (!(Number(data.min_cart_amount) >= 1)) {
+        setFormError("مبلغ حداقل سبد اجباری است");
+        return;
+      }
+      if (!selectedCities.length) {
+        setFormError("حداقل یک شهر را انتخاب کنید");
+        return;
+      }
     }
     if (!selectedProducts.length) {
       setFormError("حداقل یک محصول انتخاب کنید");
@@ -279,11 +331,14 @@ function FestivalFormPanel({ onClose, festival, onSaved }) {
     const payload = {
       name: data.name,
       description: data.description,
-      min_cart_amount: Number(data.min_cart_amount),
-      starts_at: startsAt,
-      ends_at: endsAt,
+      type: festivalType,
+      discount_percent: isDiscount ? discountPercent : null,
+      min_cart_amount: isDiscount ? 0 : Number(data.min_cart_amount),
+      starts_at: startDateTime,
+      ends_at: endDateTime,
+      exact_time: true,
       is_active: Boolean(data.is_active),
-      city_names: selectedCities,
+      city_names: isDiscount ? [] : selectedCities,
       product_ids: selectedProducts.map((item) => item.id),
     };
 
@@ -312,7 +367,7 @@ function FestivalFormPanel({ onClose, festival, onSaved }) {
               <p className="mt-1 text-xs text-gray-500">{festival.name}</p>
             ) : (
               <p className="mt-1 text-xs text-gray-500">
-                شهر، محصولات و بازه زمانی را مشخص کنید
+                نوع جشنواره، محصولات و بازه زمانی را مشخص کنید
               </p>
             )}
           </div>
@@ -327,6 +382,31 @@ function FestivalFormPanel({ onClose, festival, onSaved }) {
         </div>
 
         <form className="space-y-5 px-5 py-5 md:px-6 md:py-6" onSubmit={handleSubmit(onSubmit)}>
+          <div className="space-y-2">
+            <label className="block text-sm font-bold">نوع جشنواره</label>
+            <div className="grid gap-2 sm:grid-cols-2">
+              {FESTIVAL_TYPE_OPTIONS.map((option) => {
+                const selected = festivalType === option.value;
+                return (
+                  <button
+                    type="button"
+                    key={option.value}
+                    onClick={() => setFestivalType(option.value)}
+                    aria-pressed={selected}
+                    className={`rounded-xl border px-4 py-3 text-right transition-colors ${
+                      selected
+                        ? "border-[#CA8549] bg-[#CA8549]/10 ring-1 ring-[#CA8549]/40"
+                        : "border-gray-200 hover:bg-gray-50"
+                    }`}
+                  >
+                    <span className="block text-sm font-bold text-gray-900">{option.title}</span>
+                    <span className="mt-1 block text-xs text-gray-500">{option.hint}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
               <label className="block text-sm font-bold">نام جشنواره</label>
@@ -339,21 +419,43 @@ function FestivalFormPanel({ onClose, festival, onSaved }) {
                 <p className="text-xs text-red-500">نام جشنواره اجباری است</p>
               )}
             </div>
-            <div className="space-y-2">
-              <label className="block text-sm font-bold">حداقل مبلغ سبد (تومان)</label>
-              <input
-                type="text"
-                inputMode="numeric"
-                dir="ltr"
-                className="admin-input text-left"
-                value={minCartDisplay}
-                onChange={(e) => handleMinCartAmountChange(e.target.value)}
-                placeholder="مثلاً 500,000"
-              />
-              {errors.min_cart_amount && (
-                <p className="text-xs text-red-500">مبلغ حداقل سبد اجباری است</p>
-              )}
-            </div>
+            {isDiscount ? (
+              <div className="space-y-2">
+                <label className="block text-sm font-bold">درصد تخفیف</label>
+                <div className="relative">
+                  <input
+                    type="number"
+                    min={1}
+                    max={90}
+                    step={1}
+                    inputMode="numeric"
+                    dir="ltr"
+                    className="admin-input pl-9 text-left"
+                    placeholder="مثلاً 30"
+                    {...register("discount_percent")}
+                  />
+                  <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-400">
+                    ٪
+                  </span>
+                </div>
+                <p className="text-[11px] text-gray-500">
+                  روی قیمت اصلی محصول حساب می‌شود؛ اگر محصول از قبل تخفیف بیشتری داشته باشد، همان قیمت ارزان‌تر می‌ماند.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <label className="block text-sm font-bold">حداقل مبلغ سبد (تومان)</label>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  dir="ltr"
+                  className="admin-input text-left"
+                  value={minCartDisplay}
+                  onChange={(e) => handleMinCartAmountChange(e.target.value)}
+                  placeholder="مثلاً 500,000"
+                />
+              </div>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -367,20 +469,44 @@ function FestivalFormPanel({ onClose, festival, onSaved }) {
 
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <label className="block text-sm font-bold">تاریخ شروع</label>
-              <PersianDateField
-                value={startsAt}
-                onChange={setStartsAt}
-                placeholder="انتخاب تاریخ شروع"
-              />
+              <label className="block text-sm font-bold">تاریخ و ساعت شروع</label>
+              <div className="flex gap-2">
+                <div className="min-w-0 flex-1">
+                  <PersianDateField
+                    value={startsAt}
+                    onChange={setStartsAt}
+                    placeholder="انتخاب تاریخ شروع"
+                  />
+                </div>
+                <input
+                  type="time"
+                  dir="ltr"
+                  className="admin-input !w-28 shrink-0 text-center"
+                  value={startTime}
+                  onChange={(e) => setStartTime(e.target.value)}
+                  aria-label="ساعت شروع"
+                />
+              </div>
             </div>
             <div className="space-y-2">
-              <label className="block text-sm font-bold">تاریخ پایان</label>
-              <PersianDateField
-                value={endsAt}
-                onChange={setEndsAt}
-                placeholder="انتخاب تاریخ پایان"
-              />
+              <label className="block text-sm font-bold">تاریخ و ساعت پایان</label>
+              <div className="flex gap-2">
+                <div className="min-w-0 flex-1">
+                  <PersianDateField
+                    value={endsAt}
+                    onChange={setEndsAt}
+                    placeholder="انتخاب تاریخ پایان"
+                  />
+                </div>
+                <input
+                  type="time"
+                  dir="ltr"
+                  className="admin-input !w-28 shrink-0 text-center"
+                  value={endTime}
+                  onChange={(e) => setEndTime(e.target.value)}
+                  aria-label="ساعت پایان"
+                />
+              </div>
             </div>
           </div>
 
@@ -391,6 +517,7 @@ function FestivalFormPanel({ onClose, festival, onSaved }) {
             </label>
           )}
 
+          {!isDiscount && (
           <div className="rounded-xl border border-gray-100 p-4">
             <h3 className="mb-3 text-sm font-bold">شهرهای جشنواره</h3>
             <div className="grid gap-3 md:grid-cols-2">
@@ -437,6 +564,7 @@ function FestivalFormPanel({ onClose, festival, onSaved }) {
               )}
             </div>
           </div>
+          )}
 
           <div className="rounded-xl border border-gray-100 p-4">
             <h3 className="mb-3 text-sm font-bold">محصولات جشنواره</h3>
