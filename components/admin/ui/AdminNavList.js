@@ -63,6 +63,7 @@ function AdminNavListContent({ badgeCount = 0, onNavigate, className = "" }) {
             {group.items.map((item) => {
               if (item.parentPath && !isSectionOpen(item.parentPath, group.items)) return null;
               const Icon = item.icon;
+              const isSub = Boolean(item.parentPath);
               const isParent = hasSubItems(item, group.items);
               const isOpen = isParent && isSectionOpen(item.path, group.items);
               const isActive = isNavItemActive(item, pathname, stage);
@@ -71,15 +72,15 @@ function AdminNavListContent({ badgeCount = 0, onNavigate, className = "" }) {
               return (
                 <li
                   key={item.href}
-                  className={item.parentPath ? "mr-5" : isParent ? "relative" : undefined}
+                  className={isSub ? "mr-6" : isParent ? "relative" : undefined}
                 >
                   <Link
                     href={item.href}
                     onClick={onNavigate}
-                    className={`admin-nav-link ${isActive ? "admin-nav-link-active" : ""} ${isParent ? "pl-11" : ""}`}
+                    className={`admin-nav-link ${isActive ? "admin-nav-link-active" : ""} ${isParent ? "pl-11" : ""} ${isSub ? "gap-2 py-1.5 text-xs" : ""}`}
                   >
-                    <span className="admin-nav-icon">
-                      <Icon fontSize="small" />
+                    <span className={`admin-nav-icon ${isSub ? "h-6 w-6 text-[15px]" : ""}`}>
+                      <Icon fontSize={isSub ? "inherit" : "small"} />
                     </span>
                     <span className="flex-1 truncate">{item.label}</span>
                     {showBadge && (
