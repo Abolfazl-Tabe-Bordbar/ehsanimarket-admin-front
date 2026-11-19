@@ -2,17 +2,21 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import SearchIcon from "@mui/icons-material/Search";
 import CloseIcon from "@mui/icons-material/Close";
 import AttachFileIcon from "@mui/icons-material/AttachFile";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import SendOutlinedIcon from "@mui/icons-material/SendOutlined";
 import Loader from "@/components/modules/Loader";
+import PlatformLogo from "./PlatformLogo";
 import { TopRightToast } from "@/components/modules/Toast";
+import { uploadUrl } from "@/data/variables";
 import {
   getHubraAccount,
   getHubraBroadcast,
   getHubraBroadcasts,
   getHubraUsage,
+  searchHubraProducts,
   sendHubraBroadcast,
 } from "@/funcs/hubra";
 
@@ -109,6 +113,7 @@ function HistoryRow({ item }) {
                 {targets.map((target, index) => (
                   <li key={target.channel?.ulid || index} className="flex flex-wrap items-center gap-2 text-xs">
                     <StatusBadge status={target.status} />
+                    <PlatformLogo channel={target.channel} size={18} />
                     <span className="text-gray-700">{target.channel?.name || target.channel_name || "کانال"}</span>
                     {target.channel?.platform && (
                       <span className="text-gray-400">({PLATFORM_LABELS[target.channel.platform] || target.channel.platform})</span>
@@ -134,6 +139,10 @@ function HubraMain() {
   const [message, setMessage] = useState("");
   const [format, setFormat] = useState("html");
   const [files, setFiles] = useState([]);
+  const [productQuery, setProductQuery] = useState("");
+  const [productResults, setProductResults] = useState([]);
+  const [product, setProduct] = useState(null);
+  const [attachProductImage, setAttachProductImage] = useState(true);
   const [busy, setBusy] = useState(false);
   const fileRef = useRef(null);
 
@@ -155,16 +164,35 @@ function HubraMain() {
     loadHistory();
   }, [loadAccount, loadHistory]);
 
+  useEffect(() => {
+    const q = productQuery.trim();
+    if (q.length < 2) {
+      setProductResults([]);
+      return;
+    }
+    const timer = setTimeout(() => searchHubraProducts(q).then((res) => setProductResults(res?.body || [])), 350);
+    return () => clearTimeout(timer);
+  }, [productQuery]);
+
   const workspace = (account?.workspaces || []).find((ws) => ws.ulid === workspaceId);
   const channels = workspace?.channels || [];
+  const productImageCount = product && attachProductImage && product.image ? 1 : 0;
 
   const toggleChannel = (id) =>
     setChannelIds((prev) => (prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]));
 
+  const pickProduct = (item) => {
+    setProduct(item);
+    setFormat("html");
+    setMessage(item.caption);
+    setProductQuery("");
+    setProductResults([]);
+  };
+
   const addFiles = (list) => {
     const next = [...files];
     for (const file of list) {
-      if (next.length >= MAX_FILES) {
+      if (next.length + productImageCount >= MAX_FILES) {
         TopRightToast.fire({ icon: "warning", title: `حداکثر ${fa(MAX_FILES)} فایل` });
         break;
       }
@@ -189,7 +217,7 @@ function HubraMain() {
 
   const send = async () => {
     if (!channelIds.length) return TopRightToast.fire({ icon: "warning", title: "حداقل یک کانال را انتخاب کنید" });
-    if (!message.trim() && !files.length) {
+    if (!message.trim() && !files.length && !productImageCount) {
       return TopRightToast.fire({ icon: "warning", title: "متن پیام یا فایل لازم است" });
     }
     const formData = new FormData();
@@ -197,6 +225,10 @@ function HubraMain() {
     channelIds.forEach((id) => formData.append("channel_ids[]", id));
     formData.append("message", message.trim());
     formData.append("format", format);
+    if (product) {
+      formData.append("product_id", String(product.id));
+      formData.append("attach_product_image", attachProductImage ? "true" : "false");
+    }
     files.forEach((file) => formData.append("attachments", file));
 
     setBusy(true);
@@ -205,6 +237,7 @@ function HubraMain() {
     if (!res?.status) return;
     setMessage("");
     setFiles([]);
+    setProduct(null);
     loadHistory();
     pollStatus(res.body?.ulid);
   };
@@ -271,14 +304,15 @@ function HubraMain() {
                         type="button"
                         onClick={() => toggleChannel(channel.ulid)}
                         aria-pressed={selected}
-                        className={`rounded-xl border px-3 py-2 text-xs transition-colors ${
+                        className={`inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-xs transition-colors ${
                           selected ? "border-brand-navy bg-brand-navy text-white" : "border-gray-200 text-gray-700 hover:bg-gray-50"
                         }`}
                       >
+                        <PlatformLogo channel={channel} />
                         {channel.name || channel.title || channel.ulid}
                         {channel.platform && (
-                          <span className={`mr-1.5 ${selected ? "text-white/70" : "text-gray-400"}`}>
-                            ({PLATFORM_LABELS[channel.platform] || channel.platform})
+                          <span className={selected ? "text-white/70" : "text-gray-400"}>
+                            {PLATFORM_LABELS[channel.platform] || channel.platform}
                           </span>
                         )}
                       </button>
@@ -287,6 +321,55 @@ function HubraMain() {
                 </div>
               )}
             </>
+          )}
+        </section>
+
+        <section className="admin-card space-y-4">
+          <h3 className="text-sm font-bold text-brand-navy">معرفی محصول (اختیاری)</h3>
+          {product ? (
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-gray-100 bg-gray-50 p-3">
+              <div className="flex min-w-0 items-center gap-3">
+                {product.image && (
+                  <img src={`${uploadUrl}/products/${product.image}`} alt="" className="h-12 w-12 rounded-lg bg-white object-contain" />
+                )}
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium text-gray-800">{product.name}</p>
+                  <label className="mt-1 flex items-center gap-1.5 text-xs text-gray-600">
+                    <input type="checkbox" checked={attachProductImage} onChange={(e) => setAttachProductImage(e.target.checked)} disabled={!product.image} />
+                    ارسال تصویر محصول همراه پیام
+                  </label>
+                </div>
+              </div>
+              <button type="button" onClick={() => setProduct(null)} className="text-xs text-red-500 hover:underline">
+                حذف محصول
+              </button>
+            </div>
+          ) : (
+            <div className="relative">
+              <SearchIcon className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" fontSize="small" />
+              <input
+                className="admin-input pr-10"
+                value={productQuery}
+                onChange={(e) => setProductQuery(e.target.value)}
+                placeholder="نام یا شناسه محصول را جستجو کنید تا متن معرفی خودکار ساخته شود"
+              />
+              {productResults.length > 0 && (
+                <div className="absolute inset-x-0 top-full z-10 mt-1 max-h-64 overflow-auto rounded-xl border border-gray-100 bg-white shadow-lg">
+                  {productResults.map((item) => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => pickProduct(item)}
+                      className="flex w-full items-center gap-3 px-3 py-2 text-right hover:bg-gray-50"
+                    >
+                      {item.image && <img src={`${uploadUrl}/products/${item.image}`} alt="" className="h-9 w-9 rounded-lg bg-gray-50 object-contain" />}
+                      <span className="min-w-0 flex-1 truncate text-sm">{item.name}</span>
+                      <span className="text-xs text-gray-400">{fa(Number(item.totalPrice) > 0 ? item.totalPrice : item.price)} تومان</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           )}
         </section>
 
