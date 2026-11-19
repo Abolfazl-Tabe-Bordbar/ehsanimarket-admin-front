@@ -10,6 +10,7 @@ import SendOutlinedIcon from "@mui/icons-material/SendOutlined";
 import Loader from "@/components/modules/Loader";
 import PlatformLogo from "./PlatformLogo";
 import MessagePreview from "./MessagePreview";
+import HubraEditor, { hubraToPlain } from "./HubraEditor";
 import { TopRightToast } from "@/components/modules/Toast";
 import { uploadUrl } from "@/data/variables";
 import {
@@ -24,7 +25,6 @@ const MESSAGE_MAX = 4000;
 const MAX_FILES = 10;
 const MAX_FILE_MB = 20;
 const ACCEPT = ".jpg,.jpeg,.png,.gif,.webp,.mp4,.mov,.avi,.mkv,.pdf,.doc,.docx,.xls,.xlsx,.zip";
-const PLATFORM_LABELS = { telegram: "تلگرام", bale: "بله", eitaa: "ایتا", rubika: "روبیکا", soroush: "سروش", whatsapp: "واتساپ", instagram: "اینستاگرام" };
 const STATUS_STYLE = {
   pending: "bg-amber-50 text-amber-700 border-amber-200",
   sent: "bg-emerald-50 text-emerald-700 border-emerald-200",
@@ -90,9 +90,6 @@ function HistoryRow({ item }) {
                     <StatusBadge status={target.status} />
                     <PlatformLogo channel={target.channel} size={18} />
                     <span className="text-gray-700">{target.channel?.name || target.channel_name || "کانال"}</span>
-                    {target.channel?.platform && (
-                      <span className="text-gray-400">({PLATFORM_LABELS[target.channel.platform] || target.channel.platform})</span>
-                    )}
                     {target.error && <span className="text-red-600">— {target.error}</span>}
                   </li>
                 ))}
@@ -150,6 +147,14 @@ function HubraMain() {
   const workspace = (account?.workspaces || []).find((ws) => ws.ulid === workspaceId);
   const channels = workspace?.channels || [];
   const productImageCount = product && attachProductImage && product.image ? 1 : 0;
+
+  // با رفتن به «متن ساده» تگ‌ها حذف می‌شوند تا در کانال دیده نشوند
+  const changeFormat = (next) => {
+    if (next === format) return;
+    if (next === "text") setMessage((prev) => hubraToPlain(prev));
+    else setMessage((prev) => prev.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"));
+    setFormat(next);
+  };
 
   const toggleChannel = (id) =>
     setChannelIds((prev) => (prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]));
@@ -284,11 +289,6 @@ function HubraMain() {
                       >
                         <PlatformLogo channel={channel} />
                         {channel.name || channel.title || channel.ulid}
-                        {channel.platform && (
-                          <span className={selected ? "text-white/70" : "text-gray-400"}>
-                            {PLATFORM_LABELS[channel.platform] || channel.platform}
-                          </span>
-                        )}
                       </button>
                     );
                   })}
@@ -358,7 +358,7 @@ function HubraMain() {
                 <button
                   key={item.value}
                   type="button"
-                  onClick={() => setFormat(item.value)}
+                  onClick={() => changeFormat(item.value)}
                   className={`rounded-lg px-3 py-1.5 ${format === item.value ? "bg-white font-bold text-brand-navy shadow-sm" : "text-gray-500"}`}
                 >
                   {item.label}
@@ -366,22 +366,24 @@ function HubraMain() {
               ))}
             </div>
           </div>
-          <textarea
-            rows={9}
-            maxLength={MESSAGE_MAX}
-            className="admin-input !rounded-xl"
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            placeholder="متن پیام برای کانال‌ها..."
-          />
-          <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-gray-400">
-            <span>
-              {format === "html"
-                ? "تگ‌های مجاز: <b> <i> <u> <s> <code> <blockquote> <a href> <br> — در پیام‌رسان‌هایی که پشتیبانی نمی‌کنند متن ساده ارسال می‌شود."
-                : "متن همان‌طور که نوشته شده ارسال می‌شود."}
-            </span>
-            <span>{fa(message.length)} / {fa(MESSAGE_MAX)}</span>
-          </div>
+          {format === "html" ? (
+            <HubraEditor value={message} onChange={setMessage} maxLength={MESSAGE_MAX} />
+          ) : (
+            <>
+              <textarea
+                rows={9}
+                maxLength={MESSAGE_MAX}
+                className="admin-input !rounded-xl"
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                placeholder="متن پیام برای کانال‌ها..."
+              />
+              <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-gray-400">
+                <span>متن همان‌طور که نوشته شده و بدون قالب‌بندی ارسال می‌شود.</span>
+                <span>{fa(message.length)} / {fa(MESSAGE_MAX)}</span>
+              </div>
+            </>
+          )}
 
           <input
             ref={fileRef}
