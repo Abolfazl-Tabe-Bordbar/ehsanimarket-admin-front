@@ -12,6 +12,11 @@ async function Navbar() {
     <NavbarInner
       adminName={adminInfos?.name || ""}
       adminFamily={adminInfos?.family || ""}
+      quickInfo={{
+        orders: adminInfos?.orders || 0,
+        tickets: adminInfos?.tickets || 0,
+        permissions: adminInfos?.permissions || [],
+      }}
     />
   );
 }

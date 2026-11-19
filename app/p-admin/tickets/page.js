@@ -6,10 +6,11 @@ export const metadata = {
 };
 
 async function page({ searchParams }) {
-  const assigned = (await searchParams)?.assigned || "";
+  const query = (await searchParams) || {};
+  const assigned = query.assigned || "";
   return (
     <AdminPageShell title="تیکت‌های پشتیبانی" description="درخواست‌های مشتریان؛ اول تیکت‌های بی‌پاسخ و فوری">
-      <TicketsMain initialAssigned={assigned} />
+      <TicketsMain initialAssigned={assigned} initialUnread={query.unread === "1"} />
     </AdminPageShell>
   );
 }

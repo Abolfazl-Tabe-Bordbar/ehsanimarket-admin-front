@@ -4,8 +4,9 @@ import React from "react";
 import PersonIcon from "@mui/icons-material/Person";
 import LogoutButton from "./LogoutButton";
 import ChangePasswordButton from "./ChangePasswordButton";
+import NavbarQuickLinks from "./NavbarQuickLinks";
 
-function NavbarInner({ adminName, adminFamily }) {
+function NavbarInner({ adminName, adminFamily, quickInfo }) {
   return (
     <header className="sticky top-0 z-30 border-b border-gray-200/80 bg-white/90 backdrop-blur-md">
       <div className="flex h-14 md:h-16 items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
@@ -19,6 +20,7 @@ function NavbarInner({ adminName, adminFamily }) {
         </div>
 
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+          <NavbarQuickLinks initial={quickInfo} />
           <ChangePasswordButton />
           <LogoutButton />
         </div>

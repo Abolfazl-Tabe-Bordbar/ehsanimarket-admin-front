@@ -23,8 +23,8 @@ const STATUS_TABS = [
   { value: "", label: "همه" },
 ];
 
-function TicketsMain({ initialAssigned = "" }) {
-  const [filters, setFilters] = useState({ status: "active", assigned: initialAssigned ? String(initialAssigned) : "", priority: "", category_id: "", q: "", unread: "", page: 1 });
+function TicketsMain({ initialAssigned = "", initialUnread = false }) {
+  const [filters, setFilters] = useState({ status: "active", assigned: initialAssigned ? String(initialAssigned) : "", priority: "", category_id: "", q: "", unread: initialUnread ? "1" : "", page: 1 });
   const [search, setSearch] = useState("");
   const [data, setData] = useState(null);
   const [agents, setAgents] = useState([]);

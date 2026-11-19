@@ -2,8 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
-import getCookie from "@/funcs/cookies/getCookie";
-import isLogin from "@/funcs/isLogin";
+import getAdminStatus from "@/funcs/getAdminStatus";
 import AdminNavList from "@/components/admin/ui/AdminNavList";
 
 function Sidebar() {
@@ -13,7 +12,7 @@ function Sidebar() {
 
   useEffect(() => {
     const load = () =>
-      isLogin(getCookie("ramian-pakhsh-admin")).then((res) => {
+      getAdminStatus().then((res) => {
         setOrdersCount(res?.orders || 0);
         setTicketCount(res?.tickets || 0);
         setPermissions(Array.isArray(res?.permissions) ? res.permissions : []);
