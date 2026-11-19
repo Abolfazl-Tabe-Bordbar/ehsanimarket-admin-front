@@ -139,13 +139,25 @@ export const purchaseStageDateFields = {
   "not-send": "rejected_at",
 };
 
+// کد status_after_paid هر مرحله: 1 آماده‌سازی | 2 رد | 3 در حال ارسال | 4 ارسال شده
+const purchaseStageStatusCodes = {
+  preparing: 1,
+  "not-send": 2,
+  shipping: 3,
+  shipped: 4,
+  send: 4,
+};
+
 export function getPurchaseStageDate(purchaseInfo, stageKey) {
   const field = purchaseStageDateFields[stageKey];
+  // تاریخ کلی تغییر وضعیت فقط برای مرحله‌ای که سفارش الان در آن است جایگزین می‌شود
+  // (سفارش‌های قدیمی که تاریخ جداگانه هر مرحله را ندارند)؛ نه برای مراحلی که هنوز طی نشده‌اند.
+  const isCurrentStage =
+    purchaseStageStatusCodes[stageKey] !== undefined &&
+    Number(purchaseInfo?.status_after_paid) === purchaseStageStatusCodes[stageKey];
   const rawDate =
     (field && purchaseInfo?.[field]) ||
-    (stageKey !== "pending" && stageKey !== "paid"
-      ? purchaseInfo?.status_after_paid_at
-      : null);
+    (isCurrentStage ? purchaseInfo?.status_after_paid_at : null);
 
   if (!rawDate) return null;
 
