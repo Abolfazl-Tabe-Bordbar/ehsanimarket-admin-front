@@ -30,6 +30,7 @@ import {
   CategoryOutlined,
   QuickreplyOutlined,
   InsightsOutlined,
+  PodcastsOutlined,
 } from "@mui/icons-material";
 
 // دسترسی‌های پشتیبانی؛ آیتم‌هایی که permissions دارند فقط برای مدیران دارای آن دسترسی نمایش داده می‌شوند
@@ -309,6 +310,14 @@ export const adminNavGroups = [
         label: "مدیریت پیام‌ها",
         description: "تنظیم پیامک‌های سیستمی",
         icon: AdUnitsIcon,
+      },
+      {
+        href: "/p-admin/hubra",
+        path: "/p-admin/hubra",
+        label: "ارسال به کانال‌ها",
+        description: "تلگرام، بله و ... از طریق هابرا",
+        icon: PodcastsOutlined,
+        permissions: ["hubra_send"],
       },
     ],
   },

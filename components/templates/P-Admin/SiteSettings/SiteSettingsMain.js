@@ -5,6 +5,7 @@ import updateSiteSettings from "@/funcs/updateSiteSettings";
 import { uploadUrl, siteUrl } from "@/data/variables";
 import AdminPageShell from "@/components/admin/ui/AdminPageShell";
 import { useMemo, useState } from "react";
+import HubraSettingsCard from "@/components/templates/P-Admin/Hubra/HubraSettingsCard";
 
 const basicSections = [
   {
@@ -362,6 +363,11 @@ function SiteSettingsMain({ initialSettings }) {
         ))}
 
       </form>
+
+      {/* جدا از فرم اصلی: توکن با دکمه خودش ذخیره و قبل از ذخیره با هابرا بررسی می‌شود */}
+      <div className="mt-6">
+        <HubraSettingsCard />
+      </div>
     </AdminPageShell>
   );
 }
