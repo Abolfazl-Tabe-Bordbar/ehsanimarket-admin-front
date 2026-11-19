@@ -6,6 +6,7 @@ import { uploadUrl, siteUrl } from "@/data/variables";
 import AdminPageShell from "@/components/admin/ui/AdminPageShell";
 import { useMemo, useState } from "react";
 import HubraSettingsCard from "@/components/templates/P-Admin/Hubra/HubraSettingsCard";
+import KcoSettingsCard from "@/components/templates/P-Admin/Kco/KcoSettingsCard";
 
 const basicSections = [
   {
@@ -365,8 +366,9 @@ function SiteSettingsMain({ initialSettings }) {
       </form>
 
       {/* جدا از فرم اصلی: توکن با دکمه خودش ذخیره و قبل از ذخیره با هابرا بررسی می‌شود */}
-      <div className="mt-6">
+      <div className="mt-6 space-y-6">
         <HubraSettingsCard />
+        <KcoSettingsCard />
       </div>
     </AdminPageShell>
   );

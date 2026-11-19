@@ -59,6 +59,59 @@ function DuplicateProductCard({ product }) {
   );
 }
 
+const PRODUCT_NAME_MAX = 32;
+
+// نتیجه جستجوی کد در کارآمد: نام، انبارها و موجودی قابل فروش هر انبار
+function KcoLookupBanner({ info, onPickCount }) {
+  if (!info) return null;
+  if (!info.found) {
+    return (
+      <div className="mt-3 rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-xs text-gray-500">
+        کارآمد: {info.message || "کالا پیدا نشد"}
+      </div>
+    );
+  }
+  const fa = (value) => Number(value || 0).toLocaleString("fa-IR");
+  return (
+    <div className="mt-3 space-y-2 rounded-xl border border-emerald-200 bg-emerald-50/70 px-4 py-3 text-sm">
+      <p className="font-bold text-emerald-800">
+        این کالا در کارآمد پیدا شد: <span className="text-gray-900">{info.name}</span>
+      </p>
+      {info.name && info.name.length > PRODUCT_NAME_MAX && (
+        <p className="text-xs text-amber-700">
+          نام بیشتر از {fa(PRODUCT_NAME_MAX)} حرف است و کوتاه شد؛ در صورت نیاز آن را اصلاح کنید.
+        </p>
+      )}
+      <div className="flex flex-wrap items-center gap-2 text-xs">
+        <span className="text-gray-600">موجودی قابل فروش:</span>
+        {info.stores.map((store) => (
+          <button
+            key={store.id}
+            type="button"
+            onClick={() => onPickCount(store.free)}
+            title="استفاده از موجودی همین انبار"
+            className="rounded-lg border border-emerald-200 bg-white px-2.5 py-1 text-emerald-800 hover:bg-emerald-100"
+          >
+            {store.name}: <b>{fa(store.free)}</b>
+          </button>
+        ))}
+        {info.stores.length > 1 && (
+          <button
+            type="button"
+            onClick={() => onPickCount(info.total)}
+            className="rounded-lg bg-emerald-600 px-2.5 py-1 text-white hover:bg-emerald-700"
+          >
+            جمع همه: <b>{fa(info.total)}</b>
+          </button>
+        )}
+      </div>
+      <p className="text-[11px] text-gray-500">
+        نام و تعداد در فرم پر شد ({info.stores.length > 1 ? "جمع همه انبارها" : "موجودی همین انبار"}). برای استفاده از موجودی یک انبار، روی آن بزنید.
+      </p>
+    </div>
+  );
+}
+
 function AddProductModal({ setIsAddProductModalShow }) {
   const [step, setStep] = useState(1);
   const [confirmedProductCode, setConfirmedProductCode] = useState("");
@@ -66,6 +119,8 @@ function AddProductModal({ setIsAddProductModalShow }) {
   const [codeError, setCodeError] = useState("");
   const [duplicateProduct, setDuplicateProduct] = useState(null);
   const [isCheckingCode, setIsCheckingCode] = useState(false);
+  // اطلاعات کالا از کارآمد (نام و موجودی به تفکیک انبار)
+  const [kcoInfo, setKcoInfo] = useState(null);
   const [productImages, setProductImages] = useState([]);
   const [isProductImagesErrorShow, setIsProductImagesErrorShow] =
     useState(false);
@@ -106,6 +161,13 @@ function AddProductModal({ setIsAddProductModalShow }) {
       if (res?.status && res?.available) {
         setConfirmedProductCode(normalized);
         setValue("product_code", normalized);
+        const kco = res.kco || null;
+        setKcoInfo(kco);
+        if (kco?.found) {
+          // نام محصول در فروشگاه حداکثر ۳۲ کاراکتر است
+          if (kco.name) setValue("name", kco.name.slice(0, PRODUCT_NAME_MAX));
+          setValue("count", Math.max(0, Math.floor(kco.total || 0)));
+        }
         setStep(2);
       } else {
         setDuplicateProduct(res?.product || null);
@@ -283,6 +345,10 @@ function AddProductModal({ setIsAddProductModalShow }) {
                   <span className="text-gray-500 font-normal">کد محصول:</span>
                   {confirmedProductCode}
                 </div>
+                <KcoLookupBanner
+                  info={kcoInfo}
+                  onPickCount={(value) => setValue("count", Math.max(0, Math.floor(value)))}
+                />
               </div>
 
               <div className="space-y-3 mb-6">
@@ -390,6 +456,7 @@ function AddProductModal({ setIsAddProductModalShow }) {
                       id="name"
                       type="text"
                       className="border rounded-full px-3 py-2 w-full text-sm text-gray-700 outline-gray-300"
+                      maxLength={PRODUCT_NAME_MAX}
                       {...register("name", { required: true })}
                     />
                     {errors.name?.type === "required" && (
