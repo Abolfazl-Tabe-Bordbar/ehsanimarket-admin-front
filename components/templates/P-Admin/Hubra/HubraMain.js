@@ -9,13 +9,13 @@ import RefreshIcon from "@mui/icons-material/Refresh";
 import SendOutlinedIcon from "@mui/icons-material/SendOutlined";
 import Loader from "@/components/modules/Loader";
 import PlatformLogo from "./PlatformLogo";
+import MessagePreview from "./MessagePreview";
 import { TopRightToast } from "@/components/modules/Toast";
 import { uploadUrl } from "@/data/variables";
 import {
   getHubraAccount,
   getHubraBroadcast,
   getHubraBroadcasts,
-  getHubraUsage,
   searchHubraProducts,
   sendHubraBroadcast,
 } from "@/funcs/hubra";
@@ -50,31 +50,6 @@ function formatDate(value) {
 
 // متن پیام برای پیش‌نمایش (حذف تگ‌های html)
 const plain = (value) => String(value || "").replace(/<[^>]+>/g, "").trim();
-
-function UsageBox({ usage }) {
-  if (!usage) return null;
-  const today = usage.today || {};
-  const used = today.used ?? today.count ?? today.sent ?? null;
-  const limit = usage.limits?.daily ?? usage.plan?.daily_limit ?? usage.limit ?? null;
-  const remaining = today.remaining ?? (limit !== null && used !== null ? Math.max(0, limit - used) : null);
-  return (
-    <div className="admin-card space-y-2 text-sm">
-      <h3 className="text-sm font-bold text-brand-navy">سهمیه امروز</h3>
-      {usage.plan?.name && <p className="text-xs text-gray-500">پلن: {usage.plan.name}</p>}
-      <div className="grid grid-cols-2 gap-2 text-center">
-        <div className="rounded-xl bg-gray-50 p-3">
-          <p className="text-[11px] text-gray-500">مصرف‌شده</p>
-          <p className="mt-1 text-lg font-bold text-gray-900">{used === null ? "—" : fa(used)}</p>
-        </div>
-        <div className="rounded-xl bg-gray-50 p-3">
-          <p className="text-[11px] text-gray-500">باقی‌مانده</p>
-          <p className="mt-1 text-lg font-bold text-gray-900">{remaining === null ? "—" : fa(remaining)}</p>
-        </div>
-      </div>
-      <p className="text-[11px] leading-5 text-gray-400">هر کانال در هر ارسال یک واحد از سهمیه روزانه مصرف می‌کند.</p>
-    </div>
-  );
-}
 
 function HistoryRow({ item }) {
   const [open, setOpen] = useState(false);
@@ -132,7 +107,6 @@ function HistoryRow({ item }) {
 
 function HubraMain() {
   const [account, setAccount] = useState(null);
-  const [usage, setUsage] = useState(null);
   const [history, setHistory] = useState(null);
   const [workspaceId, setWorkspaceId] = useState("");
   const [channelIds, setChannelIds] = useState([]);
@@ -156,7 +130,6 @@ function HubraMain() {
 
   const loadHistory = useCallback(() => {
     getHubraBroadcasts(1).then((res) => setHistory(res?.status ? res.body : []));
-    getHubraUsage().then((res) => res?.status && setUsage(res.body));
   }, []);
 
   useEffect(() => {
@@ -452,14 +425,14 @@ function HubraMain() {
 
       </div>
 
-      <div className="space-y-4">
-        <UsageBox usage={usage} />
-        <div className="admin-card space-y-2 text-xs leading-6 text-gray-500">
-          <h3 className="text-sm font-bold text-brand-navy">راهنما</h3>
-          <p>ارسال در پس‌زمینه انجام می‌شود؛ وضعیت هر کانال را با کلیک روی ردیف تاریخچه ببینید.</p>
-          <p>اگر کانالی در لیست نیست، آن را در پنل هابرا متصل یا فعال کنید و «به‌روزرسانی لیست» را بزنید.</p>
-          <Link href="/p-admin/site-settings#hubra" className="text-brand-navy hover:underline">تنظیم توکن هابرا</Link>
-        </div>
+      <div>
+        <MessagePreview
+          message={message}
+          format={format}
+          files={files}
+          channelsCount={channelIds.length}
+          extraImages={product && attachProductImage && product.image ? [{ key: "product", src: `${uploadUrl}/products/${product.image}` }] : []}
+        />
       </div>
     </div>
 
