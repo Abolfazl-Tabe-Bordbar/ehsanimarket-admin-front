@@ -57,7 +57,7 @@ function NavbarQuickLinks({ initial }) {
     <div className="flex items-center gap-2">
       {canTickets && (
         <QuickLink
-          href="/p-admin/tickets?unread=1"
+          href="/p-admin/tickets"
           icon={ConfirmationNumberOutlinedIcon}
           label="تیکت‌های باز‌نشده"
           count={info.tickets}

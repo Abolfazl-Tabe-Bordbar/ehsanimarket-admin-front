@@ -23,8 +23,8 @@ const STATUS_TABS = [
   { value: "", label: "همه" },
 ];
 
-function TicketsMain({ initialAssigned = "", initialUnread = false }) {
-  const [filters, setFilters] = useState({ status: "active", assigned: initialAssigned ? String(initialAssigned) : "", priority: "", category_id: "", q: "", unread: initialUnread ? "1" : "", page: 1 });
+function TicketsMain({ initialAssigned = "" }) {
+  const [filters, setFilters] = useState({ status: "active", assigned: initialAssigned ? String(initialAssigned) : "", priority: "", category_id: "", q: "", page: 1 });
   const [search, setSearch] = useState("");
   const [data, setData] = useState(null);
   const [agents, setAgents] = useState([]);
@@ -114,14 +114,7 @@ function TicketsMain({ initialAssigned = "", initialUnread = false }) {
         </div>
 
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <label className="flex items-center gap-2 text-xs text-gray-600">
-            <input
-              type="checkbox"
-              checked={filters.unread === "1"}
-              onChange={(e) => setFilter("unread", e.target.checked ? "1" : "")}
-            />
-            فقط پیام‌های پاسخ‌داده‌نشده
-          </label>
+          <span />
           <div className="flex items-center gap-3 text-xs text-gray-500">
             <span>{data ? `${fa(data.count)} تیکت` : ""}</span>
             <button type="button" onClick={load} className="inline-flex items-center gap-1 hover:text-brand-navy">

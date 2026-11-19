@@ -10,7 +10,7 @@ async function page({ searchParams }) {
   const assigned = query.assigned || "";
   return (
     <AdminPageShell title="تیکت‌های پشتیبانی" description="درخواست‌های مشتریان؛ اول تیکت‌های بی‌پاسخ و فوری">
-      <TicketsMain initialAssigned={assigned} initialUnread={query.unread === "1"} />
+      <TicketsMain initialAssigned={assigned} />
     </AdminPageShell>
   );
 }
