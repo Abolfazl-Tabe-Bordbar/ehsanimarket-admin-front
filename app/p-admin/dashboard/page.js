@@ -2,6 +2,8 @@ import DashboardMain from "@/components/templates/P-Admin/Dashboard/DashboardMai
 import getDashboardStats from "@/funcs/getDashboardStats";
 import isLogin from "@/funcs/isLogin";
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+import { isSupportOnlyAdmin } from "@/components/admin/navConfig";
 
 export const metadata = {
   title: "احسانی مارکت - داشبورد",
@@ -13,6 +15,11 @@ async function DashboardPage() {
     getDashboardStats(token),
     isLogin(token),
   ]);
+
+  // کارشناس پشتیبانی به داشبورد دسترسی ندارد و مستقیم به تیکت‌ها می‌رود
+  if (isSupportOnlyAdmin(adminInfo?.permissions)) {
+    redirect("/p-admin/tickets");
+  }
 
   const stats = statsRes?.status ? statsRes.body : null;
   const adminName = adminInfo?.name

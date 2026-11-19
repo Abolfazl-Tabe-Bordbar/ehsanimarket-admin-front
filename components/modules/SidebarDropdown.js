@@ -13,6 +13,8 @@ function SidebarDropdownContent() {
   const searchParams = useSearchParams();
   const [isOpen, setIsOpen] = useState(false);
   const [ordersCount, setOrdersCount] = useState(0);
+  const [ticketCount, setTicketCount] = useState(0);
+  const [permissions, setPermissions] = useState(null);
   const currentItem = getNavItemByPath(pathname, searchParams.get("stage"));
   const CurrentIcon = currentItem?.icon;
 
@@ -23,6 +25,8 @@ function SidebarDropdownContent() {
   useEffect(() => {
     isLogin(getCookie("ramian-pakhsh-admin")).then((res) => {
       setOrdersCount(res?.orders || 0);
+      setTicketCount(res?.tickets || 0);
+      setPermissions(Array.isArray(res?.permissions) ? res.permissions : []);
     });
   }, []);
 
@@ -56,6 +60,8 @@ function SidebarDropdownContent() {
         <div className="rounded-2xl bg-brand-navy-dark p-3 shadow-lg border border-white/5">
           <AdminNavList
             badgeCount={ordersCount}
+            ticketCount={ticketCount}
+            permissions={permissions}
             onNavigate={() => setIsOpen(false)}
           />
         </div>

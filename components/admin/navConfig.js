@@ -25,7 +25,16 @@ import {
   Inventory2Outlined,
   OutboxOutlined,
   CampaignOutlined,
+  SupportAgentOutlined,
+  ConfirmationNumberOutlined,
+  CategoryOutlined,
+  QuickreplyOutlined,
+  InsightsOutlined,
 } from "@mui/icons-material";
+
+// دسترسی‌های پشتیبانی؛ آیتم‌هایی که permissions دارند فقط برای مدیران دارای آن دسترسی نمایش داده می‌شوند
+const SUPPORT_ANY = ["support_agent", "support_manage"];
+const SUPPORT_MANAGE = ["support_manage"];
 
 export const adminNavGroups = [
   {
@@ -97,6 +106,53 @@ export const adminNavGroups = [
         label: "هزینه پست",
         description: "تعریف هزینه پست بر اساس وزن برای هر شهر",
         icon: LocalShippingOutlined,
+      },
+    ],
+  },
+  {
+    id: "support",
+    title: "پشتیبانی",
+    items: [
+      {
+        href: "/p-admin/tickets",
+        path: "/p-admin/tickets",
+        label: "تیکت‌ها",
+        description: "درخواست‌های پشتیبانی مشتریان",
+        icon: ConfirmationNumberOutlined,
+        badgeKey: "tickets",
+        permissions: SUPPORT_ANY,
+      },
+      {
+        href: "/p-admin/support-agents",
+        path: "/p-admin/support-agents",
+        label: "کاربران پشتیبانی",
+        description: "کارشناس‌ها و وضعیت کارشان",
+        icon: SupportAgentOutlined,
+        permissions: SUPPORT_MANAGE,
+      },
+      {
+        href: "/p-admin/ticket-categories",
+        path: "/p-admin/ticket-categories",
+        label: "موضوعات تیکت",
+        description: "پیگیری سفارش، مرجوعی، ...",
+        icon: CategoryOutlined,
+        permissions: SUPPORT_MANAGE,
+      },
+      {
+        href: "/p-admin/canned-replies",
+        path: "/p-admin/canned-replies",
+        label: "پاسخ‌های آماده",
+        description: "متن‌های تکراری کارشناس‌ها",
+        icon: QuickreplyOutlined,
+        permissions: SUPPORT_MANAGE,
+      },
+      {
+        href: "/p-admin/support-reports",
+        path: "/p-admin/support-reports",
+        label: "گزارش پشتیبانی",
+        description: "زمان پاسخگویی و رضایت مشتریان",
+        icon: InsightsOutlined,
+        permissions: SUPPORT_MANAGE,
       },
     ],
   },
@@ -279,6 +335,22 @@ export const adminNavGroups = [
 ];
 
 export const adminNavItems = adminNavGroups.flatMap((group) => group.items);
+
+// مدیری که فقط دسترسی پشتیبانی دارد (کارشناس پشتیبانی)
+export function isSupportOnlyAdmin(permissions) {
+  return (
+    Array.isArray(permissions) &&
+    permissions.length > 0 &&
+    permissions.every((name) => name.startsWith("support_"))
+  );
+}
+
+// permissions: null یعنی هنوز دریافت نشده (آیتم‌های دارای دسترسی خاص پنهان می‌مانند)
+export function canSeeNavItem(item, permissions, group) {
+  if (isSupportOnlyAdmin(permissions) && group?.id !== "support") return false;
+  if (!item.permissions) return true;
+  return Array.isArray(permissions) && item.permissions.some((name) => permissions.includes(name));
+}
 
 export function getNavItemByPath(pathname, stage = null) {
   const resolvedStage =

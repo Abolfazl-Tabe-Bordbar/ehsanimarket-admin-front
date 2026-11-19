@@ -4,7 +4,7 @@ import { Suspense, useEffect, useState } from "react";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
-import { adminNavGroups } from "../navConfig";
+import { adminNavGroups, canSeeNavItem } from "../navConfig";
 
 function isNavItemActive(item, pathname, stage) {
   const pathMatches =
@@ -35,7 +35,7 @@ function hasSubItems(item, items) {
   return items.some((other) => other.parentPath === item.path);
 }
 
-function AdminNavListContent({ badgeCount = 0, onNavigate, className = "" }) {
+function AdminNavListContent({ badgeCount = 0, ticketCount = 0, permissions = null, onNavigate, className = "" }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const stage = searchParams.get("stage");
@@ -56,18 +56,23 @@ function AdminNavListContent({ badgeCount = 0, onNavigate, className = "" }) {
 
   return (
     <div className={`space-y-5 ${className}`.trim()}>
-      {adminNavGroups.map((group) => (
+      {adminNavGroups.map((group) => {
+        const visibleItems = group.items.filter((item) => canSeeNavItem(item, permissions, group));
+        if (!visibleItems.length) return null;
+        return (
         <section key={group.id}>
           <p className="admin-nav-group-title">{group.title}</p>
           <ul className="space-y-1">
-            {group.items.map((item) => {
+            {visibleItems.map((item) => {
               if (item.parentPath && !isSectionOpen(item.parentPath, group.items)) return null;
               const Icon = item.icon;
               const isSub = Boolean(item.parentPath);
               const isParent = hasSubItems(item, group.items);
               const isOpen = isParent && isSectionOpen(item.path, group.items);
               const isActive = isNavItemActive(item, pathname, stage);
-              const showBadge = item.badgeKey === "orders" && badgeCount > 0;
+              const badgeValue =
+                item.badgeKey === "orders" ? badgeCount : item.badgeKey === "tickets" ? ticketCount : 0;
+              const showBadge = badgeValue > 0;
 
               return (
                 <li
@@ -85,7 +90,7 @@ function AdminNavListContent({ badgeCount = 0, onNavigate, className = "" }) {
                     <span className="flex-1 truncate">{item.label}</span>
                     {showBadge && (
                       <span className="admin-nav-badge">
-                        {badgeCount.toLocaleString("fa")}
+                        {badgeValue.toLocaleString("fa")}
                       </span>
                     )}
                   </Link>
@@ -109,7 +114,8 @@ function AdminNavListContent({ badgeCount = 0, onNavigate, className = "" }) {
             })}
           </ul>
         </section>
-      ))}
+        );
+      })}
     </div>
   );
 }

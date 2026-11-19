@@ -8,11 +8,20 @@ import AdminNavList from "@/components/admin/ui/AdminNavList";
 
 function Sidebar() {
   const [ordersCount, setOrdersCount] = useState(0);
+  const [ticketCount, setTicketCount] = useState(0);
+  const [permissions, setPermissions] = useState(null);
 
   useEffect(() => {
-    isLogin(getCookie("ramian-pakhsh-admin")).then((res) => {
-      setOrdersCount(res?.orders || 0);
-    });
+    const load = () =>
+      isLogin(getCookie("ramian-pakhsh-admin")).then((res) => {
+        setOrdersCount(res?.orders || 0);
+        setTicketCount(res?.tickets || 0);
+        setPermissions(Array.isArray(res?.permissions) ? res.permissions : []);
+      });
+    load();
+    // شمارنده تیکت‌ها و سفارش‌ها هر دقیقه به‌روز می‌شود
+    const timer = setInterval(load, 60 * 1000);
+    return () => clearInterval(timer);
   }, []);
 
   return (
@@ -30,7 +39,7 @@ function Sidebar() {
         </p>
       </div>
       <nav className="admin-sidebar-scroll admin-scroll-y flex-1 overflow-y-auto px-3 py-5">
-        <AdminNavList badgeCount={ordersCount} />
+        <AdminNavList badgeCount={ordersCount} ticketCount={ticketCount} permissions={permissions} />
       </nav>
       <div className="border-t border-white/10 px-4 py-4">
         <p className="text-[11px] text-white/35 text-center leading-relaxed">
