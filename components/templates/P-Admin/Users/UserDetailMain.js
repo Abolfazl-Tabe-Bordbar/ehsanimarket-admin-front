@@ -199,6 +199,18 @@ function UserDetailMain({ userId }) {
               <span className="font-bold text-gray-600 shrink-0">کد پستی:</span>
               <span>{user.post_code || "—"}</span>
             </div>
+            <div className="flex gap-2">
+              <span className="font-bold text-gray-600 shrink-0">جنسیت:</span>
+              <span>{user.gender_label || "—"}</span>
+            </div>
+            <div className="flex gap-2">
+              <span className="font-bold text-gray-600 shrink-0">تاریخ تولد:</span>
+              <span>{user.birth_date_fa ? user.birth_date_fa.replace(/\d/g, (d) => "۰۱۲۳۴۵۶۷۸۹"[d]) : "—"}</span>
+            </div>
+            <div className="flex gap-2 md:col-span-2">
+              <span className="font-bold text-gray-600 shrink-0">نحوه آشنایی:</span>
+              <span>{user.referral_label || "—"}</span>
+            </div>
           </div>
 
           <UserTagsEditor

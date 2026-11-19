@@ -24,6 +24,7 @@ import {
   CelebrationOutlined,
   Inventory2Outlined,
   OutboxOutlined,
+  CampaignOutlined,
 } from "@mui/icons-material";
 
 export const adminNavGroups = [
@@ -150,6 +151,13 @@ export const adminNavGroups = [
         label: "تگ‌های کاربران",
         description: "تعریف تگ با رنگ",
         icon: LabelOutlined,
+      },
+      {
+        href: "/p-admin/referral-sources",
+        path: "/p-admin/referral-sources",
+        label: "نحوه آشنایی",
+        description: "گزینه‌های «از کجا با ما آشنا شدید» و آمار آن",
+        icon: CampaignOutlined,
       },
       {
         href: "/p-admin/user-sms",
