@@ -5,6 +5,7 @@ import Link from "next/link";
 import SearchIcon from "@mui/icons-material/Search";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import { getSupportAgents, getTicketCategories, getTickets } from "@/funcs/support";
+import TicketStatusTabs from "./TicketStatusTabs";
 import {
   PRIORITY_OPTIONS,
   PriorityBadge,
@@ -14,14 +15,6 @@ import {
   formatDateTime,
 } from "./supportHelpers";
 
-const STATUS_TABS = [
-  { value: "active", label: "باز" },
-  { value: "open", label: "ثبت‌شده" },
-  { value: "in_progress", label: "در حال بررسی" },
-  { value: "waiting_customer", label: "منتظر مشتری" },
-  { value: "resolved", label: "حل‌شده" },
-  { value: "", label: "همه" },
-];
 
 function TicketsMain({ initialAssigned = "" }) {
   const [filters, setFilters] = useState({ status: "active", assigned: initialAssigned ? String(initialAssigned) : "", priority: "", category_id: "", q: "", page: 1 });
@@ -50,24 +43,13 @@ function TicketsMain({ initialAssigned = "" }) {
 
   return (
     <section className="admin-section space-y-4">
-      <div className="admin-card space-y-4">
-        <div className="flex flex-wrap gap-2">
-          {STATUS_TABS.map((tab) => (
-            <button
-              key={tab.value || "all"}
-              type="button"
-              onClick={() => setFilter("status", tab.value)}
-              className={`rounded-full px-3.5 py-1.5 text-xs font-medium transition-colors ${
-                filters.status === tab.value
-                  ? "bg-brand-navy text-white"
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
+      <TicketStatusTabs
+        status={filters.status}
+        counts={data?.statusCounts}
+        onChange={(value) => setFilter("status", value)}
+      />
 
+      <div className="admin-card space-y-4">
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
           <form
             className="relative lg:col-span-2"
