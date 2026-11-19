@@ -95,7 +95,7 @@ function HistoryRow({ item }) {
       <tr className="cursor-pointer hover:bg-gray-50" onClick={toggle}>
         <td className="whitespace-nowrap text-xs text-gray-500">{formatDate(item.created_at || item.createdAt)}</td>
         <td><StatusBadge status={detail?.status || item.status} /></td>
-        <td className="min-w-[220px] max-w-[320px]">
+        <td className="min-w-[260px]">
           <p className="line-clamp-2 text-sm text-gray-700">{plain(item.message || item.text) || "(فقط فایل)"}</p>
         </td>
         <td className="whitespace-nowrap text-xs">{fa(targets.length || item.channels_count)} کانال</td>
@@ -254,6 +254,7 @@ function HubraMain() {
   }
 
   return (
+    <div className="space-y-4">
     <div className="grid gap-4 xl:grid-cols-[1fr_320px]">
       {busy && <Loader />}
 
@@ -449,39 +450,6 @@ function HubraMain() {
           </div>
         </section>
 
-        <section className="admin-card !p-0 overflow-hidden">
-          <div className="flex items-center justify-between border-b border-gray-100 p-5">
-            <h3 className="text-sm font-bold text-brand-navy">ارسال‌های اخیر</h3>
-            <button type="button" onClick={loadHistory} className="inline-flex items-center gap-1 text-xs text-gray-500 hover:text-brand-navy">
-              <RefreshIcon sx={{ fontSize: 16 }} />
-              به‌روزرسانی
-            </button>
-          </div>
-          {history === null ? (
-            <p className="p-8 text-center text-xs text-gray-400">در حال بارگذاری...</p>
-          ) : !history.length ? (
-            <p className="p-8 text-center text-xs text-gray-400">هنوز پیامی ارسال نشده است</p>
-          ) : (
-            <div className="admin-table-wrap border-0 rounded-none shadow-none">
-              <table className="admin-table">
-                <thead>
-                  <tr>
-                    <th>زمان</th>
-                    <th>وضعیت</th>
-                    <th>پیام</th>
-                    <th>کانال‌ها</th>
-                    <th>ارسال‌کننده</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {history.map((item) => (
-                    <HistoryRow key={item.ulid} item={item} />
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </section>
       </div>
 
       <div className="space-y-4">
@@ -493,6 +461,42 @@ function HubraMain() {
           <Link href="/p-admin/site-settings#hubra" className="text-brand-navy hover:underline">تنظیم توکن هابرا</Link>
         </div>
       </div>
+    </div>
+
+    {/* تاریخچه با عرض کامل صفحه */}
+      <section className="admin-card !p-0 overflow-hidden">
+        <div className="flex items-center justify-between border-b border-gray-100 p-5">
+          <h3 className="text-sm font-bold text-brand-navy">ارسال‌های اخیر</h3>
+          <button type="button" onClick={loadHistory} className="inline-flex items-center gap-1 text-xs text-gray-500 hover:text-brand-navy">
+            <RefreshIcon sx={{ fontSize: 16 }} />
+            به‌روزرسانی
+          </button>
+        </div>
+        {history === null ? (
+          <p className="p-8 text-center text-xs text-gray-400">در حال بارگذاری...</p>
+        ) : !history.length ? (
+          <p className="p-8 text-center text-xs text-gray-400">هنوز پیامی ارسال نشده است</p>
+        ) : (
+          <div className="admin-table-wrap border-0 rounded-none shadow-none">
+            <table className="admin-table">
+              <thead>
+                <tr>
+                  <th>زمان</th>
+                  <th>وضعیت</th>
+                  <th>پیام</th>
+                  <th>کانال‌ها</th>
+                  <th>ارسال‌کننده</th>
+                </tr>
+              </thead>
+              <tbody>
+                {history.map((item) => (
+                  <HistoryRow key={item.ulid} item={item} />
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
     </div>
   );
 }
