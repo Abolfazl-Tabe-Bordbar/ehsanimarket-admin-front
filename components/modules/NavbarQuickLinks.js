@@ -59,7 +59,7 @@ function NavbarQuickLinks({ initial }) {
         <QuickLink
           href="/p-admin/tickets"
           icon={ConfirmationNumberOutlinedIcon}
-          label="تیکت‌های باز‌نشده"
+          label="تیکت جدید"
           count={info.tickets}
           tone="border-red-200 bg-red-50 text-red-700 hover:bg-red-100"
         />
@@ -68,7 +68,7 @@ function NavbarQuickLinks({ initial }) {
         <QuickLink
           href="/p-admin/purchases?p=1&status=pending"
           icon={ShoppingBasketOutlinedIcon}
-          label="خریدهای جدید"
+          label="خریدها"
           count={info.orders}
           tone="border-amber-200 bg-amber-50 text-amber-800 hover:bg-amber-100"
         />
