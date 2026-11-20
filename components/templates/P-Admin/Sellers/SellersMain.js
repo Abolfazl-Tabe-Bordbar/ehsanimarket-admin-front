@@ -9,7 +9,6 @@ import KeyOutlinedIcon from "@mui/icons-material/KeyOutlined";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import ReceiptLongOutlinedIcon from "@mui/icons-material/ReceiptLongOutlined";
 import StorefrontOutlinedIcon from "@mui/icons-material/StorefrontOutlined";
-import PhoneIphoneOutlinedIcon from "@mui/icons-material/PhoneIphoneOutlined";
 import Loader from "@/components/modules/Loader";
 import { createSeller, deleteSeller, getSellerOrders, getSellers, setSellerPassword, updateSeller } from "@/funcs/sellers";
 
@@ -220,23 +219,6 @@ function SellersMain() {
   return (
     <section className="admin-section space-y-4">
       {busy && <Loader />}
-
-      <div className="admin-card flex gap-3 text-sm leading-7 text-gray-600">
-        <span className="mt-1 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-navy/8 text-brand-navy">
-          <PhoneIphoneOutlinedIcon />
-        </span>
-        <div>
-          <p>
-            فروشنده با <b>نام کاربری و رمز</b> وارد اپ فروشنده می‌شود، مشتری را با شماره موبایل پیدا یا ثبت‌نام می‌کند،
-            سبد را می‌چیند و سفارش ثبت می‌کند. <b>لینک پرداخت با پیامک</b> برای مشتری می‌رود و سفارش پس از پرداخت مثل بقیه
-            خریدها در بخش «خریدها» دیده می‌شود.
-          </p>
-          <p className="text-xs text-gray-500">
-            موجودی محصولات با ثبت سفارش رزرو می‌شود و اگر مشتری تا ۲۴ ساعت پرداخت نکند، سفارش لغو و موجودی برمی‌گردد. متن
-            پیامک در «مدیریت پیام‌ها ← لینک پرداخت سفارش فروشنده» قابل تغییر است.
-          </p>
-        </div>
-      </div>
 
       <div className="admin-card !p-0 overflow-hidden">
         <div className="flex flex-col gap-3 border-b border-gray-100 p-5 sm:flex-row sm:items-center sm:justify-between">
