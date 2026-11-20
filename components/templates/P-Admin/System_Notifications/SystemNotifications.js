@@ -63,7 +63,40 @@ function SystemNotifications({ systemMessages }) {
     orderRejectedMessage?.msg ||
       "fullname عزیز، سفارش orderId شما رد شد.\nmessage"
   );
+  const sellerPaymentLinkMessage = systemMessagesData.find(
+    (message) => message.tag === "seller_payment_link"
+  );
+  const [sellerPaymentLinkMessageValue, setSellerPaymentLinkMessageValue] = useState(
+    sellerPaymentLinkMessage?.msg ||
+      "fullname عزیز، سفارش orderId شما در احسانی مارکت به مبلغ totalPrice تومان ثبت شد.\nپرداخت:\npayUrl"
+  );
   const [isLoading, setIsLoading] = useState(false);
+
+  const editSellerPaymentLinkMessage = () => {
+    if (!sellerPaymentLinkMessageValue.trim()) {
+      Swal.fire("توجه!", "وارد کردن پیام لینک پرداخت اجباری است", "warning");
+    } else if (!sellerPaymentLinkMessageValue.includes("payUrl")) {
+      Swal.fire("توجه!", "متن پیام باید شامل payUrl (لینک پرداخت) باشد", "warning");
+    } else if (!sellerPaymentLinkMessage?.id) {
+      Swal.fire(
+        "توجه!",
+        "رکورد پیام در پایگاه داده یافت نشد. API را ری‌استارت کنید.",
+        "warning"
+      );
+    } else {
+      setIsLoading(true);
+      editSystemNotification(
+        {
+          tag: "seller_payment_link",
+          msg_id: "seller_payment_link",
+          msg: sellerPaymentLinkMessageValue,
+        },
+        sellerPaymentLinkMessage.id
+      ).then(() => {
+        setIsLoading(false);
+      });
+    }
+  };
 
   const editLoginMessage = () => {
     if (!loginMessageValue.trim()) {
@@ -626,6 +659,55 @@ function SystemNotifications({ systemMessages }) {
                 type="button"
                 className="admin-btn-accent"
                 onClick={editProductBackInStockMessage}
+              >
+                ذخیره
+              </button>
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-amber-200 bg-amber-50/60 p-5">
+            <h3 className="font-semibold text-base text-amber-800 mb-2">
+              ۱۰. لینک پرداخت سفارش فروشنده
+            </h3>
+
+            <p className="text-sm text-gray-600 mb-3">
+              وقتی فروشنده از اپ فروشنده برای مشتری سفارش ثبت می‌کند، این پیام همراه
+              لینک پرداخت برای مشتری ارسال می‌شود.
+            </p>
+
+            <div className="text-xs bg-amber-100 text-amber-800 p-3 rounded-lg mb-3">
+              متغیرهای قابل استفاده:
+              <ul className="list-disc list-inside mt-1">
+                <li>
+                  <b>fullname</b> : نام و نام خانوادگی مشتری
+                </li>
+                <li>
+                  <b>orderId</b> : شماره سفارش
+                </li>
+                <li>
+                  <b>totalPrice</b> : مبلغ قابل پرداخت (تومان)
+                </li>
+                <li>
+                  <b>payUrl</b> : لینک پرداخت (الزامی)
+                </li>
+                <li>
+                  <b>sellerName</b> : نام فروشنده
+                </li>
+              </ul>
+            </div>
+
+            <textarea
+              rows="4"
+              className="admin-input"
+              value={sellerPaymentLinkMessageValue}
+              onChange={(e) => setSellerPaymentLinkMessageValue(e.target.value)}
+            />
+
+            <div className="flex justify-end mt-4">
+              <button
+                type="button"
+                className="admin-btn-accent"
+                onClick={editSellerPaymentLinkMessage}
               >
                 ذخیره
               </button>
