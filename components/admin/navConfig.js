@@ -31,6 +31,7 @@ import {
   QuickreplyOutlined,
   InsightsOutlined,
   PodcastsOutlined,
+  StorefrontOutlined,
 } from "@mui/icons-material";
 
 // دسترسی‌های پشتیبانی؛ آیتم‌هایی که permissions دارند فقط برای مدیران دارای آن دسترسی نمایش داده می‌شوند
@@ -100,6 +101,14 @@ export const adminNavGroups = [
         label: "دلایل رد خرید",
         description: "تعریف دلایل آماده برای رد سفارش",
         icon: BlockOutlined,
+      },
+      {
+        href: "/p-admin/sellers",
+        path: "/p-admin/sellers",
+        label: "فروشندگان",
+        description: "حساب‌های اپ فروشنده و سفارش‌های ثبت‌شده‌شان",
+        icon: StorefrontOutlined,
+        permissions: ["sellers_manage"],
       },
       {
         href: "/p-admin/shipping-rates",

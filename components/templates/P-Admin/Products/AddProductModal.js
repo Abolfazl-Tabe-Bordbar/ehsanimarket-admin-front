@@ -63,6 +63,13 @@ const PRODUCT_NAME_MAX = 32;
 
 // نتیجه جستجوی کد در کارآمد: نام، انبارها و موجودی قابل فروش هر انبار
 function KcoLookupBanner({ info, onPickCount }) {
+  if (info === undefined) {
+    return (
+      <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-2.5 text-xs text-amber-800">
+        کارآمد بررسی نشد: نسخه API روی سرور به‌روز نیست (تغییرات API را deploy کنید).
+      </div>
+    );
+  }
   if (!info) return null;
   if (!info.found) {
     return (
@@ -92,7 +99,7 @@ function KcoLookupBanner({ info, onPickCount }) {
             title="استفاده از موجودی همین انبار"
             className="rounded-lg border border-emerald-200 bg-white px-2.5 py-1 text-emerald-800 hover:bg-emerald-100"
           >
-            {store.name}: <b>{fa(store.free)}</b>
+            {store.name}: <b>{Number(store.free).toLocaleString("fa-IR", { maximumFractionDigits: 3 })}</b>
           </button>
         ))}
         {info.stores.length > 1 && (
@@ -105,6 +112,11 @@ function KcoLookupBanner({ info, onPickCount }) {
           </button>
         )}
       </div>
+      {info.stores.some((store) => !Number.isInteger(store.free)) && (
+        <p className="text-[11px] text-amber-700">
+          موجودی کارآمد اعشاری است؛ در فرم به عدد صحیح پایین گرد شد.
+        </p>
+      )}
       <p className="text-[11px] text-gray-500">
         نام و تعداد در فرم پر شد ({info.stores.length > 1 ? "جمع همه انبارها" : "موجودی همین انبار"}). برای استفاده از موجودی یک انبار، روی آن بزنید.
       </p>
@@ -161,7 +173,8 @@ function AddProductModal({ setIsAddProductModalShow }) {
       if (res?.status && res?.available) {
         setConfirmedProductCode(normalized);
         setValue("product_code", normalized);
-        const kco = res.kco || null;
+        // undefined یعنی API قدیمی است و اصلاً کارآمد را بررسی نکرده
+        const kco = res.kco === undefined ? undefined : res.kco || null;
         setKcoInfo(kco);
         if (kco?.found) {
           // نام محصول در فروشگاه حداکثر ۳۲ کاراکتر است
