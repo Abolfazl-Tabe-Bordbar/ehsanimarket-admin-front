@@ -4,6 +4,60 @@ import editSystemNotification from "@/funcs/editSystemNotification";
 import React, { useState } from "react";
 import Swal from "sweetalert2";
 
+// متغیر قابل کلیک: با کلیک، همان‌جا که نشانگر در متن پیام همان کارت است درج می‌شود
+function VarChip({ name }) {
+  return (
+    <button
+      type="button"
+      data-template-var={name}
+      title="کلیک کنید تا در متن پیام درج شود"
+      className="mx-0.5 inline-flex items-center rounded-md border border-black/10 bg-white/80 px-1.5 py-0.5 font-bold leading-none transition hover:bg-white hover:shadow-sm active:scale-95 cursor-pointer"
+      dir="ltr"
+    >
+      {name}
+    </button>
+  );
+}
+
+// مقدار textarea کنترل‌شده React را عوض می‌کند و onChange همان فیلد را صدا می‌زند
+function setNativeValue(element, value) {
+  const prototype = element instanceof HTMLTextAreaElement ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype;
+  Object.getOwnPropertyDescriptor(prototype, "value").set.call(element, value);
+  element.dispatchEvent(new Event("input", { bubbles: true }));
+}
+
+function insertVariable(event) {
+  const chip = event.target.closest("[data-template-var]");
+  if (!chip) return;
+  // جلوگیری از گرفتن فوکوس توسط دکمه تا نشانگر متن سر جایش بماند
+  event.preventDefault();
+  const card = chip.closest("[data-template-card]");
+  const field = card?.querySelector("textarea");
+  if (!field) return;
+
+  const variable = chip.dataset.templateVar;
+  const value = field.value;
+  // اگر کاربر هنوز داخل متن کلیک نکرده، به انتهای متن اضافه می‌شود
+  const touched = field.dataset.touched === "1";
+  const start = touched ? field.selectionStart : value.length;
+  const end = touched ? field.selectionEnd : value.length;
+  const before = value.slice(0, start);
+  const after = value.slice(end);
+  const lead = before && !/\s$/.test(before) ? " " : "";
+  const trail = after && !/^\s/.test(after) ? " " : "";
+  const insert = `${lead}${variable}${trail}`;
+
+  setNativeValue(field, before + insert + after);
+  const caret = before.length + insert.length;
+  field.focus();
+  field.dataset.touched = "1";
+  requestAnimationFrame(() => field.setSelectionRange(caret, caret));
+}
+
+function markTouched(event) {
+  if (event.target instanceof HTMLTextAreaElement) event.target.dataset.touched = "1";
+}
+
 function SystemNotifications({ systemMessages }) {
   const systemMessagesData = systemMessages.body.data;
 
@@ -295,7 +349,7 @@ function SystemNotifications({ systemMessages }) {
   return (
     <>
       {isLoading && <Loader />}
-      <section className="admin-section space-y-6">
+      <section className="admin-section space-y-6" onMouseDown={insertVariable} onFocusCapture={markTouched}>
         <div>
           <h2 className="admin-section-title !border-0 !pb-0 mb-2">تنظیمات پیام‌های سیستمی</h2>
           <p className="text-sm text-gray-500">
@@ -304,7 +358,7 @@ function SystemNotifications({ systemMessages }) {
           </p>
         </div>
 
-          <div className="rounded-2xl border border-gray-200 bg-gray-50/80 p-5">
+          <div data-template-card className="rounded-2xl border border-gray-200 bg-gray-50/80 p-5">
             <h3 className="font-semibold text-base text-brand-navy mb-2">
               ۱. پیام ورود کاربر
             </h3>
@@ -314,13 +368,13 @@ function SystemNotifications({ systemMessages }) {
             </p>
 
             <div className="text-xs bg-blue-50 text-blue-700 p-3 rounded-lg mb-3">
-              متغیرهای قابل استفاده:
+              متغیرهای قابل استفاده (روی هر کدام کلیک کنید تا جای نشانگر در متن درج شود):
               <ul className="list-disc list-inside mt-1">
                 <li>
-                  <b>fullname</b> : نام و نام خانوادگی کاربر
+                  <VarChip name="fullname" /> : نام و نام خانوادگی کاربر
                 </li>
                 <li>
-                  <b>date</b> : تاریخ و ساعت ورود
+                  <VarChip name="date" /> : تاریخ و ساعت ورود
                 </li>
               </ul>
             </div>
@@ -343,7 +397,7 @@ function SystemNotifications({ systemMessages }) {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-amber-200 bg-amber-50/80 p-5">
+          <div data-template-card className="rounded-2xl border border-amber-200 bg-amber-50/80 p-5">
             <h3 className="font-semibold text-base text-amber-900 mb-2">
               ۲. پیام OTP (کد اعتبارسنجی)
             </h3>
@@ -380,7 +434,7 @@ function SystemNotifications({ systemMessages }) {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-gray-200 bg-gray-50/80 p-5">
+          <div data-template-card className="rounded-2xl border border-gray-200 bg-gray-50/80 p-5">
             <h3 className="font-semibold text-base text-brand-navy mb-2">
               ۳. پیام خوش‌آمدگویی
             </h3>
@@ -393,7 +447,7 @@ function SystemNotifications({ systemMessages }) {
               متغیر قابل استفاده:
               <ul className="list-disc list-inside mt-1">
                 <li>
-                  <b>fullname</b> : نام و نام خانوادگی کاربر
+                  <VarChip name="fullname" /> : نام و نام خانوادگی کاربر
                 </li>
               </ul>
             </div>
@@ -418,7 +472,7 @@ function SystemNotifications({ systemMessages }) {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-red-200 bg-red-50/60 p-5">
+          <div data-template-card className="rounded-2xl border border-red-200 bg-red-50/60 p-5">
             <h3 className="font-semibold text-base text-red-800 mb-2">
               ۴. پیام کمبود موجودی محصول
             </h3>
@@ -431,7 +485,7 @@ function SystemNotifications({ systemMessages }) {
               متغیر قابل استفاده:
               <ul className="list-disc list-inside mt-1">
                 <li>
-                  <b>productName</b> : نام محصول
+                  <VarChip name="productName" /> : نام محصول
                 </li>
               </ul>
             </div>
@@ -454,7 +508,7 @@ function SystemNotifications({ systemMessages }) {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-[#253c8a]/20 bg-[#253c8a]/5 p-5">
+          <div data-template-card className="rounded-2xl border border-[#253c8a]/20 bg-[#253c8a]/5 p-5">
             <h3 className="font-semibold text-base text-[#253c8a] mb-2">
               ۵. پیام انتشار مقاله (خبرنامه)
             </h3>
@@ -464,13 +518,13 @@ function SystemNotifications({ systemMessages }) {
             </p>
 
             <div className="text-xs bg-blue-50 text-blue-700 p-3 rounded-lg mb-3">
-              متغیرهای قابل استفاده:
+              متغیرهای قابل استفاده (روی هر کدام کلیک کنید تا جای نشانگر در متن درج شود):
               <ul className="list-disc list-inside mt-1">
                 <li>
-                  <b>articleTitle</b> : عنوان مقاله
+                  <VarChip name="articleTitle" /> : عنوان مقاله
                 </li>
                 <li>
-                  <b>articleUrl</b> : لینک مقاله در سایت
+                  <VarChip name="articleUrl" /> : لینک مقاله در سایت
                 </li>
               </ul>
             </div>
@@ -493,7 +547,7 @@ function SystemNotifications({ systemMessages }) {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-sky-200 bg-sky-50/60 p-5">
+          <div data-template-card className="rounded-2xl border border-sky-200 bg-sky-50/60 p-5">
             <h3 className="font-semibold text-base text-sky-800 mb-2">
               ۶. پیام ثبت خرید پس از پرداخت
             </h3>
@@ -503,16 +557,16 @@ function SystemNotifications({ systemMessages }) {
             </p>
 
             <div className="text-xs bg-sky-100 text-sky-800 p-3 rounded-lg mb-3">
-              متغیرهای قابل استفاده:
+              متغیرهای قابل استفاده (روی هر کدام کلیک کنید تا جای نشانگر در متن درج شود):
               <ul className="list-disc list-inside mt-1">
                 <li>
-                  <b>fullname</b> : نام و نام خانوادگی کاربر
+                  <VarChip name="fullname" /> : نام و نام خانوادگی کاربر
                 </li>
                 <li>
-                  <b>orderId</b> : شماره سفارش
+                  <VarChip name="orderId" /> : شماره سفارش
                 </li>
                 <li>
-                  <b>totalPrice</b> : مبلغ کل سفارش (تومان)
+                  <VarChip name="totalPrice" /> : مبلغ کل سفارش (تومان)
                 </li>
               </ul>
             </div>
@@ -535,7 +589,7 @@ function SystemNotifications({ systemMessages }) {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-green-200 bg-green-50/60 p-5">
+          <div data-template-card className="rounded-2xl border border-green-200 bg-green-50/60 p-5">
             <h3 className="font-semibold text-base text-green-800 mb-2">
               ۷. پیام تأیید سفارش توسط مدیر
             </h3>
@@ -545,19 +599,19 @@ function SystemNotifications({ systemMessages }) {
             </p>
 
             <div className="text-xs bg-green-100 text-green-800 p-3 rounded-lg mb-3">
-              متغیرهای قابل استفاده:
+              متغیرهای قابل استفاده (روی هر کدام کلیک کنید تا جای نشانگر در متن درج شود):
               <ul className="list-disc list-inside mt-1">
                 <li>
-                  <b>fullname</b> : نام و نام خانوادگی کاربر
+                  <VarChip name="fullname" /> : نام و نام خانوادگی کاربر
                 </li>
                 <li>
-                  <b>orderId</b> : شماره سفارش
+                  <VarChip name="orderId" /> : شماره سفارش
                 </li>
                 <li>
-                  <b>totalPrice</b> : مبلغ کل سفارش (تومان)
+                  <VarChip name="totalPrice" /> : مبلغ کل سفارش (تومان)
                 </li>
                 <li>
-                  <b>message</b> : پیامی که مدیر هنگام تأیید وارد می‌کند
+                  <VarChip name="message" /> : پیامی که مدیر هنگام تأیید وارد می‌کند
                 </li>
               </ul>
             </div>
@@ -580,7 +634,7 @@ function SystemNotifications({ systemMessages }) {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-rose-200 bg-rose-50/60 p-5">
+          <div data-template-card className="rounded-2xl border border-rose-200 bg-rose-50/60 p-5">
             <h3 className="font-semibold text-base text-rose-800 mb-2">
               ۸. پیام رد سفارش توسط مدیر
             </h3>
@@ -590,19 +644,19 @@ function SystemNotifications({ systemMessages }) {
             </p>
 
             <div className="text-xs bg-rose-100 text-rose-800 p-3 rounded-lg mb-3">
-              متغیرهای قابل استفاده:
+              متغیرهای قابل استفاده (روی هر کدام کلیک کنید تا جای نشانگر در متن درج شود):
               <ul className="list-disc list-inside mt-1">
                 <li>
-                  <b>fullname</b> : نام و نام خانوادگی کاربر
+                  <VarChip name="fullname" /> : نام و نام خانوادگی کاربر
                 </li>
                 <li>
-                  <b>orderId</b> : شماره سفارش
+                  <VarChip name="orderId" /> : شماره سفارش
                 </li>
                 <li>
-                  <b>totalPrice</b> : مبلغ کل سفارش (تومان)
+                  <VarChip name="totalPrice" /> : مبلغ کل سفارش (تومان)
                 </li>
                 <li>
-                  <b>message</b> : پیام دلیل رد که به کاربر نمایش داده می‌شود
+                  <VarChip name="message" /> : پیام دلیل رد که به کاربر نمایش داده می‌شود
                 </li>
               </ul>
             </div>
@@ -625,7 +679,7 @@ function SystemNotifications({ systemMessages }) {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-emerald-200 bg-emerald-50/60 p-5">
+          <div data-template-card className="rounded-2xl border border-emerald-200 bg-emerald-50/60 p-5">
             <h3 className="font-semibold text-base text-emerald-800 mb-2">
               ۹. پیام موجود شدن محصول
             </h3>
@@ -636,13 +690,13 @@ function SystemNotifications({ systemMessages }) {
             </p>
 
             <div className="text-xs bg-emerald-100 text-emerald-800 p-3 rounded-lg mb-3">
-              متغیرهای قابل استفاده:
+              متغیرهای قابل استفاده (روی هر کدام کلیک کنید تا جای نشانگر در متن درج شود):
               <ul className="list-disc list-inside mt-1">
                 <li>
-                  <b>productName</b> : نام محصول
+                  <VarChip name="productName" /> : نام محصول
                 </li>
                 <li>
-                  <b>productUrl</b> : لینک محصول در سایت
+                  <VarChip name="productUrl" /> : لینک محصول در سایت
                 </li>
               </ul>
             </div>
@@ -665,7 +719,7 @@ function SystemNotifications({ systemMessages }) {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-amber-200 bg-amber-50/60 p-5">
+          <div data-template-card className="rounded-2xl border border-amber-200 bg-amber-50/60 p-5">
             <h3 className="font-semibold text-base text-amber-800 mb-2">
               ۱۰. لینک پرداخت سفارش فروشنده
             </h3>
@@ -676,22 +730,22 @@ function SystemNotifications({ systemMessages }) {
             </p>
 
             <div className="text-xs bg-amber-100 text-amber-800 p-3 rounded-lg mb-3">
-              متغیرهای قابل استفاده:
+              متغیرهای قابل استفاده (روی هر کدام کلیک کنید تا جای نشانگر در متن درج شود):
               <ul className="list-disc list-inside mt-1">
                 <li>
-                  <b>fullname</b> : نام و نام خانوادگی مشتری
+                  <VarChip name="fullname" /> : نام و نام خانوادگی مشتری
                 </li>
                 <li>
-                  <b>orderId</b> : شماره سفارش
+                  <VarChip name="orderId" /> : شماره سفارش
                 </li>
                 <li>
-                  <b>totalPrice</b> : مبلغ قابل پرداخت (تومان)
+                  <VarChip name="totalPrice" /> : مبلغ قابل پرداخت (تومان)
                 </li>
                 <li>
-                  <b>payUrl</b> : لینک پرداخت (الزامی)
+                  <VarChip name="payUrl" /> : لینک پرداخت (الزامی)
                 </li>
                 <li>
-                  <b>sellerName</b> : نام فروشنده
+                  <VarChip name="sellerName" /> : نام فروشنده
                 </li>
               </ul>
             </div>
