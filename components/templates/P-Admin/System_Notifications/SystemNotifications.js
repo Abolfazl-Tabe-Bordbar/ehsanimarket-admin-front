@@ -11,9 +11,10 @@ function VarChip({ name }) {
       type="button"
       data-template-var={name}
       title="کلیک کنید تا در متن پیام درج شود"
-      className="mx-0.5 inline-flex items-center rounded-md border border-black/10 bg-white/80 px-1.5 py-0.5 font-bold leading-none transition hover:bg-white hover:shadow-sm active:scale-95 cursor-pointer"
+      className="my-1 mx-0.5 inline-flex items-center gap-1 rounded-lg border border-black/10 bg-white px-3 py-1.5 text-[13px] font-bold leading-none shadow-sm transition hover:-translate-y-px hover:shadow active:scale-95 cursor-pointer"
       dir="ltr"
     >
+      <span className="text-[15px] leading-none opacity-60">+</span>
       {name}
     </button>
   );
