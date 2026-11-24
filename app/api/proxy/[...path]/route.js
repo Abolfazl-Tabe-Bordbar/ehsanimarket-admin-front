@@ -4,7 +4,7 @@ export const dynamic = "force-dynamic";
 
 const handler = createApiProxy({
   prefix: "admins",
-  tokenPaths: ["login"],
+  tokenPaths: ["login", "profile/me"],
 });
 
 export {
