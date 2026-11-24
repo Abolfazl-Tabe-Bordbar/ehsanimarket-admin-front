@@ -33,6 +33,7 @@ import {
   PodcastsOutlined,
   StorefrontOutlined,
   AccountTreeOutlined,
+  WarehouseOutlined,
 } from "@mui/icons-material";
 
 // دسترسی‌های پشتیبانی؛ آیتم‌هایی که permissions دارند فقط برای مدیران دارای آن دسترسی نمایش داده می‌شوند
@@ -198,6 +199,14 @@ export const adminNavGroups = [
         label: "برندها",
         description: "مدیریت برندهای محصولات",
         icon: LocalOfferOutlined,
+      },
+      {
+        href: "/p-admin/warehouses",
+        path: "/p-admin/warehouses",
+        label: "انبارها",
+        description: "تعریف انبارها و وضعیت فعال بودن",
+        icon: WarehouseOutlined,
+        permissions: ["warehouses_manage"],
       },
     ],
   },

@@ -15,12 +15,14 @@ const PERMISSION_GROUPS = {
   user: { label: "تگ و پیامک کاربران", order: 13 },
   newsletter: { label: "خبرنامه", order: 14 },
   site_settings: { label: "تنظیمات سایت", order: 15 },
+  warehouses: { label: "انبارها", order: 16 },
 };
 
 export function getPermissionGroupKey(name = "") {
   if (name.startsWith("discount_plans")) return "discount_plans";
   if (name.startsWith("festivals")) return "festivals";
   if (name.startsWith("site_settings")) return "site_settings";
+  if (name.startsWith("warehouses")) return "warehouses";
   if (name.startsWith("user_tags") || name.startsWith("user_sms")) return "user";
   const prefix = name.split("_")[0];
   return PERMISSION_GROUPS[prefix] ? prefix : "other";
