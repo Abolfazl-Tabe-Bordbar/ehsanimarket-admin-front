@@ -94,32 +94,36 @@ function KcoStockTestModal({ onClose }) {
             <div className="space-y-3 border border-gray-100 rounded-xl p-4 bg-gray-50/80">
               <p className="text-sm font-semibold text-brand-navy">{result.goodsName || "—"}</p>
 
-              <div className="admin-table-wrap border-0 shadow-none rounded-lg overflow-hidden">
-                <table className="admin-table text-sm w-full table-fixed">
+              <div className="rounded-lg border border-gray-200 bg-white overflow-x-auto">
+                <table className="w-full min-w-0 text-sm text-right border-collapse">
                   <thead>
-                    <tr>
-                      <th className="w-auto">انبار</th>
-                      <th className="w-24">کد انبار</th>
-                      <th className="w-28">موجودی آزاد</th>
+                    <tr className="bg-gray-50 border-b border-gray-200">
+                      <th className="px-3 py-2.5 text-xs font-bold text-gray-600">انبار</th>
+                      <th className="px-3 py-2.5 text-xs font-bold text-gray-600 w-24 whitespace-nowrap">کد انبار</th>
+                      <th className="px-3 py-2.5 text-xs font-bold text-gray-600 w-28 whitespace-nowrap">
+                        موجودی آزاد
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
                     {result.stores?.map((row) => (
-                      <tr key={row.storeRef}>
-                        <td className="text-gray-800">{row.storeName}</td>
-                        <td className="dir-ltr tabular-nums text-gray-600 text-center">{row.storeRef}</td>
-                        <td className="dir-ltr tabular-nums font-medium text-brand-navy text-center">
+                      <tr key={row.storeRef} className="border-t border-gray-100">
+                        <td className="px-3 py-2.5 text-gray-800">{row.storeName}</td>
+                        <td className="px-3 py-2.5 dir-ltr tabular-nums text-gray-600 text-center">{row.storeRef}</td>
+                        <td className="px-3 py-2.5 dir-ltr tabular-nums font-semibold text-brand-navy text-center">
                           {num3(row.free)}
                         </td>
                       </tr>
                     ))}
                   </tbody>
                   <tfoot>
-                    <tr className="bg-white font-semibold border-t border-gray-200">
-                      <td colSpan={2} className="text-sm text-gray-800">
+                    <tr className="bg-gray-50/80 font-semibold border-t border-gray-200">
+                      <td colSpan={2} className="px-3 py-2.5 text-sm text-gray-800">
                         جمع
                       </td>
-                      <td className="dir-ltr tabular-nums text-brand-navy text-center">{num3(result.totalFree)}</td>
+                      <td className="px-3 py-2.5 dir-ltr tabular-nums text-brand-navy text-center">
+                        {num3(result.totalFree)}
+                      </td>
                     </tr>
                   </tfoot>
                 </table>
