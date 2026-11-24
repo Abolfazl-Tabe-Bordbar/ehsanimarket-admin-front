@@ -56,15 +56,21 @@ function WarehousesClient({ initialRows }) {
       Swal.fire("توجه!", "نام انبار باید حداقل ۲ کاراکتر باشد", "warning");
       return;
     }
-    if (code.trim().length < 2) {
-      Swal.fire("توجه!", "کد انبار باید حداقل ۲ کاراکتر باشد", "warning");
+    const codeTrim = code.trim();
+    const codeLatin = codeTrim.replace(/[۰-۹]/g, (d) => "۰۱۲۳۴۵۶۷۸۹".indexOf(d));
+    if (codeLatin.length < 1) {
+      Swal.fire("توجه!", "کد انبار (شناسه StoreRef کارآمد) الزامی است", "warning");
+      return;
+    }
+    if (!/^\d+$/.test(codeLatin)) {
+      Swal.fire("توجه!", "کد انبار باید عدد باشد (مثلاً 1 یا 3 — همان StoreRef در کارآمد)", "warning");
       return;
     }
 
     setIsLoading(true);
     const payload = {
       name: name.trim(),
-      code: code.trim(),
+      code: codeLatin,
       is_active: isActive,
     };
     const result = await saveWarehouse(payload, editing?.id || null);
@@ -180,7 +186,9 @@ function WarehousesClient({ initialRows }) {
                     dir="ltr"
                     value={code}
                     maxLength={32}
-                    onChange={(e) => setCode(e.target.value.toUpperCase())}
+                    onChange={(e) => setCode(e.target.value.replace(/[^\d۰-۹]/g, ""))}
+                    inputMode="numeric"
+                    pattern="[0-9]*"
                     placeholder="شناسه انبار در کارآمد (مثلاً: 3)"
                     disabled={Boolean(editing)}
                   />
