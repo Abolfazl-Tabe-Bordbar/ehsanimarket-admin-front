@@ -11,8 +11,6 @@ import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import CloseIcon from "@mui/icons-material/Close";
 
-const fa = (value) => Number(value || 0).toLocaleString("fa-IR");
-
 function WarehousesClient({ initialRows }) {
   const [rows, setRows] = useState(initialRows || []);
   const [isLoading, setIsLoading] = useState(false);
@@ -132,13 +130,7 @@ function WarehousesClient({ initialRows }) {
               <span className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-brand-navy/8 text-brand-navy shrink-0">
                 <WarehouseOutlinedIcon sx={{ fontSize: 22 }} />
               </span>
-              <div>
-                <h3 className="font-semibold text-base text-brand-navy">انبارها</h3>
-                <p className="text-xs text-gray-500 mt-0.5">
-                  {fa(rows.length)} انبار تعریف شده است. برای همگام‌سازی کارآمد، کد = شناسه{" "}
-                  <span className="dir-ltr">StoreRef</span>.
-                </p>
-              </div>
+              <h3 className="font-semibold text-base text-brand-navy">انبارها</h3>
             </div>
 
             <button
@@ -239,14 +231,20 @@ function WarehousesClient({ initialRows }) {
                       <td>
                         <button
                           type="button"
-                          className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium border ${
-                            row.is_active
-                              ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                              : "bg-gray-100 text-gray-600 border-gray-200"
-                          }`}
+                          role="switch"
+                          aria-checked={Boolean(row.is_active)}
+                          aria-label={`${row.is_active ? "غیرفعال" : "فعال"} کردن ${row.name}`}
+                          disabled={isLoading}
                           onClick={() => toggleActive(row)}
+                          className={`relative inline-flex h-8 w-14 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy/30 disabled:opacity-50 ${
+                            row.is_active ? "bg-emerald-500" : "bg-gray-300"
+                          }`}
                         >
-                          {row.is_active ? "فعال" : "غیرفعال"}
+                          <span
+                            className={`pointer-events-none inline-block h-7 w-7 rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                              row.is_active ? "ms-6" : "ms-0.5"
+                            }`}
+                          />
                         </button>
                       </td>
                       <td>
