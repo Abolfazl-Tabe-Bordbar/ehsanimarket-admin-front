@@ -66,7 +66,7 @@ function KcoStockTestModal({ onClose }) {
 
         <div className="p-5 space-y-4">
           <div>
-            <label className="text-sm text-gray-600 mb-1.5 block">کد کالا (product_code / GoodsCode)</label>
+            <label className="text-sm text-gray-600 mb-1.5 block">کد کالا</label>
             <input
               type="text"
               className="admin-input dir-ltr"
@@ -91,52 +91,32 @@ function KcoStockTestModal({ onClose }) {
 
           {result ? (
             <div className="space-y-3 border border-gray-100 rounded-xl p-4 bg-gray-50/80">
-              <div>
-                <p className="text-sm font-semibold text-brand-navy">{result.goodsName || "—"}</p>
-                <p className="text-xs text-gray-500 mt-1">
-                  کد: <span className="dir-ltr">{result.code}</span>
-                  {result.goodsId != null ? (
-                    <>
-                      {" "}
-                      · GoodsId: <span className="dir-ltr">{result.goodsId}</span>
-                    </>
-                  ) : null}
-                </p>
-              </div>
+              <p className="text-sm font-semibold text-brand-navy">{result.goodsName || "—"}</p>
 
               <div className="admin-table-wrap border-0 shadow-none rounded-lg overflow-hidden">
                 <table className="admin-table text-sm">
                   <thead>
                     <tr>
                       <th>انبار</th>
-                      <th className="w-20 dir-ltr">StoreRef</th>
-                      <th>TotalT</th>
-                      <th>TotalO</th>
-                      <th>موجودی آزاد</th>
+                      <th className="w-32 text-left">موجودی آزاد</th>
                     </tr>
                   </thead>
                   <tbody>
                     {result.stores?.map((row) => (
                       <tr key={row.storeRef}>
                         <td>{row.storeName}</td>
-                        <td className="dir-ltr">{row.storeRef}</td>
-                        <td>{num3(row.totalT)}</td>
-                        <td>{num3(row.totalO)}</td>
-                        <td className="font-medium text-brand-navy">{num3(row.free)}</td>
+                        <td className="font-medium text-brand-navy text-left">{num3(row.free)}</td>
                       </tr>
                     ))}
                   </tbody>
                   <tfoot>
                     <tr className="bg-white font-semibold">
-                      <td colSpan={4} className="text-left text-sm">
-                        جمع موجودی آزاد (انبارهای فعال)
-                      </td>
-                      <td className="text-brand-navy">{num3(result.totalFree)}</td>
+                      <td className="text-sm">جمع</td>
+                      <td className="text-brand-navy text-left">{num3(result.totalFree)}</td>
                     </tr>
                   </tfoot>
                 </table>
               </div>
-              <p className="text-[11px] text-gray-500">موجودی آزاد = TotalT − TotalO (مطابق همگام‌سازی خودکار)</p>
             </div>
           ) : null}
         </div>
