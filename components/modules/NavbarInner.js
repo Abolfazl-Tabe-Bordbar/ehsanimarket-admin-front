@@ -4,7 +4,6 @@ import React from "react";
 import Link from "next/link";
 import PersonIcon from "@mui/icons-material/Person";
 import LogoutButton from "./LogoutButton";
-import ChangePasswordButton from "./ChangePasswordButton";
 import NavbarQuickLinks from "./NavbarQuickLinks";
 import { uploadUrl } from "@/data/variables";
 
@@ -34,7 +33,6 @@ function NavbarInner({ adminName, adminFamily, avatarPath, quickInfo }) {
 
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           <NavbarQuickLinks initial={quickInfo} />
-          <ChangePasswordButton />
           <LogoutButton />
         </div>
       </div>
