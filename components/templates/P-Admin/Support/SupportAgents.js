@@ -57,7 +57,7 @@ function SupportAgents() {
                   <th>نام</th>
                   <th>نقش</th>
                   <th>تیکت باز</th>
-                  <th>حل‌شده</th>
+                  <th>بسته‌شده</th>
                   <th>میانگین اولین پاسخ</th>
                   <th>رضایت</th>
                   <th></th>

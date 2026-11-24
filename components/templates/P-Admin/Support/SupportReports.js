@@ -91,7 +91,7 @@ function SupportReports() {
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
             <StatTile label="تعداد تیکت‌ها" value={fa(data.total)} hint={`${fa(data.unanswered)} تیکت هنوز پاسخ نگرفته`} />
             <StatTile label="میانگین زمان اولین پاسخ" value={formatDuration(data.avg_first_response_minutes)} />
-            <StatTile label="میانگین زمان حل" value={formatDuration(data.avg_resolution_minutes)} hint={`${fa(data.auto_closed)} تیکت خودکار بسته شد (در میانگین نیست)`} />
+            <StatTile label="میانگین زمان بسته‌شدن" value={formatDuration(data.avg_resolution_minutes)} hint={`${fa(data.auto_closed)} تیکت خودکار بسته شد (در میانگین نیست)`} />
             <StatTile
               label="رضایت مشتریان"
               value={
@@ -131,7 +131,7 @@ function SupportReports() {
                     <tr>
                       <th>کارشناس</th>
                       <th>تیکت‌ها</th>
-                      <th>حل‌شده</th>
+                      <th>بسته‌شده</th>
                       <th>میانگین اولین پاسخ</th>
                       <th>رضایت</th>
                     </tr>

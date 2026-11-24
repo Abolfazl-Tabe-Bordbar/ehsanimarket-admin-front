@@ -365,7 +365,7 @@ function TicketDetail({ ticketId }) {
         <SideBox title="زمان‌ها">
           <Row label="ثبت">{formatDateTime(ticket.createdAt)}</Row>
           <Row label="اولین پاسخ">{firstResponse === null ? "هنوز پاسخ داده نشده" : formatDuration(firstResponse)}</Row>
-          {ticket.resolved_at && <Row label="حل‌شده">{formatDateTime(ticket.resolved_at)}{ticket.closed_automatically ? " (خودکار)" : ""}</Row>}
+          {ticket.resolved_at && <Row label="بسته‌شده">{formatDateTime(ticket.resolved_at)}{ticket.closed_automatically ? " (خودکار)" : ""}</Row>}
           {ticket.rating && (
             <Row label="رضایت مشتری">
               <span className="inline-flex items-center gap-0.5 text-[#e0a100]">

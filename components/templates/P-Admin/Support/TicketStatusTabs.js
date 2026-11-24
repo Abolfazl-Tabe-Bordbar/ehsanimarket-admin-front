@@ -18,11 +18,11 @@ const theme = (color, to) => ({
 });
 
 const tabs = [
-  { key: "active", label: "همه تیکت‌های باز", hint: "همه به‌جز حل‌شده", icon: InboxOutlinedIcon, theme: theme("orange", "amber") },
+  { key: "active", label: "همه تیکت‌های باز", hint: "همه به‌جز بسته‌شده", icon: InboxOutlinedIcon, theme: theme("orange", "amber") },
   { key: "open", label: "ثبت‌شده", hint: "هنوز بررسی نشده", icon: FiberNewOutlinedIcon, theme: theme("sky", "blue") },
   { key: "in_progress", label: "در حال بررسی", hint: "در دست کارشناس", icon: ManageSearchOutlinedIcon, theme: theme("indigo", "violet") },
   { key: "waiting_customer", label: "منتظر مشتری", hint: "منتظر پاسخ مشتری", icon: HourglassEmptyOutlinedIcon, theme: theme("fuchsia", "purple") },
-  { key: "resolved", label: "حل‌شده", hint: "بسته‌شده", icon: TaskAltOutlinedIcon, theme: theme("emerald", "green") },
+  { key: "resolved", label: "بسته‌شده", hint: "تیکت‌های بسته‌شده", icon: TaskAltOutlinedIcon, theme: theme("emerald", "green") },
   { key: "", countKey: "all", label: "همه", hint: "همه تیکت‌ها", icon: AllInboxOutlinedIcon, theme: theme("slate", "gray") },
 ];
 
