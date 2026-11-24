@@ -22,3 +22,6 @@ export const getKcoStockSyncLogs = (page = 1) =>
 
 export const runKcoStockSyncNow = () =>
   request("/kco/stock-sync/run", { method: "POST" }, { toast: true });
+
+export const previewKcoStock = (code) =>
+  request(`/kco/stock-preview?code=${encodeURIComponent(code)}`);

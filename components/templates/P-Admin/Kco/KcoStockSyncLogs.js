@@ -4,6 +4,8 @@ import { useCallback, useEffect, useState } from "react";
 import Loader from "@/components/modules/Loader";
 import { getKcoStockSyncLogs, runKcoStockSyncNow } from "@/funcs/kco";
 import SyncOutlinedIcon from "@mui/icons-material/SyncOutlined";
+import ScienceOutlinedIcon from "@mui/icons-material/ScienceOutlined";
+import KcoStockTestModal from "@/components/templates/P-Admin/Kco/KcoStockTestModal";
 
 const fa = (value) => Number(value || 0).toLocaleString("fa-IR");
 
@@ -24,6 +26,7 @@ function KcoStockSyncLogs() {
   const [pages, setPages] = useState(1);
   const [busy, setBusy] = useState(false);
   const [scheduler, setScheduler] = useState(null);
+  const [testOpen, setTestOpen] = useState(false);
 
   const load = useCallback(async (p = 1) => {
     setBusy(true);
@@ -75,30 +78,29 @@ function KcoStockSyncLogs() {
                 </span>
               ) : null}
             </div>
-            <p className="text-xs text-gray-500 mt-1">
-              {scheduler?.cron_enabled && scheduler?.scheduler_active ? (
-                <>
-                  هر {fa(scheduler.interval_minutes)} دقیقه به‌صورت خودکار موجودی از کارآمد خوانده می‌شود.
-                </>
-              ) : (
-                <>
-                  اجرای خودکار غیرفعال است؛ فقط با دکمه «اجرای اکنون» یا فعال‌کردن{" "}
-                  <span className="dir-ltr">KCO_STOCK_SYNC_ENABLED</span> در سرور.
-                </>
-              )}{" "}
-              کد انبار = شناسه <span className="dir-ltr">StoreRef</span> در کارآمد.
-            </p>
           </div>
-          <button
-            type="button"
-            className="admin-btn-primary inline-flex items-center gap-1.5 shrink-0"
-            onClick={runNow}
-            disabled={busy || scheduler?.sync_in_progress}
-          >
-            <SyncOutlinedIcon sx={{ fontSize: 18 }} />
-            اجرای اکنون
-          </button>
+          <div className="flex flex-wrap items-center gap-2 shrink-0">
+            <button
+              type="button"
+              className="admin-btn-secondary inline-flex items-center gap-1.5"
+              onClick={() => setTestOpen(true)}
+            >
+              <ScienceOutlinedIcon sx={{ fontSize: 18 }} />
+              تست
+            </button>
+            <button
+              type="button"
+              className="admin-btn-primary inline-flex items-center gap-1.5"
+              onClick={runNow}
+              disabled={busy || scheduler?.sync_in_progress}
+            >
+              <SyncOutlinedIcon sx={{ fontSize: 18 }} />
+              اجرای اکنون
+            </button>
+          </div>
         </div>
+
+        {testOpen ? <KcoStockTestModal onClose={() => setTestOpen(false)} /> : null}
 
         <div className="admin-table-wrap border-0 rounded-none shadow-none">
           <table className="admin-table">
