@@ -11,7 +11,8 @@ const fa = (value) => Number(value || 0).toLocaleString("fa-IR");
 function num3(value) {
   const n = Number(value);
   if (!Number.isFinite(n)) return "—";
-  return fa(Math.round(n * 1000) / 1000);
+  const rounded = Math.round(n * 1000) / 1000;
+  return fa(rounded);
 }
 
 function KcoStockTestModal({ onClose }) {
@@ -48,7 +49,7 @@ function KcoStockTestModal({ onClose }) {
     >
       {busy && <Loader />}
       <div
-        className="admin-card w-full max-w-xl max-h-[90vh] overflow-y-auto shadow-xl"
+        className="admin-card w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start justify-between gap-3 p-5 border-b border-gray-100">
@@ -94,25 +95,31 @@ function KcoStockTestModal({ onClose }) {
               <p className="text-sm font-semibold text-brand-navy">{result.goodsName || "—"}</p>
 
               <div className="admin-table-wrap border-0 shadow-none rounded-lg overflow-hidden">
-                <table className="admin-table text-sm">
+                <table className="admin-table text-sm w-full table-fixed">
                   <thead>
                     <tr>
-                      <th>انبار</th>
-                      <th className="w-32 text-left">موجودی آزاد</th>
+                      <th className="w-auto">انبار</th>
+                      <th className="w-24">کد انبار</th>
+                      <th className="w-28">موجودی آزاد</th>
                     </tr>
                   </thead>
                   <tbody>
                     {result.stores?.map((row) => (
                       <tr key={row.storeRef}>
-                        <td>{row.storeName}</td>
-                        <td className="font-medium text-brand-navy text-left">{num3(row.free)}</td>
+                        <td className="text-gray-800">{row.storeName}</td>
+                        <td className="dir-ltr tabular-nums text-gray-600 text-center">{row.storeRef}</td>
+                        <td className="dir-ltr tabular-nums font-medium text-brand-navy text-center">
+                          {num3(row.free)}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
                   <tfoot>
-                    <tr className="bg-white font-semibold">
-                      <td className="text-sm">جمع</td>
-                      <td className="text-brand-navy text-left">{num3(result.totalFree)}</td>
+                    <tr className="bg-white font-semibold border-t border-gray-200">
+                      <td colSpan={2} className="text-sm text-gray-800">
+                        جمع
+                      </td>
+                      <td className="dir-ltr tabular-nums text-brand-navy text-center">{num3(result.totalFree)}</td>
                     </tr>
                   </tfoot>
                 </table>
