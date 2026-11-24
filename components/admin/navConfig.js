@@ -34,6 +34,7 @@ import {
   StorefrontOutlined,
   AccountTreeOutlined,
   WarehouseOutlined,
+  SyncOutlined,
 } from "@mui/icons-material";
 
 // دسترسی‌های پشتیبانی؛ آیتم‌هایی که permissions دارند فقط برای مدیران دارای آن دسترسی نمایش داده می‌شوند
@@ -207,6 +208,14 @@ export const adminNavGroups = [
         description: "تعریف انبارها و وضعیت فعال بودن",
         icon: WarehouseOutlined,
         permissions: ["warehouses_manage"],
+      },
+      {
+        href: "/p-admin/kco-stock-sync",
+        path: "/p-admin/kco-stock-sync",
+        label: "لاگ موجودی کارآمد",
+        description: "همگام‌سازی موجودی از کارآمد و اجرای اکنون",
+        icon: SyncOutlined,
+        permissions: ["product_update"],
       },
     ],
   },
