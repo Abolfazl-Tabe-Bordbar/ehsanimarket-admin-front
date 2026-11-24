@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Loader from "@/components/modules/Loader";
-import { getKcoStockSyncLogs, runKcoStockSyncNow } from "@/funcs/kco";
+import { getKcoStockSyncLogs, runKcoStockSyncNow, saveKcoStockSyncSettings } from "@/funcs/kco";
 import SyncOutlinedIcon from "@mui/icons-material/SyncOutlined";
 import ScienceOutlinedIcon from "@mui/icons-material/ScienceOutlined";
 import KcoStockTestModal from "@/components/templates/P-Admin/Kco/KcoStockTestModal";
@@ -27,6 +27,8 @@ function KcoStockSyncLogs() {
   const [busy, setBusy] = useState(false);
   const [scheduler, setScheduler] = useState(null);
   const [testOpen, setTestOpen] = useState(false);
+  const [autoEnabled, setAutoEnabled] = useState(false);
+  const [intervalMinutes, setIntervalMinutes] = useState(30);
 
   const load = useCallback(async (p = 1) => {
     setBusy(true);
@@ -36,7 +38,11 @@ function KcoStockSyncLogs() {
       setRows(res.body || []);
       setPage(res.pagination?.page || p);
       setPages(res.pagination?.pages || 1);
-      if (res.scheduler) setScheduler(res.scheduler);
+      if (res.scheduler) {
+        setScheduler(res.scheduler);
+        setAutoEnabled(Boolean(res.scheduler.cron_enabled));
+        setIntervalMinutes(res.scheduler.interval_minutes ?? 30);
+      }
     }
   }, []);
 
@@ -51,6 +57,23 @@ function KcoStockSyncLogs() {
     if (res?.scheduler) setScheduler(res.scheduler);
     setBusy(false);
     await load(1);
+  };
+
+  const saveSchedulerSettings = async () => {
+    const minutes = Number(intervalMinutes);
+    if (!Number.isFinite(minutes) || minutes < 5 || minutes > 1440) return;
+    setBusy(true);
+    const res = await saveKcoStockSyncSettings({
+      enabled: autoEnabled,
+      interval_minutes: minutes,
+    });
+    setBusy(false);
+    if (!res?.status) return;
+    if (res.scheduler) {
+      setScheduler(res.scheduler);
+      setAutoEnabled(Boolean(res.scheduler.cron_enabled));
+      setIntervalMinutes(res.scheduler.interval_minutes ?? minutes);
+    }
   };
 
   return (
@@ -101,6 +124,50 @@ function KcoStockSyncLogs() {
         </div>
 
         {testOpen ? <KcoStockTestModal onClose={() => setTestOpen(false)} /> : null}
+
+        <div className="px-5 py-4 border-b border-gray-100 bg-gray-50/70 flex flex-col lg:flex-row lg:items-center gap-4 flex-wrap">
+          <div className="flex items-center gap-3">
+            <span className="text-sm font-medium text-gray-800">همگام‌سازی خودکار</span>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={autoEnabled}
+              aria-label={autoEnabled ? "خاموش کردن همگام‌سازی خودکار" : "روشن کردن همگام‌سازی خودکار"}
+              disabled={busy}
+              onClick={() => setAutoEnabled((v) => !v)}
+              className={`relative inline-flex h-8 w-14 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy/30 disabled:opacity-50 ${
+                autoEnabled ? "bg-emerald-500" : "bg-gray-300"
+              }`}
+            >
+              <span
+                className={`pointer-events-none inline-block h-7 w-7 rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                  autoEnabled ? "ms-6" : "ms-0.5"
+                }`}
+              />
+            </button>
+          </div>
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-sm text-gray-600">فاصله:</span>
+            <input
+              type="number"
+              min={5}
+              max={1440}
+              className="admin-input w-24 dir-ltr"
+              value={intervalMinutes}
+              onChange={(e) => setIntervalMinutes(e.target.value)}
+              disabled={busy}
+            />
+            <span className="text-sm text-gray-600">دقیقه (حداقل ۵)</span>
+          </div>
+          <button
+            type="button"
+            className="admin-btn-accent lg:mr-auto"
+            onClick={saveSchedulerSettings}
+            disabled={busy}
+          >
+            ذخیره تنظیمات کرون
+          </button>
+        </div>
 
         <div className="admin-table-wrap border-0 rounded-none shadow-none">
           <table className="admin-table">

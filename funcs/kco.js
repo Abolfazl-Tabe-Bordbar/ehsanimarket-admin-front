@@ -25,3 +25,12 @@ export const runKcoStockSyncNow = () =>
 
 export const previewKcoStock = (code) =>
   request(`/kco/stock-preview?code=${encodeURIComponent(code)}`);
+
+export const getKcoStockSyncSettings = () => request("/kco/stock-sync/settings");
+
+export const saveKcoStockSyncSettings = (payload) =>
+  request(
+    "/kco/stock-sync/settings",
+    { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) },
+    { toast: true }
+  );
