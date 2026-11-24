@@ -12,7 +12,9 @@ import {
   groupPermissions,
 } from "@/funcs/groupPermissions";
 import ManagePermissionsModal from "./ManagePermissionsModal";
+import ManageOrgUnitsModal from "./ManageOrgUnitsModal";
 import UpdateAdminPasswordModal from "./UpdateAdminPasswordModal";
+import AccountTreeOutlinedIcon from "@mui/icons-material/AccountTreeOutlined";
 
 function getInitials(admin) {
   const first = admin?.first_name?.trim()?.[0] || "";
@@ -22,12 +24,14 @@ function getInitials(admin) {
 
 function AdminBox({ admin, permissions, refreshDataHandler }) {
   const [isPermissionsModalShow, setIsPermissionsModalShow] = useState(false);
+  const [isOrgUnitsModalShow, setIsOrgUnitsModalShow] = useState(false);
   const [isUpdatePasswordModalShow, setIsUpdatePasswordModalShow] =
     useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showAllPermissions, setShowAllPermissions] = useState(false);
 
   const adminPermissions = admin?.permissions || [];
+  const orgUnits = admin?.orgUnits || [];
   const permissionGroups = useMemo(
     () => groupPermissions(adminPermissions),
     [adminPermissions]
@@ -65,6 +69,14 @@ function AdminBox({ admin, permissions, refreshDataHandler }) {
           setIsPermissionsModalShow={setIsPermissionsModalShow}
           admin={admin}
           permissions={permissions}
+          refreshDataHandler={refreshDataHandler}
+          setIsLoading={setIsLoading}
+        />
+      )}
+      {isOrgUnitsModalShow && (
+        <ManageOrgUnitsModal
+          setIsOrgUnitsModalShow={setIsOrgUnitsModalShow}
+          admin={admin}
           refreshDataHandler={refreshDataHandler}
           setIsLoading={setIsLoading}
         />
@@ -111,6 +123,14 @@ function AdminBox({ admin, permissions, refreshDataHandler }) {
             <button
               type="button"
               className="admin-action admin-action-view"
+              onClick={() => setIsOrgUnitsModalShow(true)}
+            >
+              <AccountTreeOutlinedIcon sx={{ fontSize: 18 }} />
+              واحدها
+            </button>
+            <button
+              type="button"
+              className="admin-action admin-action-view"
               onClick={() => setIsUpdatePasswordModalShow(true)}
             >
               <LockResetOutlinedIcon sx={{ fontSize: 18 }} />
@@ -125,6 +145,26 @@ function AdminBox({ admin, permissions, refreshDataHandler }) {
               حذف
             </button>
           </div>
+        </div>
+
+        <div className="border-b border-gray-100 py-4">
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+            <p className="text-sm font-bold text-gray-800">واحدهای سازمان</p>
+            <span className="rounded-full bg-[#141c32]/8 px-2.5 py-0.5 text-xs font-medium text-[#141c32]">
+              {orgUnits.length} واحد
+            </span>
+          </div>
+          {!orgUnits.length ? (
+            <p className="text-sm text-gray-500">به هیچ واحدی متصل نیست.</p>
+          ) : (
+            <div className="flex flex-wrap gap-1.5">
+              {orgUnits.map((unit) => (
+                <span key={unit.id} className="admin-permission-chip">
+                  {unit.name}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="pt-4">

@@ -32,6 +32,7 @@ import {
   InsightsOutlined,
   PodcastsOutlined,
   StorefrontOutlined,
+  AccountTreeOutlined,
 } from "@mui/icons-material";
 
 // دسترسی‌های پشتیبانی؛ آیتم‌هایی که permissions دارند فقط برای مدیران دارای آن دسترسی نمایش داده می‌شوند
@@ -340,6 +341,14 @@ export const adminNavGroups = [
         label: "اطلاعات سایت",
         description: "تماس، شبکه‌ها و درباره ما",
         icon: SettingsOutlinedIcon,
+      },
+      {
+        href: "/p-admin/org-units",
+        path: "/p-admin/org-units",
+        label: "واحدهای سازمان",
+        description: "تعریف واحدهایی مثل مالی و فروش",
+        icon: AccountTreeOutlined,
+        permissions: ["admins_access"],
       },
       {
         href: "/p-admin/admins",
