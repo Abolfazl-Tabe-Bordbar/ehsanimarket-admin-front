@@ -128,7 +128,10 @@ function WarehousesClient({ initialRows }) {
               </span>
               <div>
                 <h3 className="font-semibold text-base text-brand-navy">انبارها</h3>
-                <p className="text-xs text-gray-500 mt-0.5">{fa(rows.length)} انبار تعریف شده است.</p>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  {fa(rows.length)} انبار تعریف شده است. برای همگام‌سازی کارآمد، کد = شناسه{" "}
+                  <span className="dir-ltr">StoreRef</span>.
+                </p>
               </div>
             </div>
 
@@ -178,7 +181,7 @@ function WarehousesClient({ initialRows }) {
                     value={code}
                     maxLength={32}
                     onChange={(e) => setCode(e.target.value.toUpperCase())}
-                    placeholder="مثلاً: WH-01"
+                    placeholder="شناسه انبار در کارآمد (مثلاً: 3)"
                     disabled={Boolean(editing)}
                   />
                   {editing && (

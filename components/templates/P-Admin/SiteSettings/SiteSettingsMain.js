@@ -7,6 +7,7 @@ import AdminPageShell from "@/components/admin/ui/AdminPageShell";
 import { useMemo, useState } from "react";
 import HubraSettingsCard from "@/components/templates/P-Admin/Hubra/HubraSettingsCard";
 import KcoSettingsCard from "@/components/templates/P-Admin/Kco/KcoSettingsCard";
+import KcoStockSyncLogs from "@/components/templates/P-Admin/Kco/KcoStockSyncLogs";
 
 const basicSections = [
   {
@@ -369,6 +370,7 @@ function SiteSettingsMain({ initialSettings }) {
       <div className="mt-6 space-y-6">
         <HubraSettingsCard />
         <KcoSettingsCard />
+        <KcoStockSyncLogs />
       </div>
     </AdminPageShell>
   );

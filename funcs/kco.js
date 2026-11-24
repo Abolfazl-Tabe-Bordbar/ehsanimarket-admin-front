@@ -16,3 +16,9 @@ async function request(path, options = {}, { toast = false } = {}) {
 export const getKcoSettings = () => request("/kco/settings");
 export const saveKcoSettings = (token) =>
   request("/kco/settings", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token }) }, { toast: true });
+
+export const getKcoStockSyncLogs = (page = 1) =>
+  request(`/kco/stock-sync/logs?page=${page}&limit=20`);
+
+export const runKcoStockSyncNow = () =>
+  request("/kco/stock-sync/run", { method: "POST" }, { toast: true });
