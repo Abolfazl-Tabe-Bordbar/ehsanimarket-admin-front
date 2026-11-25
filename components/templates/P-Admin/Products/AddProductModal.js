@@ -156,7 +156,7 @@ function AddProductModal({ setIsAddProductModalShow }) {
     getValues,
     setValue,
     setError,
-  } = useForm();
+  } = useForm({ defaultValues: { stock_sync_percent: 100 } });
 
   const handleCodeContinue = async () => {
     const normalized = codeInput.trim();
@@ -223,6 +223,7 @@ function AddProductModal({ setIsAddProductModalShow }) {
       features: data.features || [],
       images: productImages,
       count: data.count,
+      stock_sync_percent: data.stock_sync_percent,
       weight_kg: data.weight_kg,
       brand_id: data.brand_id || "",
     }).then(() => setIsLoading(false));
@@ -657,6 +658,29 @@ function AddProductModal({ setIsAddProductModalShow }) {
                         تعداد محصول اجباری است
                       </p>
                     )}
+                  </div>
+
+                  <div className="space-y-2 col-span-2 md:col-span-1">
+                    <label htmlFor="stock_sync_percent" className="block text-sm font-bold">
+                      درصد موجودی کارآمد
+                    </label>
+                    <input
+                      id="stock_sync_percent"
+                      type="number"
+                      min={1}
+                      max={100}
+                      step={1}
+                      className="border rounded-full px-3 py-2 w-full text-sm text-gray-700 outline-gray-300 dir-ltr"
+                      {...register("stock_sync_percent", {
+                        required: true,
+                        min: 1,
+                        max: 100,
+                        valueAsNumber: true,
+                      })}
+                    />
+                    <p className="text-xs text-gray-500">
+                      هنگام همگام‌سازی از انبارها؛ پیش‌فرض ۱۰۰٪
+                    </p>
                   </div>
 
                   <div className="space-y-2 col-span-2 md:col-span-1">

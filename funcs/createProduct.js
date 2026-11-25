@@ -16,6 +16,7 @@ async function createProduct(productData) {
       formData.append("image", productData.images[i]);
     }
     formData.append("count", productData.count);
+    formData.append("stock_sync_percent", productData.stock_sync_percent ?? 100);
     formData.append("weight_kg", productData.weight_kg ?? 0);
     formData.append("brand_id", productData.brand_id || "");
     if (productData.product_code?.trim()) {
