@@ -18,7 +18,13 @@ import getCookie from "@/funcs/cookies/getCookie";
 import getProducts from "@/funcs/getProducts";
 import getSearchProducts from "@/funcs/getSearchProducts";
 
-function ProductsList({ data, asnaf = [], brands = [] }) {
+function ProductsList({
+  data,
+  asnaf = [],
+  brands = [],
+  excelImportOpen = false,
+  onCloseExcelImport,
+}) {
   const [shownData, setShownData] = useState(data);
 
   const searchParams = useSearchParams();
@@ -138,7 +144,12 @@ function ProductsList({ data, asnaf = [], brands = [] }) {
 
   return (
     <div className="my-6 space-y-6">
-      <ProductInventoryImportPanel onImported={fetchProducts} />
+      {excelImportOpen ? (
+        <ProductInventoryImportPanel
+          onImported={fetchProducts}
+          onClose={onCloseExcelImport}
+        />
+      ) : null}
 
       <ProductFilters asnaf={asnaf} brands={brands} />
 

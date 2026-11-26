@@ -6,13 +6,14 @@ import DownloadOutlinedIcon from "@mui/icons-material/DownloadOutlined";
 import TableChartOutlinedIcon from "@mui/icons-material/TableChartOutlined";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
+import CloseIcon from "@mui/icons-material/Close";
 import importProductsInventoryExcel from "@/funcs/importProductsInventoryExcel";
 import getProductsInventoryImportTemplate from "@/funcs/getProductsInventoryImportTemplate";
 import previewProductsInventoryExcel from "@/funcs/previewProductsInventoryExcel";
 import Loader from "@/components/modules/Loader";
 import { TopRightToast } from "@/components/modules/Toast";
 
-function ProductInventoryImportPanel({ onImported }) {
+function ProductInventoryImportPanel({ onImported, onClose }) {
   const fileInputRef = useRef(null);
   const [selectedFile, setSelectedFile] = useState(null);
   const [preview, setPreview] = useState(null);
@@ -95,14 +96,26 @@ function ProductInventoryImportPanel({ onImported }) {
               قیمت یا موجودی را پر کنید.
             </p>
           </div>
-          <button
-            type="button"
-            className="admin-btn-secondary !py-2 !px-3 text-sm inline-flex items-center gap-1 shrink-0"
-            onClick={downloadTemplate}
-          >
-            <DownloadOutlinedIcon sx={{ fontSize: 16 }} />
-            دانلود نمونه
-          </button>
+          <div className="flex flex-wrap items-center gap-2 shrink-0">
+            <button
+              type="button"
+              className="admin-btn-secondary !py-2 !px-3 text-sm inline-flex items-center gap-1"
+              onClick={downloadTemplate}
+            >
+              <DownloadOutlinedIcon sx={{ fontSize: 16 }} />
+              دانلود نمونه
+            </button>
+            {onClose ? (
+              <button
+                type="button"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-500 hover:bg-gray-50 hover:text-gray-700"
+                onClick={onClose}
+                aria-label="بستن"
+              >
+                <CloseIcon sx={{ fontSize: 20 }} />
+              </button>
+            ) : null}
+          </div>
         </div>
       </div>
 
