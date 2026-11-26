@@ -25,7 +25,7 @@ import {
   inquiryProductKcoStock,
 } from "@/funcs/productKcoStock";
 import WarehouseOutlinedIcon from "@mui/icons-material/WarehouseOutlined";
-import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutlineIcon";
+import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 
 function MetaItem({ icon: Icon, label, value, highlight = false, children = null }) {
   return (
