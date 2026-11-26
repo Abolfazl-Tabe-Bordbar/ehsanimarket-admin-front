@@ -1,35 +1,51 @@
-# مرحله Build
+
+# Build stage
 FROM node:22-alpine AS builder
 
-# منطقه زمانی ایران برای تاریخ‌هایی که سمت سرور ساخته می‌شوند
-RUN apk add --no-cache tzdata
+# Alpine mirror
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g' /etc/apk/repositories \
+    && apk update \
+    && apk add --no-cache tzdata
+
 ENV TZ=Asia/Tehran
 
 WORKDIR /app
 
+# Node memory
+ENV NODE_OPTIONS=--max-old-space-size=4096
+
 ARG NEXT_PUBLIC_API_URL=https://api.ehsanimarket.ir
 ARG NEXT_PUBLIC_SITE_URL=https://ehsanimarket.ir
+
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 ENV NEXT_PUBLIC_SITE_URL=$NEXT_PUBLIC_SITE_URL
 
 COPY package*.json ./
-RUN npm install
+
+# NPM mirror
+RUN npm config set registry https://registry.npmmirror.com \
+    && npm install
 
 COPY . .
+
 RUN npm run build
 
-# مرحله Run
+
+# Runtime stage
 FROM node:22-alpine AS runner
 
-RUN apk add --no-cache tzdata
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g' /etc/apk/repositories \
+    && apk update \
+    && apk add --no-cache tzdata
+
 ENV TZ=Asia/Tehran
-
-WORKDIR /app
-
 ENV NODE_ENV=production
 ENV PORT=5281
+
 ENV NEXT_PUBLIC_API_URL=https://api.ehsanimarket.ir
 ENV NEXT_PUBLIC_SITE_URL=https://ehsanimarket.ir
+
+WORKDIR /app
 
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next ./.next
