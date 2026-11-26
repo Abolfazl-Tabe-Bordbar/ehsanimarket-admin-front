@@ -16,9 +16,16 @@ import EditProductModal from "./EditProductModal";
 import ProductCommentsModal from "./ProductCommentsModal";
 import Link from "next/link";
 import Loader from "@/components/modules/Loader";
+import { TopRightToast } from "@/components/modules/Toast";
 import deleteProduct from "@/funcs/deleteProduct";
 import deleteOffer from "@/funcs/deleteOffer";
 import adjustProductStock from "@/funcs/adjustProductStock";
+import {
+  applyProductKcoStock,
+  inquiryProductKcoStock,
+} from "@/funcs/productKcoStock";
+import WarehouseOutlinedIcon from "@mui/icons-material/WarehouseOutlined";
+import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutlineIcon";
 
 function MetaItem({ icon: Icon, label, value, highlight = false, children = null }) {
   return (
@@ -46,6 +53,9 @@ function ProductBox(props) {
   const [isLoading, setIsLoading] = useState(false);
   const [stockCount, setStockCount] = useState(Number(props.count || 0));
   const [isStockUpdating, setIsStockUpdating] = useState(false);
+  const [kcoPreview, setKcoPreview] = useState(null);
+  const [kcoInquiryBusy, setKcoInquiryBusy] = useState(false);
+  const [kcoApplyBusy, setKcoApplyBusy] = useState(false);
 
   useEffect(() => {
     setStockCount(Number(props.count || 0));
@@ -78,6 +88,55 @@ function ProductBox(props) {
     });
   };
 
+  const kcoInquiryHandler = async () => {
+    if (kcoInquiryBusy || kcoApplyBusy) return;
+    if (!String(props.product_code || "").trim()) {
+      TopRightToast.fire({
+        icon: "warning",
+        title: "برای این محصول کد کالا ثبت نشده است",
+      });
+      return;
+    }
+    setKcoInquiryBusy(true);
+    setKcoPreview(null);
+    const res = await inquiryProductKcoStock(props.id);
+    setKcoInquiryBusy(false);
+    if (!res?.status) {
+      TopRightToast.fire({
+        icon: "error",
+        title: res?.message || "خطا در استعلام کارآمد",
+      });
+      return;
+    }
+    setKcoPreview(res.body);
+  };
+
+  const kcoApplyHandler = async () => {
+    if (kcoApplyBusy || kcoInquiryBusy) return;
+    setKcoApplyBusy(true);
+    const res = await applyProductKcoStock(props.id);
+    setKcoApplyBusy(false);
+    if (!res?.status) {
+      TopRightToast.fire({
+        icon: "error",
+        title: res?.message || "اعمال موجودی ناموفق بود",
+      });
+      return;
+    }
+    const next = Number(res.body?.count ?? kcoPreview?.suggestedCount ?? stockCount);
+    setStockCount(next);
+    setKcoPreview((prev) =>
+      prev
+        ? { ...prev, suggestedCount: next, currentCount: next }
+        : { suggestedCount: next, currentCount: next }
+    );
+    TopRightToast.fire({
+      icon: "success",
+      title: res.message || "موجودی از کارآمد اعمال شد",
+      text: `موجودی فعلی: ${next.toLocaleString("fa-IR")}`,
+    });
+  };
+
   const adjustStockHandler = async (delta) => {
     if (isStockUpdating) return;
     if (delta < 0 && stockCount <= 0) return;
@@ -106,7 +165,7 @@ function ProductBox(props) {
 
   return (
     <div className="space-y-3">
-      {isLoading && <Loader />}
+      {(isLoading || kcoInquiryBusy || kcoApplyBusy) && <Loader />}
       {isEditProductModalShow && (
         <EditProductModal
           setIsEditProductModalShow={setIsEditProductModalShow}
@@ -218,6 +277,58 @@ function ProductBox(props) {
                 </button>
               </div>
             </MetaItem>
+          </div>
+
+          <div className="rounded-xl border border-gray-100 bg-gray-50/60 px-3 py-2.5 space-y-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={kcoInquiryHandler}
+                disabled={kcoInquiryBusy || kcoApplyBusy}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-brand-navy/20 bg-white px-3 py-1.5 text-xs font-bold text-brand-navy hover:bg-brand-navy/5 disabled:opacity-50 transition-colors"
+              >
+                <WarehouseOutlinedIcon sx={{ fontSize: 16 }} />
+                بررسی موجودی انبار کارآمد
+              </button>
+              <button
+                type="button"
+                onClick={kcoApplyHandler}
+                disabled={kcoApplyBusy || kcoInquiryBusy}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-800 hover:bg-emerald-100 disabled:opacity-50 transition-colors"
+              >
+                <CheckCircleOutlineIcon sx={{ fontSize: 16 }} />
+                اعمال
+              </button>
+            </div>
+            {kcoPreview ? (
+              <p className="text-xs text-gray-600 leading-6">
+                <span className="font-semibold text-gray-800">
+                  {kcoPreview.goodsName || props.name}
+                </span>
+                {" — "}
+                جمع انبارهای فعال:{" "}
+                <span className="dir-ltr tabular-nums font-bold text-brand-navy">
+                  {Number(kcoPreview.totalFree || 0).toLocaleString("fa-IR")}
+                </span>
+                {kcoPreview.stockSyncPercent != null && kcoPreview.stockSyncPercent < 100 ? (
+                  <>
+                    {" "}
+                    (درصد {Number(kcoPreview.stockSyncPercent).toLocaleString("fa-IR")}٪)
+                  </>
+                ) : null}
+                {"؛ "}
+                پیشنهاد برای سایت:{" "}
+                <span className="dir-ltr tabular-nums font-bold text-emerald-700">
+                  {Number(kcoPreview.suggestedCount || 0).toLocaleString("fa-IR")}
+                </span>
+                {" "}
+                (فعلی: {Number(kcoPreview.currentCount ?? stockCount).toLocaleString("fa-IR")})
+              </p>
+            ) : (
+              <p className="text-[11px] text-gray-500">
+                استعلام فقط نمایش می‌دهد؛ «اعمال» موجودی سایت را طبق کارآمد (انبارهای فعال + درصد محصول) می‌نویسد.
+              </p>
+            )}
           </div>
 
           <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-3 pt-1 border-t border-gray-100">
