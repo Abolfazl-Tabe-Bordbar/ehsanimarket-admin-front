@@ -30,6 +30,7 @@ function formatDateTime(value) {
 
 function FestivalBox({ festival, onChanged, onEdit, isEditing = false }) {
   const isDiscount = festival.type === "discount";
+  const isAmazing = festival.type === "amazing";
   const [isLoading, setIsLoading] = useState(false);
   const status = getStatus(festival);
 
@@ -65,10 +66,14 @@ function FestivalBox({ festival, onChanged, onEdit, isEditing = false }) {
                 <h2 className="truncate text-base font-bold text-gray-900">{festival.name}</h2>
                 <span
                   className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ${
-                    isDiscount ? "bg-red-50 text-red-600" : "bg-blue-50 text-blue-700"
+                    isAmazing
+                      ? "bg-fuchsia-50 text-fuchsia-700"
+                      : isDiscount
+                        ? "bg-red-50 text-red-600"
+                        : "bg-blue-50 text-blue-700"
                   }`}
                 >
-                  {isDiscount ? "تخفیف درصدی" : "ارسال رایگان"}
+                  {isAmazing ? "شگفت‌انگیز" : isDiscount ? "تخفیف درصدی" : "ارسال رایگان"}
                 </span>
               </div>
               {festival.description ? (
@@ -125,6 +130,15 @@ function FestivalBox({ festival, onChanged, onEdit, isEditing = false }) {
                 <p className="text-[11px] font-medium text-gray-500">درصد تخفیف</p>
                 <p className="mt-1 text-lg font-bold text-red-600">
                   {Number(festival.discount_percent || 0).toLocaleString("fa-IR")}٪
+                </p>
+              </>
+            ) : isAmazing ? (
+              <>
+                <p className="text-[11px] font-medium text-gray-500">تخفیف پیش‌فرض</p>
+                <p className="mt-1 text-lg font-bold text-fuchsia-700">
+                  {festival.discount_percent
+                    ? `${Number(festival.discount_percent).toLocaleString("fa-IR")}٪`
+                    : "دلبخواه / بدون"}
                 </p>
               </>
             ) : (

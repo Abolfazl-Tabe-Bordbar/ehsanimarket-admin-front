@@ -167,6 +167,11 @@ const FESTIVAL_TYPE_OPTIONS = [
     title: "تخفیف درصدی",
     hint: "درصد تخفیف روی قیمت اصلی محصولات تا زمان پایان",
   },
+  {
+    value: "amazing",
+    title: "شگفت‌انگیز",
+    hint: "ویترین محصولات؛ تخفیف پیش‌فرض یا برای هر کالا اختیاری است",
+  },
 ];
 
 function FestivalFormPanel({ onClose, festival, onSaved }) {
@@ -181,15 +186,27 @@ function FestivalFormPanel({ onClose, festival, onSaved }) {
   );
   const [startTime, setStartTime] = useState(() => toTimeValue(festival?.starts_at, "00:00"));
   const [endTime, setEndTime] = useState(() => toTimeValue(festival?.ends_at, "23:59"));
-  const [festivalType, setFestivalType] = useState(
-    festival?.type === "discount" ? "discount" : "free_shipping"
-  );
+  const [festivalType, setFestivalType] = useState(() => {
+    if (festival?.type === "discount") return "discount";
+    if (festival?.type === "amazing") return "amazing";
+    return "free_shipping";
+  });
   const isDiscount = festivalType === "discount";
+  const isAmazing = festivalType === "amazing";
+  const isFreeShipping = festivalType === "free_shipping";
   const [selectedProvince, setSelectedProvince] = useState("");
   const [selectedCities, setSelectedCities] = useState(() =>
     Array.isArray(festival?.city_names) ? [...festival.city_names] : []
   );
-  const [selectedProducts, setSelectedProducts] = useState(festival?.products || []);
+  const [selectedProducts, setSelectedProducts] = useState(() =>
+    (festival?.products || []).map((product) => ({
+      ...product,
+      festival_discount_percent:
+        product.festival_products?.discount_percent != null
+          ? product.festival_products.discount_percent
+          : "",
+    }))
+  );
   const [searchValue, setSearchValue] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [searching, setSearching] = useState(false);
@@ -302,7 +319,10 @@ function FestivalFormPanel({ onClose, festival, onSaved }) {
 
   const addProduct = (product) => {
     if (!product?.id || isProductSelected(product.id)) return;
-    setSelectedProducts((prev) => [...prev, product]);
+    setSelectedProducts((prev) => [
+      ...prev,
+      { ...product, festival_discount_percent: "" },
+    ]);
     setSearchValue("");
     setSearchResults([]);
   };
@@ -318,7 +338,7 @@ function FestivalFormPanel({ onClose, festival, onSaved }) {
       for (const product of products) {
         if (product?.id && !ids.has(product.id)) {
           ids.add(product.id);
-          next.push(product);
+          next.push({ ...product, festival_discount_percent: "" });
         }
       }
       return next;
@@ -416,7 +436,15 @@ function FestivalFormPanel({ onClose, festival, onSaved }) {
         setFormError("درصد تخفیف باید عددی بین ۱ تا ۹۰ باشد");
         return;
       }
-    } else {
+    } else if (isAmazing) {
+      const raw = String(data.discount_percent ?? "").trim();
+      if (raw) {
+        if (!Number.isInteger(discountPercent) || discountPercent < 1 || discountPercent > 90) {
+          setFormError("درصد پیش‌فرض باید بین ۱ تا ۹۰ باشد یا خالی بماند");
+          return;
+        }
+      }
+    } else if (isFreeShipping) {
       if (!(Number(data.min_cart_amount) >= 1)) {
         setFormError("مبلغ حداقل سبد اجباری است");
         return;
@@ -435,14 +463,30 @@ function FestivalFormPanel({ onClose, festival, onSaved }) {
       name: data.name,
       description: data.description,
       type: festivalType,
-      discount_percent: isDiscount ? discountPercent : null,
-      min_cart_amount: isDiscount ? 0 : Number(data.min_cart_amount),
+      discount_percent: isDiscount
+        ? discountPercent
+        : isAmazing && String(data.discount_percent ?? "").trim()
+          ? discountPercent
+          : null,
+      min_cart_amount: isDiscount || isAmazing ? 0 : Number(data.min_cart_amount),
       starts_at: startDateTime,
       ends_at: endDateTime,
       exact_time: true,
       is_active: Boolean(data.is_active),
-      city_names: isDiscount ? [] : selectedCities,
+      city_names: isDiscount || isAmazing ? [] : selectedCities,
       product_ids: selectedProducts.map((item) => item.id),
+      product_discounts: isAmazing
+        ? Object.fromEntries(
+            selectedProducts.map((item) => {
+              const raw = item.festival_discount_percent;
+              if (raw === "" || raw === null || raw === undefined) {
+                return [item.id, null];
+              }
+              const n = Number(raw);
+              return [item.id, Number.isInteger(n) && n > 0 ? n : null];
+            })
+          )
+        : undefined,
     };
 
     setIsLoading(true);
@@ -487,7 +531,7 @@ function FestivalFormPanel({ onClose, festival, onSaved }) {
         <form className="space-y-5 px-5 py-5 md:px-6 md:py-6" onSubmit={handleSubmit(onSubmit)}>
           <div className="space-y-2">
             <label className="block text-sm font-bold">نوع جشنواره</label>
-            <div className="grid gap-2 sm:grid-cols-2">
+            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
               {FESTIVAL_TYPE_OPTIONS.map((option) => {
                 const selected = festivalType === option.value;
                 return (
@@ -522,9 +566,11 @@ function FestivalFormPanel({ onClose, festival, onSaved }) {
                 <p className="text-xs text-red-500">نام جشنواره اجباری است</p>
               )}
             </div>
-            {isDiscount ? (
+            {isDiscount || isAmazing ? (
               <div className="space-y-2">
-                <label className="block text-sm font-bold">درصد تخفیف</label>
+                <label className="block text-sm font-bold">
+                  {isAmazing ? "درصد پیش‌فرض (اختیاری)" : "درصد تخفیف"}
+                </label>
                 <div className="relative">
                   <input
                     type="number"
@@ -534,7 +580,7 @@ function FestivalFormPanel({ onClose, festival, onSaved }) {
                     inputMode="numeric"
                     dir="ltr"
                     className="admin-input pl-9 text-left"
-                    placeholder="مثلاً 30"
+                    placeholder={isAmazing ? "خالی = بدون تخفیف کلی" : "مثلاً 30"}
                     {...register("discount_percent")}
                   />
                   <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-400">
@@ -542,7 +588,9 @@ function FestivalFormPanel({ onClose, festival, onSaved }) {
                   </span>
                 </div>
                 <p className="text-[11px] text-gray-500">
-                  روی قیمت اصلی محصول حساب می‌شود؛ اگر محصول از قبل تخفیف بیشتری داشته باشد، همان قیمت ارزان‌تر می‌ماند.
+                  {isAmazing
+                    ? "برای هر محصول می‌توانید جداگانه درصد بگذارید یا خالی بگذارید تا فقط ویترین باشد."
+                    : "روی قیمت اصلی محصول حساب می‌شود؛ اگر محصول از قبل تخفیف بیشتری داشته باشد، همان قیمت ارزان‌تر می‌ماند."}
                 </p>
               </div>
             ) : (
@@ -606,7 +654,7 @@ function FestivalFormPanel({ onClose, festival, onSaved }) {
             </label>
           )}
 
-          {!isDiscount && (
+          {isFreeShipping && (
           <div className="rounded-xl border border-gray-100 p-4">
             <h3 className="mb-3 text-sm font-bold">شهرهای جشنواره</h3>
             <div className="grid gap-3 md:grid-cols-2">
@@ -733,7 +781,7 @@ function FestivalFormPanel({ onClose, festival, onSaved }) {
                     selectedProducts.map((product) => (
                       <div
                         key={product.id}
-                        className="flex items-center justify-between rounded-xl border border-gray-100 px-3 py-2"
+                        className="flex flex-col gap-2 rounded-xl border border-gray-100 px-3 py-2 sm:flex-row sm:items-center sm:justify-between"
                       >
                         <div className="flex min-w-0 items-center gap-3">
                           <img
@@ -743,13 +791,40 @@ function FestivalFormPanel({ onClose, festival, onSaved }) {
                           />
                           <span className="truncate text-sm font-medium">{product.name}</span>
                         </div>
-                        <button
-                          type="button"
-                          className="text-xs text-red-500"
-                          onClick={() => removeProduct(product.id)}
-                        >
-                          حذف
-                        </button>
+                        <div className="flex shrink-0 items-center gap-2 self-end sm:self-center">
+                          {isAmazing ? (
+                            <label className="flex items-center gap-1 text-[11px] text-gray-500">
+                              <span>تخفیف</span>
+                              <input
+                                type="number"
+                                min={1}
+                                max={90}
+                                dir="ltr"
+                                className="w-14 rounded-lg border border-gray-200 px-2 py-1 text-center text-xs"
+                                placeholder="—"
+                                value={product.festival_discount_percent ?? ""}
+                                onChange={(e) => {
+                                  const value = e.target.value;
+                                  setSelectedProducts((prev) =>
+                                    prev.map((item) =>
+                                      item.id === product.id
+                                        ? { ...item, festival_discount_percent: value }
+                                        : item
+                                    )
+                                  );
+                                }}
+                              />
+                              <span>٪</span>
+                            </label>
+                          ) : null}
+                          <button
+                            type="button"
+                            className="text-xs text-red-500"
+                            onClick={() => removeProduct(product.id)}
+                          >
+                            حذف
+                          </button>
+                        </div>
                       </div>
                     ))
                   ) : (
