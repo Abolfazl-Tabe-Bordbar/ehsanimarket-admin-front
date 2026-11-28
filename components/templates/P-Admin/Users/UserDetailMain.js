@@ -13,6 +13,7 @@ import { siteUrl, uploadUrl } from "@/data/variables";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import KeyboardArrowDownOutlinedIcon from "@mui/icons-material/KeyboardArrowDownOutlined";
 import UserTagsEditor from "./UserTagsEditor";
+import UserCustomerClassEditor from "./UserCustomerClassEditor";
 import FestivalPurchaseTag from "@/components/templates/P-Admin/Purchases/FestivalPurchaseTag";
 
 const tabs = [
@@ -211,7 +212,33 @@ function UserDetailMain({ userId }) {
               <span className="font-bold text-gray-600 shrink-0">نحوه آشنایی:</span>
               <span>{user.referral_label || "—"}</span>
             </div>
+            <div className="flex gap-2 md:col-span-2">
+              <span className="font-bold text-gray-600 shrink-0">کلاس مشتری:</span>
+              <span>
+                {user.customerClass
+                  ? `${user.customerClass.name} (${Number(user.customerClass.discount_percent).toLocaleString("fa-IR")}٪ تخفیف)`
+                  : "کاربر عادی"}
+              </span>
+            </div>
           </div>
+
+          <UserCustomerClassEditor
+            userId={user.id}
+            initialCustomerClass={user.customerClass}
+            onUpdated={(customerClass) => {
+              setData((prev) =>
+                prev?.body
+                  ? {
+                      ...prev,
+                      body: {
+                        ...prev.body,
+                        user: { ...prev.body.user, customerClass },
+                      },
+                    }
+                  : prev
+              );
+            }}
+          />
 
           <UserTagsEditor
             userId={user.id}

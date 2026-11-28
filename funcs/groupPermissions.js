@@ -23,7 +23,12 @@ export function getPermissionGroupKey(name = "") {
   if (name.startsWith("festivals")) return "festivals";
   if (name.startsWith("site_settings")) return "site_settings";
   if (name.startsWith("warehouses")) return "warehouses";
-  if (name.startsWith("user_tags") || name.startsWith("user_sms")) return "user";
+  if (
+    name.startsWith("user_tags") ||
+    name.startsWith("user_sms") ||
+    name.startsWith("customer_classes")
+  )
+    return "user";
   const prefix = name.split("_")[0];
   return PERMISSION_GROUPS[prefix] ? prefix : "other";
 }

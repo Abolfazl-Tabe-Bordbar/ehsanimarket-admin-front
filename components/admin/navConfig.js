@@ -25,6 +25,7 @@ import {
   Inventory2Outlined,
   OutboxOutlined,
   CampaignOutlined,
+  WorkspacePremiumOutlined,
   SupportAgentOutlined,
   ConfirmationNumberOutlined,
   CategoryOutlined,
@@ -243,6 +244,13 @@ export const adminNavGroups = [
         label: "نحوه آشنایی",
         description: "گزینه‌های «از کجا با ما آشنا شدید» و آمار آن",
         icon: CampaignOutlined,
+      },
+      {
+        href: "/p-admin/customer-classes",
+        path: "/p-admin/customer-classes",
+        label: "کلاس‌های مشتری",
+        description: "نام و درصد تخفیف از قیمت پایه؛ اختصاص در جزئیات کاربر",
+        icon: WorkspacePremiumOutlined,
       },
       {
         href: "/p-admin/user-sms",
