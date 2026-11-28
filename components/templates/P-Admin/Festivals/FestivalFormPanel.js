@@ -648,7 +648,9 @@ function FestivalFormPanel({ onClose, festival, onSaved }) {
                   </div>
                 </div>
                 <div className="min-w-0 flex-1 space-y-1">
-                  <label className="text-xs text-gray-600">تصویر پس‌زمینه (اختیاری)</label>
+                  <label className="text-xs text-gray-600">
+                    تصویر بالای نام جشنواره (جایگزین علامت ٪)
+                  </label>
                   <input
                     type="file"
                     accept="image/jpeg,image/png,image/webp,image/gif"
