@@ -6,11 +6,8 @@ import Swal from "sweetalert2";
 
 async function createFestival(festivalData) {
   try {
-    const { data } = await axios.post(`${baseUrl}/festivals`, festivalData, {
-      headers: {
-        cookies: getCookie("ramian-pakhsh-admin"),
-      },
-    });
+    const headers = { cookies: getCookie("ramian-pakhsh-admin") };
+    const { data } = await axios.post(`${baseUrl}/festivals`, festivalData, { headers });
 
     if (data.status) {
       Swal.fire({

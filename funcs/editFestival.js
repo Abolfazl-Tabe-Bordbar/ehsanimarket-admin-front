@@ -5,15 +5,10 @@ import { TopRightToast } from "@/components/modules/Toast";
 
 async function editFestival(festivalData, festivalId) {
   try {
-    const { data } = await axios.put(
-      `${baseUrl}/festivals/${festivalId}`,
-      festivalData,
-      {
-        headers: {
-          cookies: getCookie("ramian-pakhsh-admin"),
-        },
-      }
-    );
+    const headers = { cookies: getCookie("ramian-pakhsh-admin") };
+    const { data } = await axios.put(`${baseUrl}/festivals/${festivalId}`, festivalData, {
+      headers,
+    });
 
     TopRightToast.fire({
       icon: data.status ? "success" : "error",

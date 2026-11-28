@@ -14,6 +14,7 @@ import getProducts from "@/funcs/getProducts";
 import getCookie from "@/funcs/cookies/getCookie";
 import createFestival from "@/funcs/createFestival";
 import editFestival from "@/funcs/editFestival";
+import { buildFestivalFormData } from "@/funcs/buildFestivalFormData";
 import { uploadUrl } from "@/data/variables";
 
 function normalizeAmountDigits(value) {
@@ -218,6 +219,14 @@ function FestivalFormPanel({ onClose, festival, onSaved }) {
   const [categoryProducts, setCategoryProducts] = useState([]);
   const [loadingCategoryProducts, setLoadingCategoryProducts] = useState(false);
   const [categoryLoaded, setCategoryLoaded] = useState(false);
+  const [panelColor, setPanelColor] = useState(festival?.amazing_panel_color || "#c62828");
+  const [panelImageFile, setPanelImageFile] = useState(null);
+  const [removePanelImage, setRemovePanelImage] = useState(false);
+  const panelImagePreview = panelImageFile
+    ? URL.createObjectURL(panelImageFile)
+    : !removePanelImage && festival?.amazing_panel_image
+      ? `${uploadUrl}/festivals/${festival.amazing_panel_image}`
+      : null;
 
   const {
     register,
@@ -463,6 +472,7 @@ function FestivalFormPanel({ onClose, festival, onSaved }) {
       name: data.name,
       description: data.description,
       type: festivalType,
+      amazing_panel_color: isAmazing ? panelColor : null,
       discount_percent: isDiscount
         ? discountPercent
         : isAmazing && String(data.discount_percent ?? "").trim()
@@ -489,10 +499,15 @@ function FestivalFormPanel({ onClose, festival, onSaved }) {
         : undefined,
     };
 
+    const requestBody = buildFestivalFormData(payload, {
+      panelImageFile,
+      removePanelImage,
+    });
+
     setIsLoading(true);
     const res = isEdit
-      ? await editFestival(payload, festival.id)
-      : await createFestival(payload);
+      ? await editFestival(requestBody, festival.id)
+      : await createFestival(requestBody);
     setIsLoading(false);
 
     if (res?.status) {
@@ -608,6 +623,65 @@ function FestivalFormPanel({ onClose, festival, onSaved }) {
               </div>
             )}
           </div>
+
+          {isAmazing ? (
+            <div className="space-y-3 rounded-xl border border-fuchsia-200/80 bg-fuchsia-50/40 p-4">
+              <h3 className="text-sm font-bold text-gray-800">ظاهر پنل در سایت</h3>
+              <div className="flex flex-wrap items-end gap-3">
+                <div className="space-y-1">
+                  <label className="text-xs text-gray-600">رنگ پس‌زمینه</label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="color"
+                      value={panelColor}
+                      onChange={(e) => setPanelColor(e.target.value)}
+                      className="h-10 w-12 cursor-pointer rounded border border-gray-200"
+                    />
+                    <input
+                      type="text"
+                      dir="ltr"
+                      value={panelColor}
+                      onChange={(e) => setPanelColor(e.target.value)}
+                      className="admin-input w-28 text-left text-xs"
+                      placeholder="#c62828"
+                    />
+                  </div>
+                </div>
+                <div className="min-w-0 flex-1 space-y-1">
+                  <label className="text-xs text-gray-600">تصویر پس‌زمینه (اختیاری)</label>
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp,image/gif"
+                    className="block w-full text-xs"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      setPanelImageFile(file || null);
+                      setRemovePanelImage(false);
+                    }}
+                  />
+                </div>
+              </div>
+              {panelImagePreview ? (
+                <div className="flex items-start gap-3">
+                  <img
+                    src={panelImagePreview}
+                    alt=""
+                    className="h-20 w-20 rounded-lg border object-cover"
+                  />
+                  <button
+                    type="button"
+                    className="text-xs text-red-600"
+                    onClick={() => {
+                      setPanelImageFile(null);
+                      setRemovePanelImage(true);
+                    }}
+                  >
+                    حذف تصویر
+                  </button>
+                </div>
+              ) : null}
+            </div>
+          ) : null}
 
           <div className="space-y-2">
             <label className="block text-sm font-bold">توضیح (اختیاری)</label>
