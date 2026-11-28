@@ -18,6 +18,7 @@ export function buildFestivalFormData(
     "exact_time",
     "is_active",
     "amazing_panel_color",
+    "amazing_panel_color_2",
   ];
 
   for (const key of scalarKeys) {

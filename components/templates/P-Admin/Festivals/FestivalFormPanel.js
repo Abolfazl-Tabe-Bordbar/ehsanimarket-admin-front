@@ -15,6 +15,7 @@ import getCookie from "@/funcs/cookies/getCookie";
 import createFestival from "@/funcs/createFestival";
 import editFestival from "@/funcs/editFestival";
 import { buildFestivalFormData } from "@/funcs/buildFestivalFormData";
+import AmazingFestivalPanelPreview from "./AmazingFestivalPanelPreview";
 import { uploadUrl } from "@/data/variables";
 
 function normalizeAmountDigits(value) {
@@ -220,6 +221,9 @@ function FestivalFormPanel({ onClose, festival, onSaved }) {
   const [loadingCategoryProducts, setLoadingCategoryProducts] = useState(false);
   const [categoryLoaded, setCategoryLoaded] = useState(false);
   const [panelColor, setPanelColor] = useState(festival?.amazing_panel_color || "#c62828");
+  const [panelColor2, setPanelColor2] = useState(
+    festival?.amazing_panel_color_2 || "#8b1a1a"
+  );
   const [panelImageFile, setPanelImageFile] = useState(null);
   const [removePanelImage, setRemovePanelImage] = useState(false);
   const panelImagePreview = panelImageFile
@@ -232,6 +236,7 @@ function FestivalFormPanel({ onClose, festival, onSaved }) {
     register,
     handleSubmit,
     setValue,
+    watch,
     formState: { errors },
   } = useForm({
     defaultValues: {
@@ -473,6 +478,7 @@ function FestivalFormPanel({ onClose, festival, onSaved }) {
       description: data.description,
       type: festivalType,
       amazing_panel_color: isAmazing ? panelColor : null,
+      amazing_panel_color_2: isAmazing ? panelColor2 : null,
       discount_percent: isDiscount
         ? discountPercent
         : isAmazing && String(data.discount_percent ?? "").trim()
@@ -629,7 +635,7 @@ function FestivalFormPanel({ onClose, festival, onSaved }) {
               <h3 className="text-sm font-bold text-gray-800">ظاهر پنل در سایت</h3>
               <div className="flex flex-wrap items-end gap-3">
                 <div className="space-y-1">
-                  <label className="text-xs text-gray-600">رنگ پس‌زمینه</label>
+                  <label className="text-xs text-gray-600">رنگ اول (گرادینت)</label>
                   <div className="flex items-center gap-2">
                     <input
                       type="color"
@@ -644,6 +650,25 @@ function FestivalFormPanel({ onClose, festival, onSaved }) {
                       onChange={(e) => setPanelColor(e.target.value)}
                       className="admin-input w-28 text-left text-xs"
                       placeholder="#c62828"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs text-gray-600">رنگ دوم (گرادینت)</label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="color"
+                      value={panelColor2}
+                      onChange={(e) => setPanelColor2(e.target.value)}
+                      className="h-10 w-12 cursor-pointer rounded border border-gray-200"
+                    />
+                    <input
+                      type="text"
+                      dir="ltr"
+                      value={panelColor2}
+                      onChange={(e) => setPanelColor2(e.target.value)}
+                      className="admin-input w-28 text-left text-xs"
+                      placeholder="#8b1a1a"
                     />
                   </div>
                 </div>
@@ -682,6 +707,13 @@ function FestivalFormPanel({ onClose, festival, onSaved }) {
                   </button>
                 </div>
               ) : null}
+              <AmazingFestivalPanelPreview
+                name={watch("name")}
+                endsAt={endsAt}
+                color1={panelColor}
+                color2={panelColor2}
+                imageUrl={panelImagePreview}
+              />
             </div>
           ) : null}
 
